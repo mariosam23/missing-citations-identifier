@@ -12,4 +12,3 @@ def init_db():
     import database.models.paper
     import database.models.citation
     Base.metadata.create_all(bind=engine)
-
