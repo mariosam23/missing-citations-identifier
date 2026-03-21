@@ -100,12 +100,12 @@ class KeywordGraphBuilder:
     Class to build a keyword graph from academic abstracts using NLP techniques.
     """
 
-    def __init__(self, model_name: str = "en_core_sci_lg"):
+    def __init__(self, model_name: str = "en_core_sci_scibert"):
         """
         Initialize the KeywordGraphBuilder with a SpaCy model.
 
         Args:
-            model_name (str): The name of the SpaCy model to use. Defaults to "en_core_sci_lg".
+            model_name (str): The name of the SpaCy model to use. Defaults to "en_core_sci_scibert".
         """
         self._nlp = spacy.load(model_name)
 
