@@ -974,6 +974,34 @@ files = [
 ]
 
 [[package]]
+name = "keybert"
+version = "0.9.0"
+description = "KeyBERT performs keyword extraction with state-of-the-art transformer models."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "keybert-0.9.0-py3-none-any.whl", hash = "sha256:afa2f300a72f69d279e4482bc85d8b34493b119876dc0818cb4f260466285b36"},
+    {file = "keybert-0.9.0.tar.gz", hash = "sha256:eec8ebd37d3d9fa238d7075e727adb993de4f3ed67c94112840e4cc0e55d7657"},
+]
+
+[package.dependencies]
+numpy = ">=1.18.5"
+rich = ">=10.4.0"
+scikit-learn = ">=0.22.2"
+sentence-transformers = ">=0.3.8"
+
+[package.extras]
+dev = ["keybert[docs,test]"]
+docs = ["mkdocs (>=1.1)", "mkdocs-material (>=4.6.3)", "mkdocstrings (>=0.8.0)"]
+flair = ["flair (>=0.7)", "torch (>=1.4.0)", "transformers (>=3.5.1)"]
+gensim = ["gensim (>=3.6.0)"]
+spacy = ["spacy (>=3.0.1)"]
+test = ["black (>=19.3b0)", "flake8 (>=3.6.0)", "pre-commit (>=2.2.0)", "pytest (>=5.4.3)", "pytest-cov (>=2.6.1)"]
+tgi = ["huggingface-hub (>=0.23.3)", "pydantic (>=2.7.4)"]
+use = ["tensorflow", "tensorflow_hub", "tensorflow_text"]
+
+[[package]]
 name = "kiwisolver"
 version = "1.5.0"
 description = "A fast implementation of the Cassowary constraint solver"
@@ -2369,6 +2397,24 @@ files = [
     {file = "pyyaml-6.0.3-cp39-cp39-win_amd64.whl", hash = "sha256:2e71d11abed7344e42a8849600193d15b6def118602c4c176f748e4583246007"},
     {file = "pyyaml-6.0.3.tar.gz", hash = "sha256:d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f"},
 ]
+
+[[package]]
+name = "rank-bm25"
+version = "0.2.2"
+description = "Various BM25 algorithms for document ranking"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "rank_bm25-0.2.2-py3-none-any.whl", hash = "sha256:7bd4a95571adadfc271746fa146a4bcfd89c0cf731e49c3d1ad863290adbe8ae"},
+    {file = "rank_bm25-0.2.2.tar.gz", hash = "sha256:096ccef76f8188563419aaf384a02f0ea459503fdf77901378d4fd9d87e5e51d"},
+]
+
+[package.dependencies]
+numpy = "*"
+
+[package.extras]
+dev = ["pytest"]
 
 [[package]]
 name = "regex"
@@ -3903,4 +3949,4 @@ dev = ["pytest", "setuptools"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.14"
-content-hash = "668b22fcc488ae3062dee0c9079032b8451232f3eee03ce6392000c927655257"
+content-hash = "fa85732fb21c88916dcbba98979d7167b091fec9a5dd4a4c774c77853831302c"

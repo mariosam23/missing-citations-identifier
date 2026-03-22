@@ -24,6 +24,8 @@ dependencies = [
     "torchvision (>=0.25.0+cu128)",
     "en-core-sci-scibert @ https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.4/en_core_sci_scibert-0.5.4.tar.gz",
     "timm (<1.0.0)",
+    "keybert (>=0.9.0,<0.10.0)",
+    "rank-bm25 (>=0.2.2,<0.3.0)",
 ]
 
 
