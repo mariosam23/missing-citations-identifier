@@ -1,0 +1,246 @@
+{
+  "search:Attention Is All You Need, Vaswani et al., 2017:paperId,title,abstract,citationCount,references.paperId": {
+    "paperId": "6059e19fa7241445b9d25217e38592d58296edc9",
+    "title": "Succession planning: a case for revisiting the process in critical care.",
+    "citationCount": 6,
+    "openAccessPdf": {
+      "url": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/nicc.12308",
+      "status": "BRONZE",
+      "license": null,
+      "disclaimer": "Notice: The following paper fields have been elided by the publisher: {'references', 'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1111/nicc.12308?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1111/nicc.12308, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "144980341",
+        "name": "J. Scholes"
+      },
+      {
+        "authorId": "49230174",
+        "name": "J. Trapani"
+      }
+    ],
+    "abstract": null,
+    "references": null
+  },
+  "search:BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding, Devlin et al., 2018:paperId,title,abstract,citationCount,references.paperId": {
+    "paperId": "df2b0e26d0599ce3e70df8a9da02e51594e0e992",
+    "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+    "citationCount": 111776,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/1810.04805, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "authors": [
+      {
+        "authorId": "39172707",
+        "name": "Jacob Devlin"
+      },
+      {
+        "authorId": "1744179",
+        "name": "Ming-Wei Chang"
+      },
+      {
+        "authorId": "2544107",
+        "name": "Kenton Lee"
+      },
+      {
+        "authorId": "3259253",
+        "name": "Kristina Toutanova"
+      }
+    ],
+    "abstract": "We introduce a new language representation model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language representation models (Peters et al., 2018a; Radford et al., 2018), BERT is designed to pre-train deep bidirectional representations from unlabeled text by jointly conditioning on both left and right context in all layers. As a result, the pre-trained BERT model can be fine-tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task-specific architecture modifications. BERT is conceptually simple and empirically powerful. It obtains new state-of-the-art results on eleven natural language processing tasks, including pushing the GLUE score to 80.5 (7.7 point absolute improvement), MultiNLI accuracy to 86.7% (4.6% absolute improvement), SQuAD v1.1 question answering Test F1 to 93.2 (1.5 point absolute improvement) and SQuAD v2.0 Test F1 to 83.1 (5.1 point absolute improvement).",
+    "references": [
+      {
+        "paperId": "26b47e35fe6e4260fdf7b7cc98f279a73c277494"
+      },
+      {
+        "paperId": "27e98e09cf09bc13c913d01676e5f32624011050"
+      },
+      {
+        "paperId": "0c47cad9729c38d9db1f75491b1ee4bd883a5d4e"
+      },
+      {
+        "paperId": "ac11062f1f368d97f4c826c317bf50dcc13fdb59"
+      },
+      {
+        "paperId": "af5c4b80fbf847f69a202ba5a780a3dd18c1a027"
+      },
+      {
+        "paperId": "b9de9599d7241459db9213b5cdd7059696f5ef8d"
+      },
+      {
+        "paperId": "421fc2556836a6b441de806d7b393a35b6eaea58"
+      },
+      {
+        "paperId": "cb0f3ee1e98faf92429d601cdcd76c69c1e484eb"
+      },
+      {
+        "paperId": "451d4a16e425ecbf38c4b1cca0dcf5d9bec8255c"
+      },
+      {
+        "paperId": "3febb2bed8865945e7fddc99efd791887bb7e14f"
+      },
+      {
+        "paperId": "ad31866da7f14ae21bd38df0a3b1ffd1a1438122"
+      },
+      {
+        "paperId": "8c1b00128e74f1cd92aede3959690615695d5101"
+      },
+      {
+        "paperId": "7f4afc1bf3272ae6ec00b46e27efc4a4f6b0826d"
+      },
+      {
+        "paperId": "1e077413b25c4d34945cc2707e17e46ed4fe784a"
+      },
+      {
+        "paperId": "3c78c6df5eb1695b6a399e346dde880af27d1016"
+      },
+      {
+        "paperId": "bc8fa64625d9189f5801837e7b133e7fe3c581f7"
+      },
+      {
+        "paperId": "a23fa96e7217ba0e9405d9e1fe3cdedd57b6e096"
+      },
+      {
+        "paperId": "204e3073870fae3d05bcbc2f6a8e263d9b72e776"
+      },
+      {
+        "paperId": "e0222a1ae6874f7fff128c3da8769ab95963da04"
+      },
+      {
+        "paperId": "ee7b883e35d754ae4f71c21bb71f9f03e4ffbb2c"
+      },
+      {
+        "paperId": "f010affab57b5fcf1cd6be23df79d8ec98c7289c"
+      },
+      {
+        "paperId": "a97dc52807d80454e78d255f9fbd7b0fab56bd03"
+      },
+      {
+        "paperId": "5ded2b8c64491b4a67f6d39ce473d4b9347a672e"
+      },
+      {
+        "paperId": "0bb4cadc80c0afaf29c57518dc9c06f8fcfa5f38"
+      },
+      {
+        "paperId": "3a7b63b50c64f4ec3358477790e84cbd6be2a0b4"
+      },
+      {
+        "paperId": "c6850869aa5e78a107c378d2e8bfa39633158c0c"
+      },
+      {
+        "paperId": "59761abc736397539bdd01ad7f9d91c8607c0457"
+      },
+      {
+        "paperId": "4361e64f2d12d63476fdc88faf72a0f70d9a2ffb"
+      },
+      {
+        "paperId": "05dd7254b632376973f3a1b4d39485da17814df5"
+      },
+      {
+        "paperId": "2cd8e8f510c89c7c18268e8ad51c061e459ad321"
+      },
+      {
+        "paperId": "26e743d5bd465f49b9538deaf116c15e61b7951f"
+      },
+      {
+        "paperId": "4aa9f5150b46320f534de4747a2dd0cd7f3fe292"
+      },
+      {
+        "paperId": "f04df4e20a18358ea2f689b4c129781628ef7fc1"
+      },
+      {
+        "paperId": "6e795c6e9916174ae12349f5dc3f516570c17ce8"
+      },
+      {
+        "paperId": "0e6824e137847be0599bb0032e37042ed2ef5045"
+      },
+      {
+        "paperId": "081651b38ff7533550a3adfc1c00da333a8fe86c"
+      },
+      {
+        "paperId": "f37e1b62a767a307c046404ca96bc140b3e68cb5"
+      },
+      {
+        "paperId": "f3de86aeb442216a8391befcacb49e58b478f512"
+      },
+      {
+        "paperId": "5d833331b0e22ff359db05c62a8bca18c4f04b68"
+      },
+      {
+        "paperId": "87f40e6f3022adbc1f1905e3e506abad05a9964f"
+      },
+      {
+        "paperId": "687bac2d3320083eb4530bf18bb8f8f721477600"
+      },
+      {
+        "paperId": "128cb6b891aee1b5df099acb48e2efecfcff689f"
+      },
+      {
+        "paperId": "8492070dc4031ed825e95e4803781752bb5e909f"
+      },
+      {
+        "paperId": "7be3afdb7b7894321027ec90ea0a990aa7a0f266"
+      },
+      {
+        "paperId": "d2c733e34d48784a37d717fe43d9e93277a8c53e"
+      },
+      {
+        "paperId": "a9fc84f8abe740cdc7ee82e69444d1d00dbe0ceb"
+      },
+      {
+        "paperId": "57458bc1cffe5caa45a885af986d70f723f406b4"
+      },
+      {
+        "paperId": "843959ffdccf31c6694d135fad07425924f785b1"
+      },
+      {
+        "paperId": "9fa8d73e572c3ca824a04a5f551b602a17831bc5"
+      },
+      {
+        "paperId": "2c5135a0531bc5ad7dd890f018e67a40529f5bcb"
+      },
+      {
+        "paperId": "10f97f1fb4f5c2c8e6c44d4a33da46d331dd4aeb"
+      },
+      {
+        "paperId": "3de5d40b60742e3dfa86b19e7f660962298492af"
+      },
+      {
+        "paperId": "766ce989b8b8b984f7a4691fd8c9af4bdb2b74cd"
+      },
+      {
+        "paperId": null
+      },
+      {
+        "paperId": null
+      },
+      {
+        "paperId": "8ff46c88964a36985f2b45933a3d47b81bd87bd0"
+      },
+      {
+        "paperId": null
+      },
+      {
+        "paperId": "0f8468de03ee9f12d693237bec87916311bf1c24"
+      },
+      {
+        "paperId": "db8885a0037fe47d973ade79d696586453710233"
+      },
+      {
+        "paperId": "351ec42df2b60c6042addf96e6b98673bbaf4dfd"
+      },
+      {
+        "paperId": "475354f10798f110d34792b6d88f31d6d5cb099e"
+      },
+      {
+        "paperId": "e808f28d411a958c5db81ceb111beb2638698f47"
+      },
+      {
+        "paperId": null
+      }
+    ]
+  }
+}
