@@ -1,5 +1,9 @@
-from src.logger import logger
+from logger import logger
 
 
 def main():
-    pass
+    logger.info("Starting the application...")
+
+
+if __name__ == "__main__":
+    main()

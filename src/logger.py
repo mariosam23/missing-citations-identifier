@@ -1,6 +1,7 @@
 import logging
 
 logger = logging.getLogger("missing_citations")
+
 if not logger.handlers:
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
