@@ -1,4 +1,4 @@
-from logger import logger
+from utils import logger
 
 
 def main():
