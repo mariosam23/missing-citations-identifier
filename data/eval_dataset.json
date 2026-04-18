@@ -1,0 +1,650 @@
+[
+  {
+    "paper_id": "W2015914132",
+    "indexed_reference_count": 16,
+    "total_reference_count": 20,
+    "coverage": 0.8
+  },
+  {
+    "paper_id": "W2011277039",
+    "indexed_reference_count": 12,
+    "total_reference_count": 15,
+    "coverage": 0.8
+  },
+  {
+    "paper_id": "W2157765050",
+    "indexed_reference_count": 11,
+    "total_reference_count": 15,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W2088636071",
+    "indexed_reference_count": 22,
+    "total_reference_count": 31,
+    "coverage": 0.7097
+  },
+  {
+    "paper_id": "W2052113609",
+    "indexed_reference_count": 10,
+    "total_reference_count": 14,
+    "coverage": 0.7143
+  },
+  {
+    "paper_id": "W1509966554",
+    "indexed_reference_count": 16,
+    "total_reference_count": 21,
+    "coverage": 0.7619
+  },
+  {
+    "paper_id": "W2069285834",
+    "indexed_reference_count": 31,
+    "total_reference_count": 42,
+    "coverage": 0.7381
+  },
+  {
+    "paper_id": "W2038645424",
+    "indexed_reference_count": 23,
+    "total_reference_count": 29,
+    "coverage": 0.7931
+  },
+  {
+    "paper_id": "W2131690084",
+    "indexed_reference_count": 24,
+    "total_reference_count": 33,
+    "coverage": 0.7273
+  },
+  {
+    "paper_id": "W1799366690",
+    "indexed_reference_count": 10,
+    "total_reference_count": 13,
+    "coverage": 0.7692
+  },
+  {
+    "paper_id": "W2113459411",
+    "indexed_reference_count": 20,
+    "total_reference_count": 28,
+    "coverage": 0.7143
+  },
+  {
+    "paper_id": "W1839785972",
+    "indexed_reference_count": 43,
+    "total_reference_count": 61,
+    "coverage": 0.7049
+  },
+  {
+    "paper_id": "W2105614108",
+    "indexed_reference_count": 13,
+    "total_reference_count": 15,
+    "coverage": 0.8667
+  },
+  {
+    "paper_id": "W1633910587",
+    "indexed_reference_count": 19,
+    "total_reference_count": 26,
+    "coverage": 0.7308
+  },
+  {
+    "paper_id": "W2053133374",
+    "indexed_reference_count": 12,
+    "total_reference_count": 17,
+    "coverage": 0.7059
+  },
+  {
+    "paper_id": "W2102386709",
+    "indexed_reference_count": 14,
+    "total_reference_count": 20,
+    "coverage": 0.7
+  },
+  {
+    "paper_id": "W1966533239",
+    "indexed_reference_count": 18,
+    "total_reference_count": 23,
+    "coverage": 0.7826
+  },
+  {
+    "paper_id": "W2097039598",
+    "indexed_reference_count": 14,
+    "total_reference_count": 16,
+    "coverage": 0.875
+  },
+  {
+    "paper_id": "W2083019346",
+    "indexed_reference_count": 18,
+    "total_reference_count": 25,
+    "coverage": 0.72
+  },
+  {
+    "paper_id": "W1637233379",
+    "indexed_reference_count": 18,
+    "total_reference_count": 24,
+    "coverage": 0.75
+  },
+  {
+    "paper_id": "W2149381887",
+    "indexed_reference_count": 17,
+    "total_reference_count": 24,
+    "coverage": 0.7083
+  },
+  {
+    "paper_id": "W2251012068",
+    "indexed_reference_count": 26,
+    "total_reference_count": 37,
+    "coverage": 0.7027
+  },
+  {
+    "paper_id": "W1990143860",
+    "indexed_reference_count": 22,
+    "total_reference_count": 30,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W1499864241",
+    "indexed_reference_count": 11,
+    "total_reference_count": 15,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W2950225692",
+    "indexed_reference_count": 11,
+    "total_reference_count": 14,
+    "coverage": 0.7857
+  },
+  {
+    "paper_id": "W2279034837",
+    "indexed_reference_count": 22,
+    "total_reference_count": 31,
+    "coverage": 0.7097
+  },
+  {
+    "paper_id": "W2135598826",
+    "indexed_reference_count": 12,
+    "total_reference_count": 17,
+    "coverage": 0.7059
+  },
+  {
+    "paper_id": "W2145375372",
+    "indexed_reference_count": 13,
+    "total_reference_count": 18,
+    "coverage": 0.7222
+  },
+  {
+    "paper_id": "W2074333174",
+    "indexed_reference_count": 22,
+    "total_reference_count": 28,
+    "coverage": 0.7857
+  },
+  {
+    "paper_id": "W2091331782",
+    "indexed_reference_count": 10,
+    "total_reference_count": 12,
+    "coverage": 0.8333
+  },
+  {
+    "paper_id": "W4919037",
+    "indexed_reference_count": 10,
+    "total_reference_count": 13,
+    "coverage": 0.7692
+  },
+  {
+    "paper_id": "W2033666272",
+    "indexed_reference_count": 13,
+    "total_reference_count": 16,
+    "coverage": 0.8125
+  },
+  {
+    "paper_id": "W2113858518",
+    "indexed_reference_count": 11,
+    "total_reference_count": 15,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W2023639956",
+    "indexed_reference_count": 12,
+    "total_reference_count": 17,
+    "coverage": 0.7059
+  },
+  {
+    "paper_id": "W1994712115",
+    "indexed_reference_count": 11,
+    "total_reference_count": 14,
+    "coverage": 0.7857
+  },
+  {
+    "paper_id": "W2976718572",
+    "indexed_reference_count": 16,
+    "total_reference_count": 22,
+    "coverage": 0.7273
+  },
+  {
+    "paper_id": "W3037952079",
+    "indexed_reference_count": 37,
+    "total_reference_count": 51,
+    "coverage": 0.7255
+  },
+  {
+    "paper_id": "W1971571088",
+    "indexed_reference_count": 13,
+    "total_reference_count": 18,
+    "coverage": 0.7222
+  },
+  {
+    "paper_id": "W1597561788",
+    "indexed_reference_count": 12,
+    "total_reference_count": 17,
+    "coverage": 0.7059
+  },
+  {
+    "paper_id": "W2274287116",
+    "indexed_reference_count": 15,
+    "total_reference_count": 20,
+    "coverage": 0.75
+  },
+  {
+    "paper_id": "W1965272462",
+    "indexed_reference_count": 12,
+    "total_reference_count": 13,
+    "coverage": 0.9231
+  },
+  {
+    "paper_id": "W2142375107",
+    "indexed_reference_count": 10,
+    "total_reference_count": 14,
+    "coverage": 0.7143
+  },
+  {
+    "paper_id": "W2093144089",
+    "indexed_reference_count": 22,
+    "total_reference_count": 28,
+    "coverage": 0.7857
+  },
+  {
+    "paper_id": "W1710476689",
+    "indexed_reference_count": 17,
+    "total_reference_count": 24,
+    "coverage": 0.7083
+  },
+  {
+    "paper_id": "W1972653359",
+    "indexed_reference_count": 12,
+    "total_reference_count": 15,
+    "coverage": 0.8
+  },
+  {
+    "paper_id": "W2017077355",
+    "indexed_reference_count": 19,
+    "total_reference_count": 22,
+    "coverage": 0.8636
+  },
+  {
+    "paper_id": "W1973948787",
+    "indexed_reference_count": 26,
+    "total_reference_count": 34,
+    "coverage": 0.7647
+  },
+  {
+    "paper_id": "W581956982",
+    "indexed_reference_count": 20,
+    "total_reference_count": 25,
+    "coverage": 0.8
+  },
+  {
+    "paper_id": "W1563061804",
+    "indexed_reference_count": 14,
+    "total_reference_count": 20,
+    "coverage": 0.7
+  },
+  {
+    "paper_id": "W2040136860",
+    "indexed_reference_count": 25,
+    "total_reference_count": 29,
+    "coverage": 0.8621
+  },
+  {
+    "paper_id": "W2092105345",
+    "indexed_reference_count": 15,
+    "total_reference_count": 18,
+    "coverage": 0.8333
+  },
+  {
+    "paper_id": "W4230557881",
+    "indexed_reference_count": 10,
+    "total_reference_count": 14,
+    "coverage": 0.7143
+  },
+  {
+    "paper_id": "W1716995571",
+    "indexed_reference_count": 18,
+    "total_reference_count": 21,
+    "coverage": 0.8571
+  },
+  {
+    "paper_id": "W1969246646",
+    "indexed_reference_count": 19,
+    "total_reference_count": 24,
+    "coverage": 0.7917
+  },
+  {
+    "paper_id": "W2080696000",
+    "indexed_reference_count": 17,
+    "total_reference_count": 24,
+    "coverage": 0.7083
+  },
+  {
+    "paper_id": "W2093774709",
+    "indexed_reference_count": 16,
+    "total_reference_count": 22,
+    "coverage": 0.7273
+  },
+  {
+    "paper_id": "W2161444534",
+    "indexed_reference_count": 10,
+    "total_reference_count": 14,
+    "coverage": 0.7143
+  },
+  {
+    "paper_id": "W2005208156",
+    "indexed_reference_count": 11,
+    "total_reference_count": 15,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W2036218035",
+    "indexed_reference_count": 11,
+    "total_reference_count": 15,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W2111145493",
+    "indexed_reference_count": 28,
+    "total_reference_count": 39,
+    "coverage": 0.7179
+  },
+  {
+    "paper_id": "W2764035156",
+    "indexed_reference_count": 26,
+    "total_reference_count": 37,
+    "coverage": 0.7027
+  },
+  {
+    "paper_id": "W2025623691",
+    "indexed_reference_count": 11,
+    "total_reference_count": 12,
+    "coverage": 0.9167
+  },
+  {
+    "paper_id": "W2083400998",
+    "indexed_reference_count": 12,
+    "total_reference_count": 15,
+    "coverage": 0.8
+  },
+  {
+    "paper_id": "W1988633556",
+    "indexed_reference_count": 24,
+    "total_reference_count": 33,
+    "coverage": 0.7273
+  },
+  {
+    "paper_id": "W2252325337",
+    "indexed_reference_count": 10,
+    "total_reference_count": 13,
+    "coverage": 0.7692
+  },
+  {
+    "paper_id": "W2063635674",
+    "indexed_reference_count": 11,
+    "total_reference_count": 15,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W2047463679",
+    "indexed_reference_count": 15,
+    "total_reference_count": 18,
+    "coverage": 0.8333
+  },
+  {
+    "paper_id": "W1945616565",
+    "indexed_reference_count": 10,
+    "total_reference_count": 14,
+    "coverage": 0.7143
+  },
+  {
+    "paper_id": "W2038359097",
+    "indexed_reference_count": 16,
+    "total_reference_count": 22,
+    "coverage": 0.7273
+  },
+  {
+    "paper_id": "W2150940164",
+    "indexed_reference_count": 10,
+    "total_reference_count": 12,
+    "coverage": 0.8333
+  },
+  {
+    "paper_id": "W3216958049",
+    "indexed_reference_count": 28,
+    "total_reference_count": 39,
+    "coverage": 0.7179
+  },
+  {
+    "paper_id": "W1984004232",
+    "indexed_reference_count": 29,
+    "total_reference_count": 39,
+    "coverage": 0.7436
+  },
+  {
+    "paper_id": "W1998325718",
+    "indexed_reference_count": 24,
+    "total_reference_count": 30,
+    "coverage": 0.8
+  },
+  {
+    "paper_id": "W1981935016",
+    "indexed_reference_count": 21,
+    "total_reference_count": 28,
+    "coverage": 0.75
+  },
+  {
+    "paper_id": "W2029317558",
+    "indexed_reference_count": 13,
+    "total_reference_count": 18,
+    "coverage": 0.7222
+  },
+  {
+    "paper_id": "W2017964195",
+    "indexed_reference_count": 21,
+    "total_reference_count": 27,
+    "coverage": 0.7778
+  },
+  {
+    "paper_id": "W2060887031",
+    "indexed_reference_count": 34,
+    "total_reference_count": 45,
+    "coverage": 0.7556
+  },
+  {
+    "paper_id": "W2019062653",
+    "indexed_reference_count": 16,
+    "total_reference_count": 22,
+    "coverage": 0.7273
+  },
+  {
+    "paper_id": "W1987315149",
+    "indexed_reference_count": 22,
+    "total_reference_count": 30,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W1533861849",
+    "indexed_reference_count": 12,
+    "total_reference_count": 17,
+    "coverage": 0.7059
+  },
+  {
+    "paper_id": "W2047606184",
+    "indexed_reference_count": 17,
+    "total_reference_count": 19,
+    "coverage": 0.8947
+  },
+  {
+    "paper_id": "W2049947172",
+    "indexed_reference_count": 18,
+    "total_reference_count": 21,
+    "coverage": 0.8571
+  },
+  {
+    "paper_id": "W2000467687",
+    "indexed_reference_count": 16,
+    "total_reference_count": 22,
+    "coverage": 0.7273
+  },
+  {
+    "paper_id": "W2102166818",
+    "indexed_reference_count": 15,
+    "total_reference_count": 20,
+    "coverage": 0.75
+  },
+  {
+    "paper_id": "W1996851296",
+    "indexed_reference_count": 16,
+    "total_reference_count": 20,
+    "coverage": 0.8
+  },
+  {
+    "paper_id": "W2003132673",
+    "indexed_reference_count": 10,
+    "total_reference_count": 14,
+    "coverage": 0.7143
+  },
+  {
+    "paper_id": "W1508977358",
+    "indexed_reference_count": 11,
+    "total_reference_count": 14,
+    "coverage": 0.7857
+  },
+  {
+    "paper_id": "W2121448470",
+    "indexed_reference_count": 12,
+    "total_reference_count": 17,
+    "coverage": 0.7059
+  },
+  {
+    "paper_id": "W1940872118",
+    "indexed_reference_count": 17,
+    "total_reference_count": 23,
+    "coverage": 0.7391
+  },
+  {
+    "paper_id": "W2063293760",
+    "indexed_reference_count": 11,
+    "total_reference_count": 13,
+    "coverage": 0.8462
+  },
+  {
+    "paper_id": "W2051618454",
+    "indexed_reference_count": 21,
+    "total_reference_count": 28,
+    "coverage": 0.75
+  },
+  {
+    "paper_id": "W2106725754",
+    "indexed_reference_count": 10,
+    "total_reference_count": 14,
+    "coverage": 0.7143
+  },
+  {
+    "paper_id": "W2081210383",
+    "indexed_reference_count": 32,
+    "total_reference_count": 44,
+    "coverage": 0.7273
+  },
+  {
+    "paper_id": "W2075790708",
+    "indexed_reference_count": 23,
+    "total_reference_count": 26,
+    "coverage": 0.8846
+  },
+  {
+    "paper_id": "W2019018899",
+    "indexed_reference_count": 29,
+    "total_reference_count": 34,
+    "coverage": 0.8529
+  },
+  {
+    "paper_id": "W1978553093",
+    "indexed_reference_count": 11,
+    "total_reference_count": 15,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W2152231616",
+    "indexed_reference_count": 18,
+    "total_reference_count": 24,
+    "coverage": 0.75
+  },
+  {
+    "paper_id": "W1972875210",
+    "indexed_reference_count": 16,
+    "total_reference_count": 22,
+    "coverage": 0.7273
+  },
+  {
+    "paper_id": "W2059507684",
+    "indexed_reference_count": 18,
+    "total_reference_count": 25,
+    "coverage": 0.72
+  },
+  {
+    "paper_id": "W1924770834",
+    "indexed_reference_count": 12,
+    "total_reference_count": 16,
+    "coverage": 0.75
+  },
+  {
+    "paper_id": "W2006631910",
+    "indexed_reference_count": 21,
+    "total_reference_count": 29,
+    "coverage": 0.7241
+  },
+  {
+    "paper_id": "W2517194566",
+    "indexed_reference_count": 18,
+    "total_reference_count": 25,
+    "coverage": 0.72
+  },
+  {
+    "paper_id": "W2951266961",
+    "indexed_reference_count": 22,
+    "total_reference_count": 29,
+    "coverage": 0.7586
+  },
+  {
+    "paper_id": "W2061240324",
+    "indexed_reference_count": 12,
+    "total_reference_count": 13,
+    "coverage": 0.9231
+  },
+  {
+    "paper_id": "W1998688147",
+    "indexed_reference_count": 17,
+    "total_reference_count": 22,
+    "coverage": 0.7727
+  },
+  {
+    "paper_id": "W4241462706",
+    "indexed_reference_count": 27,
+    "total_reference_count": 37,
+    "coverage": 0.7297
+  },
+  {
+    "paper_id": "W2125930537",
+    "indexed_reference_count": 11,
+    "total_reference_count": 15,
+    "coverage": 0.7333
+  },
+  {
+    "paper_id": "W1922655562",
+    "indexed_reference_count": 30,
+    "total_reference_count": 42,
+    "coverage": 0.7143
+  }
+]
