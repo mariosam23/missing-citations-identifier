@@ -1,4 +1,4 @@
-from model_manager import get_sentence_nlp
+from utils.model_manager import get_sentence_nlp
 from entities.parsed_paper import ParsedPaper
 from entities.sentence_record import SentenceRecord, CitationIntent
 from utils.regex_patterns import (
