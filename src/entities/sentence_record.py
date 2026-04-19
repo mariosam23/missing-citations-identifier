@@ -14,7 +14,7 @@ class SentenceRecord:
     section: str
     position_in_section: float             # 0.0=start, 1.0=end
     has_citation: bool
-    citation_intent: CitationIntent
+    citation_intent: CitationIntent | None = None
 
     retrieval_text: str | None = None      # markers stripped (for embedding)
     previous_sentence: str | None = None
@@ -40,7 +40,7 @@ class SentenceRecord:
             "has_citation": self.has_citation,
             "previous_sentence": self.previous_sentence,
             "next_sentence": self.next_sentence,
-            "citation_intent": self.citation_intent.name,
+            "citation_intent": self.citation_intent.name if self.citation_intent else None,
             "citation_worthy": self.citation_worthy,
             "worthiness_score": self.worthiness_score,
             "urgency_score": self.urgency_score,
@@ -51,7 +51,7 @@ class SentenceRecord:
         return (
             f"AnnotatedSentence(text={preview!r}, section={self.section!r}, "
             f"pos={self.position_in_section:.2f}, has_cite={self.has_citation}, "
-            f"citation_intent={self.citation_intent.name}, "
+            f"citation_intent={self.citation_intent.name if self.citation_intent else None}, "
             f"citation_worthy={self.citation_worthy}, "
             f"worthiness_score={self.worthiness_score}, "
             f"urgency_score={self.urgency_score})"
