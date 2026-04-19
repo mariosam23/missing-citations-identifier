@@ -1,4 +1,4 @@
-from model_manager import get_nlp
+from model_manager import get_sentence_nlp
 from entities.parsed_paper import ParsedPaper
 from entities.sentence_record import SentenceRecord, CitationIntent
 from utils.regex_patterns import (
@@ -27,7 +27,7 @@ def is_noise(text: str) -> bool:
 
 def extract_sentences(parsed_paper: ParsedPaper) -> list[SentenceRecord]:
     """Split all sections into clean, annotated sentences."""
-    nlp = get_nlp()
+    nlp = get_sentence_nlp()
     records: list[SentenceRecord] = []
     
     sections_to_process = {"Abstract": parsed_paper.abstract} if parsed_paper.abstract else {}
