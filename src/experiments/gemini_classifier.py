@@ -1,6 +1,6 @@
 import json
 
-from llm import LLMClient
+from llm.genai_client import LLMClient
 from prompts import CLASSIFIER_SYSTEM_PROMPT, CLASSIFIER_USER_PROMPT_TEMPLATE
 from entities import SentenceRecord, CitationIntent
 from entities import ParsedPaper
