@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.sql import func
 
-from base import Base
+from ..base import Base
 
 
 class CorpusPaper(Base):

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, String
 
-from base import Base
+from ..base import Base
 
 
 class Citation(Base):

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Date, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 
-from base import Base
+from ..base import Base
 
 
 class Paper(Base):
