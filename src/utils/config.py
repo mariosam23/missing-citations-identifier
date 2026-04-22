@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     OPEN_ALEX_API_KEY: str = ""
     OPEN_ALEX_EMAIL: str = ""
     OPEN_ROUTER_API_KEY: str = ""
+    GEMINI_API_KEY: str = ""
     QDRANT_URL: str = ""
 
     # Embedding and indexing defaults
