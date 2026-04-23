@@ -3,6 +3,7 @@ from google.genai import types
 
 from utils import logger, config
 
+
 class LLMClient:
     def __init__(self, model: str, temperature: float = 1.0, max_tokens: int = 4096):
         self.model = model
@@ -10,7 +11,7 @@ class LLMClient:
         self.max_tokens = max_tokens
         self.client = genai.Client(api_key=config.GEMINI_API_KEY)
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, response_mime_type: str | None = None) -> str:
         """Send a Gemini generation request and return the model's reply.
 
         Raises:
@@ -25,6 +26,7 @@ class LLMClient:
                     system_instruction=system,
                     temperature=self.temperature,
                     max_output_tokens=self.max_tokens,
+                    response_mime_type=response_mime_type,
                 ),
             )
 

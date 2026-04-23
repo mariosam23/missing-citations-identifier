@@ -223,3 +223,7 @@ __marimo__/
 
 docs/
 models/
+scripts/
+
+# Ignore embedded scicite dataset repository
+eval/scicite/

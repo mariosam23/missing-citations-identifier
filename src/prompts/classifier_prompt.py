@@ -18,13 +18,12 @@ Output your response as a JSON array of objects, where each object has:
 - "citation_worthy": boolean (true/false)
 - "citation_intent": one of the 4 category names above
 - "confidence": a float between 0.0 and 1.0 indicating your confidence
-- "reasoning": a brief explanation (max 50 words)
 
 Example output format:
 [
-  {{"sentence_index": 0, "citation_worthy": false, "citation_intent": "BACKGROUND", "confidence": 0.9, "reasoning": "General statement of common knowledge in the field"}},
-  {{"sentence_index": 1, "citation_worthy": true, "citation_intent": "METHOD", "confidence": 0.8, "reasoning": "References a specific technique from prior literature"}},
-  {{"sentence_index": 2, "citation_worthy": false, "citation_intent": "OTHER", "confidence": 0.95, "reasoning": "Simply provides a link to a GitHub repository"}}
+  {{"sentence_index": 0, "citation_worthy": false, "citation_intent": "BACKGROUND", "confidence": 0.9}},
+  {{"sentence_index": 1, "citation_worthy": true, "citation_intent": "METHOD", "confidence": 0.8}},
+  {{"sentence_index": 2, "citation_worthy": false, "citation_intent": "OTHER", "confidence": 0.95}}
 ]
 '''
 
@@ -36,5 +35,5 @@ Classify the following sentences from this paper:
 
 {sentences}
 
-Respond with a JSON array as specified.
+Respond with only the JSON array as specified. Do not wrap it in markdown code fences.
 '''
