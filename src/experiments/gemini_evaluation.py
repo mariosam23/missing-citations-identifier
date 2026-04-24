@@ -311,7 +311,7 @@ def evaluate_on_scicite(
         print(f"Evaluating first {len(filtered_examples)} examples")
 
     classifier = GeminiClassifier(
-        model="gemini-3.1-flash-lite-preview",
+        model="gemma-4-31b-it",
         batch_size=batch_size,
         delay_between_calls_seconds=delay_between_calls_seconds,
     )
