@@ -1,6 +1,6 @@
 from utils.model_manager import get_sentence_nlp
 from entities.parsed_paper import ParsedPaper
-from entities.sentence_record import SentenceRecord, CitationIntent
+from entities.sentence_record import SentenceRecord
 from utils.regex_patterns import (
     CITATION_PATTERN,
     WHITESPACE_CLEANUP_PATTERN,
@@ -61,9 +61,6 @@ def extract_sentences(parsed_paper: ParsedPaper) -> list[SentenceRecord]:
             
             pos = i / max(total_sents - 1, 1) if total_sents > 1 else 0.0
             
-            # Default intent for already cited - typical simplification for background
-            intent = CitationIntent.BACKGROUND if has_cite else None
-            
             prev_sent = valid_sents[i-1] if i > 0 else None
             next_sent = valid_sents[i+1] if i < total_sents - 1 else None
             
@@ -72,7 +69,7 @@ def extract_sentences(parsed_paper: ParsedPaper) -> list[SentenceRecord]:
                 section=section_name,
                 position_in_section=pos,
                 has_citation=has_cite,
-                citation_intent=intent,
+                citation_intent=None,
                 retrieval_text=retrieval_text,
                 previous_sentence=prev_sent,
                 next_sentence=next_sent

@@ -1,0 +1,182 @@
+Hybrid top-k before reranking
+====================================================================================================
+Query: Resnik ( 1995 ) reported a correlation of r = .9026.10 The results are not direc
+        tly comparable , because he only used noun-noun pairs , words instead of concept
+Metadata: label='compareorcontrast', section='experiments', citation_worthy=True
+====================================================================================================
+Rank  Paper ID           Score   Year Venue                     Title
+----------------------------------------------------------------------------------------------------
+1     W1569415500       0.6667   2004                           Semantic distance in WordNet: An exper..
+2     W2117805756       0.5476   1995 ArXiv.org                 Using Information Content to Evaluate ..
+3     W2953332543       0.4762   1997 arXiv (Cornell Universi   Semantic Similarity Based on Corpus St..
+4     W2950225692       0.4333   1995 arXiv (Cornell Universi   Using Information Content to Evaluate ..
+5     W2136930489       0.4167   2006 Computational Linguisti   Evaluating WordNet-based Measures of L..
+6     W2100935296       0.2500   1997 ArXiv.org                 Semantic Similarity Based on Corpus St..
+7     W620279967        0.2500   2013                           Combining Heterogeneous Models for Mea..
+8     W145425800        0.2417   2005 Adelaide Research & Sch   An Empirical Evaluation of Models of T..
+9     W1654905138       0.2222   2005 ArXiv.org                 Measuring Semantic Similarity by Laten..
+10    W2613678836       0.2208   2004                           WordNet: similarity - measuring the re..
+----------------------------------------------------------------------------------------------------
+Summary: retrieved 10 papers, score range [0.2208, 0.6667], avg 0.3725
+
+Cross-encoder top-k after reranking
+====================================================================================================
+Query: Resnik ( 1995 ) reported a correlation of r = .9026.10 The results are not direc
+        tly comparable , because he only used noun-noun pairs , words instead of concept
+Metadata: label='compareorcontrast', section='experiments', citation_worthy=True
+====================================================================================================
+Rank  Paper ID           Score   Year Venue                     Title
+----------------------------------------------------------------------------------------------------
+1     W1990524510       0.9849   2005                           Measuring the semantic similarity of t..
+2     W2109830295       0.8649   2006 Computational Linguisti   Similarity of Semantic Relations
+3     W2951193962       0.8649   2006 CogPrints (University o   Similarity of Semantic Relations
+4     W1654905138       0.7894   2005 ArXiv.org                 Measuring Semantic Similarity by Laten..
+5     W2103318667       0.7826   1991 Language and Cognitive    Contextual correlates of semantic simi..
+6     W2953332543       0.7352   1997 arXiv (Cornell Universi   Semantic Similarity Based on Corpus St..
+7     W2100935296       0.7352   1997 ArXiv.org                 Semantic Similarity Based on Corpus St..
+8     W1566018662       0.6758   2006 University of North Tex   Corpus-based and knowledge-based measu..
+9     W2613678836       0.6158   2004                           WordNet: similarity - measuring the re..
+10    W2117805756       0.5819   1995 ArXiv.org                 Using Information Content to Evaluate ..
+----------------------------------------------------------------------------------------------------
+Summary: retrieved 10 papers, score range [0.5819, 0.9849], avg 0.7631
+
+Rank movement after cross-encoder reranking
+----------------------------------------------------------------------------------------------------
+New   Old   Delta   Paper ID        Rerank Score Title
+----------------------------------------------------------------------------------------------------
+1     17    +16     W1990524510           0.9849 Measuring the semantic similarity of texts
+2     19    +17     W2109830295           0.8649 Similarity of Semantic Relations
+3     22    +19     W2951193962           0.8649 Similarity of Semantic Relations
+4     9     +5      W1654905138           0.7894 Measuring Semantic Similarity by Latent Rel..
+5     12    +7      W2103318667           0.7826 Contextual correlates of semantic similarit..
+6     3     -3      W2953332543           0.7352 Semantic Similarity Based on Corpus Statist..
+7     6     -1      W2100935296           0.7352 Semantic Similarity Based on Corpus Statist..
+8     25    +17     W1566018662           0.6758 Corpus-based and knowledge-based measures o..
+9     10    +1      W2613678836           0.6158 WordNet: similarity - measuring the related..
+10    2     -8      W2117805756           0.5819 Using Information Content to Evaluate Seman..
+
+  Query 2: Hybrid retrieval... 30 candidates in 0.35s
+  Query 2: Cross-encoder reranking... 10 results in 0.68s
+
+Hybrid top-k before reranking
+====================================================================================================
+Query: Similar observation for surface word frequency was also observed by ( Bertram et
+         al. , 2000 ; Bradley , 1980 ; Burani et al. , 1987 ; Burani et al. , 1984 ; Sch
+Metadata: label='background', section='related work', citation_worthy=True
+====================================================================================================
+Rank  Paper ID           Score   Year Venue                     Title
+----------------------------------------------------------------------------------------------------
+1     W1965060064       0.5000   1995 Journal of the Internat   Semantic memory and reading abilities:..
+2     W2100881784       0.5000   2001 Linguistics               Lexical frequency in morphology: is ev..
+3     W574264556        0.4333   2007                           Frequency of Use and the Organization ..
+4     W2038490427       0.3333   2015 Physical Review Letters   Spectroscopy of Surface-Induced Noise ..
+5     W2181651975       0.3000   2009 Typological studies in    Frequency and the emergence of prefabs..
+6     W2067031135       0.2870   1963 The Journal of the Acou   Word-Frequency Effect and Errors in th..
+7     W2161946155       0.2000   2000 IEEE Transactions on Ge   A large-antenna microwave radiometer-s..
+8     W1976724989       0.2000   2002 Language Variation and    Word frequency and context of use in t..
+9     W1992407081       0.1705   1970 The American Journal of   Word Frequency and Short-Term Recognit..
+10    W2062418976       0.1667   2014 The Mental Lexicon        Time and again
+----------------------------------------------------------------------------------------------------
+Summary: retrieved 10 papers, score range [0.1667, 0.5000], avg 0.3091
+
+Cross-encoder top-k after reranking
+====================================================================================================
+Query: Similar observation for surface word frequency was also observed by ( Bertram et
+         al. , 2000 ; Bradley , 1980 ; Burani et al. , 1987 ; Burani et al. , 1984 ; Sch
+Metadata: label='background', section='related work', citation_worthy=True
+====================================================================================================
+Rank  Paper ID           Score   Year Venue                     Title
+----------------------------------------------------------------------------------------------------
+1     W1992407081       0.8215   1970 The American Journal of   Word Frequency and Short-Term Recognit..
+2     W574264556        0.6141   2007                           Frequency of Use and the Organization ..
+3     W2067031135       0.5129   1963 The Journal of the Acou   Word-Frequency Effect and Errors in th..
+4     W2170521549       0.4736   1992 IEEE Transactions on In   Random texts exhibit Zipf's-law-like w..
+5     W1976724989       0.4608   2002 Language Variation and    Word frequency and context of use in t..
+6     W2181651975       0.4217   2009 Typological studies in    Frequency and the emergence of prefabs..
+7     W2039832024       0.3492   1957 The Journal of the Acou   On the Relation between the Intelligib..
+8     W1617250205       0.3087   1997 Proceedings of the Annu   Three Frequency Effects in Syntax
+9     W2314950127       0.3049   1958 The American Journal of   Tests of a Statistical Explanation of ..
+10    W2021405340       0.2246   2012 PLoS ONE                  Phrase Frequency Effects in Language P..
+----------------------------------------------------------------------------------------------------
+Summary: retrieved 10 papers, score range [0.2246, 0.8215], avg 0.4492
+
+Rank movement after cross-encoder reranking
+----------------------------------------------------------------------------------------------------
+New   Old   Delta   Paper ID        Rerank Score Title
+----------------------------------------------------------------------------------------------------
+1     9     +8      W1992407081           0.8215 Word Frequency and Short-Term Recognition M..
+2     3     +1      W574264556            0.6141 Frequency of Use and the Organization of La..
+3     6     +3      W2067031135           0.5129 Word-Frequency Effect and Errors in the Per..
+4     21    +17     W2170521549           0.4736 Random texts exhibit Zipf's-law-like word f..
+5     8     +3      W1976724989           0.4608 Word frequency and context of use in the le..
+6     5     -1      W2181651975           0.4217 Frequency and the emergence of prefabs: Evi..
+7     17    +10     W2039832024           0.3492 On the Relation between the Intelligibility..
+8     22    +14     W1617250205           0.3087 Three Frequency Effects in Syntax
+9     20    +11     W2314950127           0.3049 Tests of a Statistical Explanation of the R..
+10    24    +14     W2021405340           0.2246 Phrase Frequency Effects in Language Produc..
+
+  Query 3: Hybrid retrieval... 30 candidates in 0.36s
+  Query 3: Cross-encoder reranking... 10 results in 0.75s
+
+Hybrid top-k before reranking
+====================================================================================================
+Query: But their importance has grown far beyond machine translation : for instance , t
+        ransferring annotations between languages ( Yarowsky and Ngai 2001 ; Hwa et al.
+Metadata: label='motivation', section='introduction', citation_worthy=True
+====================================================================================================
+Rank  Paper ID           Score   Year Venue                     Title
+----------------------------------------------------------------------------------------------------
+1     W2963206679       0.6667   2018                           Phrase-Based &amp; Neural Unsupervised..
+2     W2114609248       0.6000   2014                           Unsupervised Dependency Parsing with T..
+3     W2798931235       0.5000   2018 arXiv (Cornell Universi   Phrase-Based & Neural Unsupervised Mac..
+4     W2107130271       0.4762   2001                           Extracting paraphrases from a parallel..
+5     W2729046720       0.3333   2017 arXiv (Cornell Universi   Relevance of Unsupervised Metrics in T..
+6     W2143927888       0.2338   2005                           Paraphrasing with bilingual parallel c..
+7     W1980776243       0.2256   2004                           Unsupervised construction of large par..
+8     W2126725946       0.2217   2013 arXiv (Cornell Universi   Exploiting Similarities among Language..
+9     W2958953787       0.1667   2019 arXiv (Cornell Universi   Massively Multilingual Neural Machine ..
+10    W2164290393       0.1667   2011                           Collecting Highly Parallel Data for Pa..
+----------------------------------------------------------------------------------------------------
+Summary: retrieved 10 papers, score range [0.1667, 0.6667], avg 0.3591
+
+Cross-encoder top-k after reranking
+====================================================================================================
+Query: But their importance has grown far beyond machine translation : for instance , t
+        ransferring annotations between languages ( Yarowsky and Ngai 2001 ; Hwa et al.
+Metadata: label='motivation', section='introduction', citation_worthy=True
+====================================================================================================
+Rank  Paper ID           Score   Year Venue                     Title
+----------------------------------------------------------------------------------------------------
+1     W2126725946       0.9179   2013 arXiv (Cornell Universi   Exploiting Similarities among Language..
+2     W2149343034       0.5151   2005                           A Paraphrase-Based Approach to Machine..
+3     W2129468719       0.4992   2003                           Learning to paraphrase
+4     W1980776243       0.3056   2004                           Unsupervised construction of large par..
+5     W2156940638       0.2437   2008                           Translated Learning: Transfer Learning..
+6     W2896060389       0.1167   2018                           The Best of Both Worlds: Combining Rec..
+7     W2143927888       0.0625   2005                           Paraphrasing with bilingual parallel c..
+8     W2963206679       0.0576   2018                           Phrase-Based &amp; Neural Unsupervised..
+9     W2294970769       0.0546   2015                           Unsupervised Morphology Induction Usin..
+10    W2107130271       0.0416   2001                           Extracting paraphrases from a parallel..
+----------------------------------------------------------------------------------------------------
+Summary: retrieved 10 papers, score range [0.0416, 0.9179], avg 0.2814
+
+Rank movement after cross-encoder reranking
+----------------------------------------------------------------------------------------------------
+New   Old   Delta   Paper ID        Rerank Score Title
+----------------------------------------------------------------------------------------------------
+1     8     +7      W2126725946           0.9179 Exploiting Similarities among Languages for..
+2     15    +13     W2149343034           0.5151 A Paraphrase-Based Approach to Machine Tran..
+3     18    +15     W2129468719           0.4992 Learning to paraphrase
+4     7     +3      W1980776243           0.3056 Unsupervised construction of large paraphra..
+5     25    +20     W2156940638           0.2437 Translated Learning: Transfer Learning acro..
+6     22    +16     W2896060389           0.1167 The Best of Both Worlds: Combining Recent A..
+7     6     -1      W2143927888           0.0625 Paraphrasing with bilingual parallel corpor..
+8     1     -7      W2963206679           0.0576 Phrase-Based &amp; Neural Unsupervised Mach..
+9     13    +4      W2294970769           0.0546 Unsupervised Morphology Induction Using Wor..
+10    4     -6      W2107130271           0.0416 Extracting paraphrases from a parallel corp..
+
+============================================================
+Completed queries: 3/3
+Avg hybrid retrieval time: 0.88s/query
+Avg reranking time: 0.85s/query
+============================================================

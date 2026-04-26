@@ -37,10 +37,13 @@ def compute_intent_metrics(
 ) -> ClassifierMetrics:
     """Compute classification metrics for citation intent prediction."""
     
-    # Filter out None labels
+    missing_prediction_label = "OTHER"
+
+    # Keep all labeled examples. A None prediction represents OTHER/failed
+    # classification and must count as an incorrect prediction.
     valid_pairs = [
         (gold, pred) for gold, pred in zip(gold_labels, predictions)
-        if gold is not None and pred is not None
+        if gold is not None
     ]
     
     if not valid_pairs:
@@ -63,9 +66,11 @@ def compute_intent_metrics(
     confusion_matrix: dict[str, dict[str, int]] = {}
     for intent in all_intents:
         confusion_matrix[intent.name] = {i.name: 0 for i in all_intents}
+        confusion_matrix[intent.name][missing_prediction_label] = 0
     
     for gold, pred in valid_pairs:
-        confusion_matrix[gold.name][pred.name] += 1
+        pred_name = pred.name if pred is not None else missing_prediction_label
+        confusion_matrix[gold.name][pred_name] += 1
     
     for intent in all_intents:
         intent_name = intent.name
@@ -262,13 +267,16 @@ def print_metrics(
     
     print("\nConfusion Matrix:")
     print("-" * 80)
-    intents = sorted(intent_metrics.confusion_matrix.keys())
-    header = "Gold \\ Pred" + "".join(f"{i:<12}" for i in intents)
+    gold_intents = sorted(intent_metrics.confusion_matrix.keys())
+    pred_intents = sorted(
+        {pred for row in intent_metrics.confusion_matrix.values() for pred in row}
+    )
+    header = "Gold \\ Pred" + "".join(f"{i:<12}" for i in pred_intents)
     print(header)
     print("-" * 80)
-    for gold in intents:
+    for gold in gold_intents:
         row = f"{gold:<12}"
-        for pred in intents:
+        for pred in pred_intents:
             count = intent_metrics.confusion_matrix[gold].get(pred, 0)
             row += f"{count:<12}"
         print(row)
