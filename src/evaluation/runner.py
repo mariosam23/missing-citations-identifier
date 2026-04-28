@@ -5,16 +5,11 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Protocol
-
+from typing import Any
 from entities import CitationIntent
 
 from .benchmarks.common import BenchmarkExample
 from .metrics import mean_metrics, per_example_retrieval_metrics
-
-
-class PredictFn(Protocol):
-    def __call__(self, example: BenchmarkExample) -> list[str]: ...
 
 
 @dataclass
@@ -69,7 +64,7 @@ class RetrievalEvaluator:
     def evaluate(
         self,
         examples: Iterable[BenchmarkExample],
-        predict: PredictFn,
+        predict,
     ) -> EvaluationResult:
         """Evaluate `predict(example) -> ranked paper ids` against hidden references."""
         per_example: list[dict[str, Any]] = []

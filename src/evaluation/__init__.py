@@ -28,7 +28,7 @@ from .metrics import (
     precision_at_k,
     recall_at_k,
 )
-from .runner import EvaluationResult, PredictFn, RetrievalEvaluator
+from .runner import EvaluationResult, RetrievalEvaluator
 
 __all__ = [
     "ACL_ARC_LABEL_TO_INTENT",

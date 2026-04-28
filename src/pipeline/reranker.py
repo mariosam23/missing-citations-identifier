@@ -7,20 +7,16 @@ cross-encoder that scores each (query, title) pair jointly.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Protocol
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, cast
 
+from sentence_transformers import CrossEncoder
 from entities import RetrievalResult
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    pass
 
 logger = logging.getLogger(__name__)
-
-
-class _CrossEncoderLike(Protocol):
-    def predict(self, pairs: list[tuple[str, str]]):
-        """Return one score per (query, candidate text) pair."""
-
 
 class CrossEncoderReranker:
     """Rerank retrieval candidates with a sentence-transformers CrossEncoder.
@@ -32,7 +28,7 @@ class CrossEncoderReranker:
     def __init__(
         self,
         model_name: str = "BAAI/bge-reranker-v2-m3",
-        model: _CrossEncoderLike | None = None,
+        model: "CrossEncoder | None" = None,
     ) -> None:
         self._model_name = model_name
         self._model = model
@@ -54,8 +50,11 @@ class CrossEncoderReranker:
             return []
 
         model = self._get_model()
-        pairs = [(query, self._candidate_text(candidate)) for candidate in candidates]
-        scores = self._as_scores(model.predict(pairs))
+        pairs: list[tuple[str, str]] = [
+            (query, self._candidate_text(candidate)) for candidate in candidates
+        ]
+
+        scores = self._as_scores(model.predict(cast(Any, pairs)))
 
         if len(scores) != len(candidates):
             raise ValueError(
@@ -77,7 +76,7 @@ class CrossEncoderReranker:
         )
         return [candidate for candidate, _ in rescored[:top_k]]
 
-    def _get_model(self) -> _CrossEncoderLike:
+    def _get_model(self) -> "CrossEncoder":
         if self._model is None:
             from sentence_transformers import CrossEncoder
 
