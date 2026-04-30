@@ -1,12 +1,9 @@
 """Evaluate GeminiClassifier against labeled citation datasets (SciCite, ACL-ARC)."""
 
 import sys
-from pathlib import Path
 from collections import defaultdict
 from dataclasses import dataclass
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent.parent))
 
 from evaluation import (
     load_scicite_jsonl,
@@ -153,7 +150,7 @@ def compute_worthiness_metrics(
     if not valid_pairs:
         return {"accuracy": 0.0, "precision": 0.0, "recall": 0.0, "f1": 0.0}
     
-    gold_filtered, pred_filtered = zip(*valid_pairs)
+    gold_filtered, _ = zip(*valid_pairs)
     
     # Accuracy
     correct = sum(1 for g, p in valid_pairs if g == p)

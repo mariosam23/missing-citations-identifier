@@ -1,10 +1,9 @@
-from typing import Optional
 
 import spacy
 from spacy.language import Language
 
 # Cached spaCy model used for sentence segmentation and light text processing
-_sentence_nlp: Optional[Language] = None
+_sentence_nlp: Language | None = None
 
 def get_sentence_nlp() -> Language:
     """Return a cached spaCy `Language` instance tuned for sentence extraction.

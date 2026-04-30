@@ -34,8 +34,8 @@ class LLMClient:
                 raise RuntimeError("Empty response from the API")
             return response.text
 
-        except Exception as e:
-            logger.error("Error during Gemini completion: %s", e)
+        except Exception:
+            logger.exception("Error during Gemini completion:")
             raise
 
     @property

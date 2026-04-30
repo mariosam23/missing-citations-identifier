@@ -40,7 +40,6 @@ __all__ = [
     "OkapiBM25",
     "PairedBootstrapResult",
     "PaperDocument",
-    "PredictFn",
     "RetrievalEvaluator",
     "SCICITE_LABEL_TO_INTENT",
     "iter_acl_arc_examples",

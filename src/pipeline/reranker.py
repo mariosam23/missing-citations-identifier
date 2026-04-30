@@ -6,17 +6,14 @@ cross-encoder that scores each (query, title) pair jointly.
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
-from sentence_transformers import CrossEncoder
 from entities import RetrievalResult
+from utils import logger
 
-if TYPE_CHECKING:
-    pass
-
-logger = logging.getLogger(__name__)
+# if TYPE_CHECKING:
+from sentence_transformers import CrossEncoder
 
 class CrossEncoderReranker:
     """Rerank retrieval candidates with a sentence-transformers CrossEncoder.

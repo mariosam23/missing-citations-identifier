@@ -30,7 +30,6 @@ Usage
 
 from __future__ import annotations
 
-import logging
 import uuid
 from typing import TYPE_CHECKING
 
@@ -46,7 +45,7 @@ from qdrant_client.http.models import (
 if TYPE_CHECKING:
     from qdrant_client import QdrantClient
 
-logger = logging.getLogger(__name__)
+from utils import logger
 
 # ---------------------------------------------------------------------------
 # Instruction prefix for E5-instruct passage encoding.
@@ -263,16 +262,15 @@ class EmbeddingIndex:
         if not papers or not self.collection_exists():
             return papers
 
-        indexed_ids = self._existing_point_ids(
-            [self._stable_id(paper["paper_id"]) for paper in papers]
-        )
+        id_map = {self._stable_id(paper["paper_id"]): paper for paper in papers}
+        indexed_ids = self._existing_point_ids(list(id_map.keys()))
         if not indexed_ids:
             return papers
 
         filtered = [
             paper
-            for paper in papers
-            if self._stable_id(paper["paper_id"]) not in indexed_ids
+            for sid, paper in id_map.items()
+            if sid not in indexed_ids
         ]
         skipped = len(papers) - len(filtered)
         if skipped:

@@ -8,13 +8,12 @@ mixes it with intent and section priors, and stores the result on each
 
 from __future__ import annotations
 
-import logging
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from entities import CitationIntent, SentenceRecord
 
-logger = logging.getLogger(__name__)
+from utils import logger
 
 
 @dataclass(frozen=True)

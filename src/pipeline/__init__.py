@@ -7,15 +7,26 @@ importing components from another stage.
 from __future__ import annotations
 
 __all__ = [
+    "ClaimDecomposer",
+    "DecomposedRetriever",
     "GrobidPDFParser",
     "CrossEncoderReranker",
     "HybridRetriever",
     "UrgencyScorer",
+    "weighted_rrf_aggregate",
     "extract_sentences",
 ]
 
 
 def __getattr__(name: str):
+    if name == "ClaimDecomposer":
+        from .claim_decomposer import ClaimDecomposer
+
+        return ClaimDecomposer
+    if name == "DecomposedRetriever":
+        from .aggregator import DecomposedRetriever
+
+        return DecomposedRetriever
     if name == "GrobidPDFParser":
         from .pdf_parser import GrobidPDFParser
 
@@ -32,6 +43,10 @@ def __getattr__(name: str):
         from .urgency_scorer import UrgencyScorer
 
         return UrgencyScorer
+    if name == "weighted_rrf_aggregate":
+        from .aggregator import weighted_rrf_aggregate
+
+        return weighted_rrf_aggregate
     if name == "extract_sentences":
         from .sentence_extractor import extract_sentences
 

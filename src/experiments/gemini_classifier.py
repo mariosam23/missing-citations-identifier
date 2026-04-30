@@ -2,6 +2,8 @@ import json
 import re
 import time
 
+from utils import logger
+
 from llm.genai_client import LLMClient
 from prompts import CLASSIFIER_SYSTEM_PROMPT, CLASSIFIER_USER_PROMPT_TEMPLATE
 from entities import SentenceRecord, CitationIntent
@@ -35,12 +37,12 @@ class GeminiClassifier:
             batch = sentences[i:i + self.batch_size]
             batch_number = (i // self.batch_size) + 1
             total_batches = (len(sentences) + self.batch_size - 1) // self.batch_size
-            print(f"Sending batch {batch_number}/{total_batches} to Gemini...")
+            logger.info("Sending batch %d/%d to Gemini...", batch_number, total_batches)
             self._classify_batch(batch, paper)
 
             if i + self.batch_size < len(sentences) and self.delay_between_calls_seconds > 0:
-                print(
-                    f"Waiting {int(self.delay_between_calls_seconds)} seconds before next Gemini API call..."
+                logger.info(
+                    "Waiting %d seconds before next Gemini API call...", int(self.delay_between_calls_seconds)
                 )
                 time.sleep(self.delay_between_calls_seconds)
         return sentences
@@ -54,9 +56,9 @@ class GeminiClassifier:
                 raise
 
             split_point = max(1, len(batch) // 2)
-            print(
-                f"Batch of {len(batch)} sentences failed ({exc}). "
-                f"Retrying as chunks of {split_point} and {len(batch) - split_point}..."
+            logger.warning(
+                "Batch of %d sentences failed (%s). Retrying as chunks of %d and %d...",
+                len(batch), exc, split_point, len(batch) - split_point
             )
             self._classify_batch(batch[:split_point], paper)
             self._classify_batch(batch[split_point:], paper)
@@ -83,8 +85,7 @@ class GeminiClassifier:
             user_prompt,
             response_mime_type="application/json",
         )
-        print("Gemini raw response:")
-        print(response)
+        logger.debug("Gemini raw response:\n%s", response)
 
         classifications = self._parse_classifications(response)
         self._validate_classifications(classifications, len(batch))
@@ -167,36 +168,32 @@ class GeminiClassifier:
 
 
 def test_classifier():
-    import sys
     import os
-    
-    # Add src to sys.path so we can import properly
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     
     from pipeline.pdf_parser import GrobidPDFParser
     from pipeline.sentence_extractor import extract_sentences
 
     pdf_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "papers", "BERT.pdf"))
     
-    print(f"Parsing {pdf_path}...")
+    logger.info("Parsing %s...", pdf_path)
     parser = GrobidPDFParser(pdf_path)
     try:
         paper = parser.parse()
     except Exception as e:
-        print(f"Failed to parse paper: {e}")
+        logger.error("Failed to parse paper: %s", e)
         return
         
-    print(f"Extracted Paper Title: {paper.title}")
+    logger.info("Extracted Paper Title: %s", paper.title)
     
-    print("Extracting sentences...")
+    logger.info("Extracting sentences...")
     sentences = extract_sentences(paper)
-    print(f"Total sentences extracted: {len(sentences)}")
+    logger.info("Total sentences extracted: %d", len(sentences))
     
     if not sentences:
-        print("No sentences extracted!")
+        logger.warning("No sentences extracted!")
         return
 
-    print("Running classifier on test batch (first 10 non-trivial sentences)...")
+    logger.info("Running classifier on test batch (first 10 non-trivial sentences)...")
     classifier = GeminiClassifier()
     
     # Skip the first few sentences as they might just be title or abstract boilerplate
@@ -206,11 +203,11 @@ def test_classifier():
     classified_sentences = classifier.classify_sentences(test_batch, paper)
     
     for i, s in enumerate(classified_sentences):
-        print(f"\n--- Sentence {i+1} ---")
-        print(f"Text: {s.text}")
-        print(f"Citation Worthy: {s.citation_worthy}")
-        print(f"Citation Intent: {s.citation_intent}")
-        print(f"Worthiness Score: {s.worthiness_score}")
+        logger.info("\n--- Sentence %d ---", i+1)
+        logger.info("Text: %s", s.text)
+        logger.info("Citation Worthy: %s", s.citation_worthy)
+        logger.info("Citation Intent: %s", s.citation_intent)
+        logger.info("Worthiness Score: %s", s.worthiness_score)
 
 if __name__ == "__main__":
     test_classifier()

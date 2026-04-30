@@ -14,7 +14,7 @@ from typing import Any
 from .benchmarks.common import BenchmarkExample
 
 
-_TOKEN_RE = re.compile(r"[a-z0-9]+", re.IGNORECASE)
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
 
 
 def _tokenize(text: str) -> list[str]:

@@ -82,7 +82,7 @@ def load_acl_arc_queries(
             if line:
                 queries.append(json.loads(line))
 
-    logger.info(f"Loaded {len(queries)} queries from {dataset_path.name}")
+    logger.info("Loaded %d queries from %s", len(queries), dataset_path.name)
     return queries
 
 

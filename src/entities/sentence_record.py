@@ -49,7 +49,7 @@ class SentenceRecord:
     def __str__(self) -> str:
         preview = self.text[:60] + ("..." if len(self.text) > 60 else "")
         return (
-            f"AnnotatedSentence(text={preview!r}, section={self.section!r}, "
+            f"SentenceRecord(text={preview!r}, section={self.section!r}, "
             f"pos={self.position_in_section:.2f}, has_cite={self.has_citation}, "
             f"citation_intent={self.citation_intent.name if self.citation_intent else None}, "
             f"citation_worthy={self.citation_worthy}, "

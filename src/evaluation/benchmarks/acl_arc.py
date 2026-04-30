@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import csv
-import json
 import re
 from collections.abc import Iterator, Mapping
 from pathlib import Path
@@ -11,7 +10,7 @@ from typing import Any
 
 from entities import CitationIntent
 
-from .common import ClassifierEvalExample
+from .common import ClassifierEvalExample, iter_jsonl
 
 
 def _norm_label(s: str) -> str:
@@ -48,13 +47,6 @@ def map_acl_arc_label(raw: str) -> CitationIntent | None:
  
     return ACL_ARC_LABEL_TO_INTENT.get(key.lstrip("_"))
 
-
-def _iter_jsonl(path: Path) -> Iterator[dict[str, Any]]:
-    with path.open(encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                yield json.loads(line)
 
 
 def iter_acl_arc_examples(
@@ -107,7 +99,7 @@ def iter_acl_arc_examples(
 
 def load_acl_arc_jsonl(path: str | Path) -> list[ClassifierEvalExample]:
     """Load ACL-ARC-style JSONL (one JSON object per line)."""
-    return list(iter_acl_arc_examples(_iter_jsonl(Path(path))))
+    return list(iter_acl_arc_examples(iter_jsonl(Path(path))))
 
 
 def load_acl_arc_tsv(

@@ -17,8 +17,6 @@ from pathlib import Path
 from typing import Any
 
 SRC_DIR = Path(__file__).resolve().parents[1]
-if str(SRC_DIR) not in sys.path:
-    sys.path.append(str(SRC_DIR))
 
 
 def setup_logging(level: int = logging.INFO) -> None:

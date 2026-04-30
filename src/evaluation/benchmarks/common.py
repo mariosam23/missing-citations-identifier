@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import json
+from pathlib import Path
+from collections.abc import Iterator
 from typing import Any
 
 from entities import CitationIntent
@@ -37,3 +40,11 @@ class ClassifierEvalExample:
     citation_worthy: bool | None = None
     section: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+
+def iter_jsonl(path: Path) -> Iterator[dict[str, Any]]:
+    """Yield parsed JSON objects from a JSONL file."""
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                yield json.loads(line)

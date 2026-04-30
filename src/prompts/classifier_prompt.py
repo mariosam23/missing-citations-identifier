@@ -21,9 +21,9 @@ Output your response as a JSON array of objects, where each object has:
 
 Example output format:
 [
-  {{"sentence_index": 0, "citation_worthy": false, "citation_intent": "BACKGROUND", "confidence": 0.9}},
-  {{"sentence_index": 1, "citation_worthy": true, "citation_intent": "METHOD", "confidence": 0.8}},
-  {{"sentence_index": 2, "citation_worthy": false, "citation_intent": "OTHER", "confidence": 0.95}}
+  {"sentence_index": 0, "citation_worthy": false, "citation_intent": "BACKGROUND", "confidence": 0.9},
+  {"sentence_index": 1, "citation_worthy": true, "citation_intent": "METHOD", "confidence": 0.8},
+  {"sentence_index": 2, "citation_worthy": false, "citation_intent": "OTHER", "confidence": 0.95}
 ]
 '''
 

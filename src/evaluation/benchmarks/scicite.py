@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import csv
-import json
 import re
 from collections.abc import Iterator, Mapping
 from pathlib import Path
@@ -11,7 +10,7 @@ from typing import Any
 
 from entities import CitationIntent
 
-from .common import ClassifierEvalExample
+from .common import ClassifierEvalExample, iter_jsonl
 
 
 def _norm(s: str) -> str:
@@ -40,12 +39,6 @@ def map_scicite_label(raw: str) -> CitationIntent | None:
     return None
 
 
-def _iter_jsonl(path: Path) -> Iterator[dict[str, Any]]:
-    with path.open(encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                yield json.loads(line)
 
 
 def iter_scicite_examples(
@@ -92,7 +85,7 @@ def iter_scicite_examples(
 
 def load_scicite_jsonl(path: str | Path) -> list[ClassifierEvalExample]:
     """Load SciCite-style JSONL (one JSON object per line)."""
-    return list(iter_scicite_examples(_iter_jsonl(Path(path))))
+    return list(iter_scicite_examples(iter_jsonl(Path(path))))
 
 
 def load_scicite_tsv(

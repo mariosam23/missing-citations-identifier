@@ -1,12 +1,8 @@
-import sys
 from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend — no Tk/display required
 import matplotlib.pyplot as plt
 import pandas as pd
-
-# Add the src folder to the path so we can import modules
-sys.path.append(str(Path(__file__).parent.parent))
 
 from pipeline import GrobidPDFParser
 from pipeline import extract_sentences

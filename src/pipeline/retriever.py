@@ -19,7 +19,6 @@ Usage
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from qdrant_client.http.models import Fusion, FusionQuery, Prefetch, SparseVector
@@ -29,7 +28,7 @@ from entities.retrieval_result import RetrievalResult
 if TYPE_CHECKING:
     from qdrant_client import QdrantClient
 
-logger = logging.getLogger(__name__)
+from utils import logger
 
 # ---------------------------------------------------------------------------
 # Instruction prefix used for E5-instruct models.
