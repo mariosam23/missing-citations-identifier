@@ -6,7 +6,6 @@ mixes it with intent and section priors, and stores the result on each
 ``SentenceRecord`` as ``urgency_score``.
 """
 
-from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass

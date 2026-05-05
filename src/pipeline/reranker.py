@@ -4,16 +4,15 @@ Reranks the candidate papers returned by the hybrid retriever using a
 cross-encoder that scores each (query, title) pair jointly.
 """
 
-from __future__ import annotations
-
 from collections.abc import Sequence
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from entities import RetrievalResult
 from utils import logger
 
-# if TYPE_CHECKING:
-from sentence_transformers import CrossEncoder
+if TYPE_CHECKING:
+    from sentence_transformers import CrossEncoder
+
 
 class CrossEncoderReranker:
     """Rerank retrieval candidates with a sentence-transformers CrossEncoder.

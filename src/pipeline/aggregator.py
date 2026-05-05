@@ -1,6 +1,5 @@
 """Stage 5 — aggregate per-subclaim retrieval results."""
 
-from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import Protocol

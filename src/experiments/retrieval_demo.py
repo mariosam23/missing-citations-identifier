@@ -17,7 +17,6 @@ Examples
     python -m src.experiments.retrieval_demo --top-k 20 --num-queries 3
 """
 
-from __future__ import annotations
 
 import argparse
 import json
@@ -180,13 +179,6 @@ def initialize_retriever() -> tuple[Any, int]:
         If Qdrant is unavailable or collection is empty.
     """
     # Import here to avoid hanging on module load
-    print("[*] Importing Qdrant client...", flush=True)
-    try:
-        from qdrant_client import QdrantClient
-        print("    ✓ Qdrant imported", flush=True)
-    except ImportError as e:
-        raise RuntimeError(f"Failed to import qdrant_client: {e}") from e
-
     print("[*] Importing sentence transformers (this may take 10-30s)...", flush=True)
     try:
         from sentence_transformers import SentenceTransformer
@@ -203,7 +195,12 @@ def initialize_retriever() -> tuple[Any, int]:
 
     print("[*] Importing retriever and config...", flush=True)
     try:
-        from pipeline.retriever import HybridRetriever
+        from database.qdrant import (
+            HybridRetriever,
+            count_collections,
+            create_qdrant_client,
+            require_collection_point_count,
+        )
         from utils.config import config
         print("    ✓ Retriever and config imported", flush=True)
     except ImportError as e:
@@ -211,10 +208,10 @@ def initialize_retriever() -> tuple[Any, int]:
 
     print(f"[*] Connecting to Qdrant at {config.QDRANT_URL}...", flush=True)
     try:
-        client = QdrantClient(url=config.QDRANT_URL or "http://localhost:6333")
+        client = create_qdrant_client(config.QDRANT_URL)
         # Verify connection
-        collections = client.get_collections()
-        print(f"    ✓ Connected (found {len(collections.collections)} collections)", flush=True)
+        collection_count = count_collections(client)
+        print(f"    ✓ Connected (found {collection_count} collections)", flush=True)
     except Exception as e:
         raise RuntimeError(
             f"Failed to connect to Qdrant at {config.QDRANT_URL}\n"
@@ -254,18 +251,13 @@ def initialize_retriever() -> tuple[Any, int]:
     # Check collection exists and has data
     print(f"[*] Checking collection '{config.QDRANT_COLLECTION_NAME}'...", flush=True)
     try:
-        collection_info = client.get_collection(config.QDRANT_COLLECTION_NAME)
-        num_papers = collection_info.points_count or 0
+        num_papers = require_collection_point_count(
+            client,
+            config.QDRANT_COLLECTION_NAME,
+        )
         print(f"    ✓ Collection has {num_papers} papers", flush=True)
-        if num_papers == 0:
-            raise RuntimeError(
-                f"Collection '{config.QDRANT_COLLECTION_NAME}' is empty. "
-                "Please index papers first (see src/indexer.py)."
-            )
     except Exception as e:
-        raise RuntimeError(
-            f"Failed to access collection '{config.QDRANT_COLLECTION_NAME}': {e}"
-        ) from e
+        raise RuntimeError(str(e)) from e
 
     return retriever, int(num_papers)
 

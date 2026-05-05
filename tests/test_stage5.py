@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # pyright: reportMissingImports=false
 
 import sys
@@ -11,6 +9,15 @@ if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
 from entities import Decomposition, RetrievalResult, Subclaim  # noqa: E402
+from evaluation.runner import EvaluationResult  # noqa: E402
+from evaluation.benchmarks.common import BenchmarkExample  # noqa: E402
+from experiments.stage4_experiments import (  # noqa: E402
+    VariantOutput,
+    build_stage5_stratified_metrics,
+    build_stage5_subclaim_histogram,
+    select_stage5_qualitative_examples,
+    stage5_facet_label,
+)
 from pipeline.aggregator import DecomposedRetriever, weighted_rrf_aggregate  # noqa: E402
 from pipeline.claim_decomposer import ClaimDecomposer  # noqa: E402
 
@@ -101,6 +108,116 @@ class Stage5DecomposerTests(unittest.TestCase):
         self.assertEqual(len(decomposition.subclaims), 1)
         self.assertEqual(decomposition.subclaims[0].text, "original claim")
         self.assertEqual(decomposition.subclaims[0].importance, 1.0)
+
+
+class Stage5ArtifactHelperTests(unittest.TestCase):
+    def test_facet_label_uses_benchmark_value_before_decomposition_fallback(self) -> None:
+        decompositions = {
+            "e1": Decomposition(
+                original_text="compound",
+                subclaims=(Subclaim("a"), Subclaim("b")),
+            )
+        }
+
+        self.assertEqual(stage5_facet_label("e1", False, decompositions), "single")
+        self.assertEqual(stage5_facet_label("e1", None, decompositions), "multi")
+        self.assertEqual(stage5_facet_label("missing", None, decompositions), "unknown")
+
+    def test_stratified_metrics_group_v3_v4_by_facet(self) -> None:
+        decompositions = {
+            "single": Decomposition(original_text="one", subclaims=(Subclaim("one"),)),
+            "multi": Decomposition(
+                original_text="two",
+                subclaims=(Subclaim("a"), Subclaim("b")),
+            ),
+        }
+        result = EvaluationResult(
+            n_examples=2,
+            n_evaluated=2,
+            overall={},
+            per_section={},
+            per_intent={},
+            per_multi_facet={},
+            per_example=[
+                {
+                    "example_id": "single",
+                    "is_multi_facet": None,
+                    "hidden_count": 1,
+                    "recall@10": 0.0,
+                    "ndcg@10": 0.25,
+                    "skipped": False,
+                },
+                {
+                    "example_id": "multi",
+                    "is_multi_facet": None,
+                    "hidden_count": 1,
+                    "recall@10": 1.0,
+                    "ndcg@10": 0.75,
+                    "skipped": False,
+                },
+            ],
+        )
+
+        rows = build_stage5_stratified_metrics(
+            {
+                "V3": VariantOutput("V3", result),
+                "V4": VariantOutput("V4", result),
+            },
+            decompositions,
+        )
+
+        by_key = {(row["variant"], row["facet"]): row for row in rows}
+        self.assertEqual(by_key[("V4", "single")]["n"], 1)
+        self.assertEqual(by_key[("V4", "multi")]["n"], 1)
+        self.assertAlmostEqual(by_key[("V3", "multi")]["recall@10"], 1.0)
+        self.assertAlmostEqual(by_key[("V4", "single")]["ndcg@10"], 0.25)
+
+    def test_subclaim_histogram_counts_decompositions(self) -> None:
+        histogram = build_stage5_subclaim_histogram(
+            {
+                "e1": Decomposition(original_text="one", subclaims=(Subclaim("one"),)),
+                "e2": Decomposition(
+                    original_text="two",
+                    subclaims=(Subclaim("a"), Subclaim("b")),
+                ),
+                "e3": Decomposition(
+                    original_text="three",
+                    subclaims=(Subclaim("a"), Subclaim("b")),
+                ),
+            }
+        )
+
+        self.assertEqual(histogram, {"1": 1, "2": 2})
+
+    def test_qualitative_selection_returns_multi_facet_examples_with_results(self) -> None:
+        examples = [
+            BenchmarkExample(
+                example_id="single",
+                query_text="single query",
+                hidden_paper_ids=frozenset({"p1"}),
+            ),
+            BenchmarkExample(
+                example_id="multi",
+                query_text="multi query",
+                hidden_paper_ids=frozenset({"p2"}),
+            ),
+        ]
+        decompositions = {
+            "single": Decomposition(original_text="one", subclaims=(Subclaim("one"),)),
+            "multi": Decomposition(
+                original_text="two",
+                subclaims=(Subclaim("a"), Subclaim("b")),
+            ),
+        }
+        selected = select_stage5_qualitative_examples(
+            examples,
+            decompositions,
+            {"single": [result("p1", 0.9)], "multi": [result("p2", 0.8)]},
+        )
+
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["example_id"], "multi")
+        self.assertEqual(len(selected[0]["subclaims"]), 2)
 
 
 if __name__ == "__main__":

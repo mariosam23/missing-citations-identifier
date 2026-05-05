@@ -7,5 +7,6 @@
     "V3": 100
   },
   "n_examples": 100,
-  "output_dir": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\eval\\stage4"
+  "output_dir": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\eval\\stage4",
+  "stage5_artifacts": {}
 }

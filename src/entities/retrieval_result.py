@@ -1,6 +1,5 @@
 """Data contract for a single result returned by the retriever."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass, replace
 

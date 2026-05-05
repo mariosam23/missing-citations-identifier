@@ -1,10 +1,9 @@
 """Aggregated paper result produced by Stage 5 subclaim retrieval."""
 
-from __future__ import annotations
 
+from typing import Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Mapping
 
 from entities.retrieval_result import RetrievalResult
 

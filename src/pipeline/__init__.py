@@ -4,7 +4,6 @@ Imports are resolved lazily so optional dependencies for one stage do not block
 importing components from another stage.
 """
 
-from __future__ import annotations
 
 __all__ = [
     "ClaimDecomposer",
@@ -36,7 +35,7 @@ def __getattr__(name: str):
 
         return CrossEncoderReranker
     if name == "HybridRetriever":
-        from .retriever import HybridRetriever
+        from database.qdrant import HybridRetriever
 
         return HybridRetriever
     if name == "UrgencyScorer":

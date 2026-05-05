@@ -1,6 +1,5 @@
 """Retrieval evaluation harness: drives a predict function over benchmark examples."""
 
-from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping, Sequence

@@ -8,7 +8,6 @@ Usage
     python -m src.experiments.reranking_demo --num-queries 3 --candidate-k 30 --top-k 10
 """
 
-from __future__ import annotations
 import argparse
 import logging
 import sys

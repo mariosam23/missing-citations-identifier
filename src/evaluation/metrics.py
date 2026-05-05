@@ -1,6 +1,5 @@
 """Retrieval metrics and paired bootstrap statistics for evaluation."""
 
-from __future__ import annotations
 
 import math
 import random

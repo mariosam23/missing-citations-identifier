@@ -1,7 +1,5 @@
 """BM25 lexical baseline and helpers to load external rankings from disk."""
 
-from __future__ import annotations
-
 import json
 import math
 import re
