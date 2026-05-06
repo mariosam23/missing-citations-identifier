@@ -7,8 +7,8 @@ SRC_DIR = Path(__file__).resolve().parents[1] / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
-from database.qdrant import PaperVector, QdrantPaperStore, count_collections  # noqa: E402
-from indexer import EmbeddingIndex  # noqa: E402
+from database.qdrant import PaperVector, QdrantPaperStore, count_collections
+from indexer import EmbeddingIndex
 
 
 class FakeDenseModel:

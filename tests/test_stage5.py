@@ -2,24 +2,18 @@
 
 import sys
 import unittest
-from pathlib import Path
-
-SRC_DIR = Path(__file__).resolve().parents[1] / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.append(str(SRC_DIR))
-
-from entities import Decomposition, RetrievalResult, Subclaim  # noqa: E402
-from evaluation.runner import EvaluationResult  # noqa: E402
-from evaluation.benchmarks.common import BenchmarkExample  # noqa: E402
-from experiments.stage4_experiments import (  # noqa: E402
+from entities import Decomposition, RetrievalResult, Subclaim
+from evaluation.runner import EvaluationResult
+from evaluation.benchmarks.common import BenchmarkExample
+from experiments.stage4_experiments import (
     VariantOutput,
     build_stage5_stratified_metrics,
     build_stage5_subclaim_histogram,
     select_stage5_qualitative_examples,
     stage5_facet_label,
 )
-from pipeline.aggregator import DecomposedRetriever, weighted_rrf_aggregate  # noqa: E402
-from pipeline.claim_decomposer import ClaimDecomposer  # noqa: E402
+from pipeline.aggregator import DecomposedRetriever, weighted_rrf_aggregate
+from pipeline.claim_decomposer import ClaimDecomposer
 
 
 def result(paper_id: str, score: float) -> RetrievalResult:

@@ -1,17 +1,11 @@
 import importlib
 import sys
 import unittest
-from pathlib import Path
-
-SRC_DIR = Path(__file__).resolve().parents[1] / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.append(str(SRC_DIR))
-
-from database.postgres.base import Base  # noqa: E402
-from database.postgres.tables.citation import Citation  # noqa: E402,F401
-from database.postgres.tables.corpus_paper import CorpusPaper  # noqa: E402,F401
-from database.postgres.tables.paper import Paper  # noqa: E402,F401
-from entities import RankedPaper, RetrievalResult  # noqa: E402
+from database.postgres.base import Base
+from database.postgres.tables.citation import Citation
+from database.postgres.tables.corpus_paper import CorpusPaper
+from database.postgres.tables.paper import Paper
+from entities import RankedPaper, RetrievalResult
 
 
 class _BlockSentenceTransformersImport:
