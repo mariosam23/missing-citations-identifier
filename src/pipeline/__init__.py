@@ -35,7 +35,7 @@ def __getattr__(name: str):
 
         return CrossEncoderReranker
     if name == "HybridRetriever":
-        from database.qdrant import HybridRetriever
+        from .retriever import HybridRetriever
 
         return HybridRetriever
     if name == "UrgencyScorer":

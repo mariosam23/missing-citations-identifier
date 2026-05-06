@@ -195,8 +195,8 @@ def initialize_retriever() -> tuple[Any, int]:
 
     print("[*] Importing retriever and config...", flush=True)
     try:
+        from pipeline import HybridRetriever
         from database.qdrant import (
-            HybridRetriever,
             count_collections,
             create_qdrant_client,
             require_collection_point_count,

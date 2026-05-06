@@ -44,7 +44,7 @@ class Stage4Config:
     hide_fraction: float
     min_refs: int
     model_name: str
-    include_v4: bool
+    include_v2: bool
     decomposer_model: str
     output_dir: Path
     assets_dir: Path
@@ -416,8 +416,7 @@ def evaluate_variants(
     v0_predict = make_cached_hybrid_predictor(
         retriever, candidate_k=candidate_k, top_k=top_k, cache=hybrid_cache, filter_pipeline=filter_pipeline
     )
-    v1_predict = make_worthiness_predictor(v0_predict)
-    v3_predict = make_rerank_predictor(
+    v1_predict = make_rerank_predictor(
         retriever,
         reranker,
         candidate_k=candidate_k,
@@ -432,11 +431,6 @@ def evaluate_variants(
         VariantOutput("V1", evaluator.evaluate(examples, v1_predict)),
     ]
     urgency = compute_urgency_probes(examples, hybrid_cache)
-
-    # V2 prioritizes query processing by urgency; per-query retrieval quality is
-    # intentionally identical to V1, while urgency is exported for analysis.
-    outputs.append(VariantOutput("V2", evaluator.evaluate(examples, v1_predict)))
-    outputs.append(VariantOutput("V3", evaluator.evaluate(examples, v3_predict)))
     stage5_run: Stage5RunData | None = None
     if decomposer is not None:
         from pipeline.aggregator import DecomposedRetriever
@@ -448,7 +442,7 @@ def evaluate_variants(
             reranker=reranker,
             candidates_per_subclaim=candidate_k,
         )
-        v4_predict = make_decomposed_predictor(
+        v2_predict = make_decomposed_predictor(
             decomposer,
             decomposed_retriever,
             candidate_k=candidate_k,
@@ -457,7 +451,7 @@ def evaluate_variants(
             aggregate_cache=aggregate_cache,
             filter_pipeline=filter_pipeline,
         )
-        outputs.append(VariantOutput("V4", evaluator.evaluate(examples, v4_predict)))
+        outputs.append(VariantOutput("V2", evaluator.evaluate(examples, v2_predict)))
         stage5_run = Stage5RunData(
             decomposition_cache=decomposition_cache,
             aggregate_cache=aggregate_cache,
@@ -614,15 +608,45 @@ def stage5_facet_label(
     return "unknown"
 
 
+def plot_bootstrap_comparisons(
+    outputs: Mapping[str, VariantOutput],
+    out_dir: Path,
+) -> None:
+    if "V1" not in outputs or "V2" not in outputs:
+        return
+    bootstrap = compute_bootstrap(
+        outputs["V0"].result,
+        outputs["V1"].result,
+        seed=42,
+    )
+    write_bootstrap_markdown(
+        out_dir / "bootstrap_v1_vs_v0.md",
+        bootstrap,
+        variant_name="V1",
+        baseline_name="V0",
+    )
+    bootstrap_v2 = compute_bootstrap(
+        outputs["V0"].result,
+        outputs["V2"].result,
+        seed=42,
+    )
+    write_bootstrap_markdown(
+        out_dir / "bootstrap_v2_vs_v0.md",
+        bootstrap_v2,
+        variant_name="V2",
+        baseline_name="V0",
+    )
+
+
 def build_stage5_stratified_metrics(
     outputs_by_name: Mapping[str, VariantOutput],
     decompositions: Mapping[str, Any] | None,
     *,
     metrics: Sequence[str] = ("recall@10", "ndcg@10"),
 ) -> list[dict[str, Any]]:
-    """Build thesis table: V3/V4 metrics by single/multi facet bucket."""
+    """Build thesis table: V1/V2 metrics by single/multi facet bucket."""
     rows: list[dict[str, Any]] = []
-    for variant_name in ("V3", "V4"):
+    for variant_name in ("V1", "V2"):
         output = outputs_by_name.get(variant_name)
         if output is None:
             continue
@@ -663,14 +687,14 @@ def build_stage5_subclaim_histogram(
 
 
 def build_stage5_aggregation_heatmap(
-    v4_output: VariantOutput,
+    v2_output: VariantOutput,
     *,
     metrics: Sequence[str] = ("recall@10", "ndcg@10", "mrr"),
     strategy: str = "WEIGHTED",
 ) -> list[dict[str, Any]]:
     row: dict[str, Any] = {"aggregation_strategy": strategy}
     for metric in metrics:
-        row[metric] = float(v4_output.result.overall.get(metric, 0.0))
+        row[metric] = float(v2_output.result.overall.get(metric, 0.0))
     return [row]
 
 
@@ -772,13 +796,13 @@ def write_stage5_analysis(
     outputs_by_name: Mapping[str, VariantOutput],
     stage5_run: Stage5RunData,
 ) -> dict[str, str]:
-    v4_output = outputs_by_name["V4"]
+    v2_output = outputs_by_name["V2"]
     stratified = build_stage5_stratified_metrics(
         outputs_by_name,
         stage5_run.decomposition_cache,
     )
     histogram = build_stage5_subclaim_histogram(stage5_run.decomposition_cache)
-    heatmap = build_stage5_aggregation_heatmap(v4_output)
+    heatmap = build_stage5_aggregation_heatmap(v2_output)
     qualitative = select_stage5_qualitative_examples(
         examples,
         stage5_run.decomposition_cache,
@@ -790,7 +814,7 @@ def write_stage5_analysis(
     write_json(
         analysis_path,
         {
-            "stratified_v3_v4": stratified,
+            "stratified_v1_v2": stratified,
             "subclaim_histogram": histogram,
             "aggregation_heatmap": heatmap,
             "qualitative_examples": qualitative,
@@ -826,17 +850,17 @@ def write_outputs(
     config.output_dir.mkdir(parents=True, exist_ok=True)
     metrics = {output.name: output.result.overall for output in outputs}
     outputs_by_name = {output.name: output for output in outputs}
-    bootstrap_v3_vs_v0 = compute_bootstrap(
+    bootstrap_v1_vs_v0 = compute_bootstrap(
         outputs_by_name["V0"].result,
-        outputs_by_name["V3"].result,
+        outputs_by_name["V1"].result,
         seed=config.seed,
     )
-    bootstrap_json = {metric: asdict(result) for metric, result in bootstrap_v3_vs_v0.items()}
-    bootstrap_v4_vs_v3 = None
-    if "V4" in outputs_by_name:
-        bootstrap_v4_vs_v3 = compute_bootstrap(
-            outputs_by_name["V3"].result,
-            outputs_by_name["V4"].result,
+    bootstrap_json = {metric: asdict(result) for metric, result in bootstrap_v1_vs_v0.items()}
+    bootstrap_v2_vs_v1 = None
+    if "V2" in outputs_by_name:
+        bootstrap_v2_vs_v1 = compute_bootstrap(
+            outputs_by_name["V1"].result,
+            outputs_by_name["V2"].result,
             seed=config.seed,
         )
 
@@ -853,40 +877,40 @@ def write_outputs(
                 "hide_fraction": config.hide_fraction,
                 "min_refs": config.min_refs,
                 "model_name": config.model_name,
-                "include_v4": config.include_v4,
+                "include_v2": config.include_v2,
                 "decomposer_model": config.decomposer_model,
             },
             "n_examples": len(examples),
             "n_indexed_papers": num_papers,
             "elapsed_s": elapsed_s,
             "variants": metrics,
-            "bootstrap_v3_vs_v0": bootstrap_json,
-            "bootstrap_v4_vs_v3": {
+            "bootstrap_v1_vs_v0": bootstrap_json,
+            "bootstrap_v2_vs_v1": {
                 metric: asdict(result)
-                for metric, result in (bootstrap_v4_vs_v3 or {}).items()
+                for metric, result in (bootstrap_v2_vs_v1 or {}).items()
             },
         },
     )
-    write_json(config.output_dir / "bootstrap_v3_vs_v0.json", bootstrap_json)
+    write_json(config.output_dir / "bootstrap_v1_vs_v0.json", bootstrap_json)
     write_bootstrap_markdown(
-        config.output_dir / "bootstrap_v3_vs_v0.md",
-        bootstrap_v3_vs_v0,
-        variant_name="V3",
+        config.output_dir / "bootstrap_v1_vs_v0.md",
+        bootstrap_v1_vs_v0,
+        variant_name="V1",
         baseline_name="V0",
     )
-    if bootstrap_v4_vs_v3 is not None:
+    if bootstrap_v2_vs_v1 is not None:
         write_json(
-            config.output_dir / "bootstrap_v4_vs_v3.json",
-            {metric: asdict(result) for metric, result in bootstrap_v4_vs_v3.items()},
+            config.output_dir / "bootstrap_v2_vs_v1.json",
+            {metric: asdict(result) for metric, result in bootstrap_v2_vs_v1.items()},
         )
         write_bootstrap_markdown(
-            config.output_dir / "bootstrap_v4_vs_v3.md",
-            bootstrap_v4_vs_v3,
-            variant_name="V4",
-            baseline_name="V3",
+            config.output_dir / "bootstrap_v2_vs_v1.md",
+            bootstrap_v2_vs_v1,
+            variant_name="V2",
+            baseline_name="V1",
         )
     stage5_artifacts: dict[str, str] = {}
-    if stage5_run is not None and "V4" in outputs_by_name:
+    if stage5_run is not None and "V2" in outputs_by_name:
         stage5_artifacts = write_stage5_analysis(
             config=config,
             examples=examples,
@@ -1001,7 +1025,7 @@ def generate_stage5_visuals(
 
     metrics = ["recall@10", "ndcg@10"]
     facets = ["single", "multi"]
-    variants = ["V3", "V4"]
+    variants = ["V1", "V2"]
     lookup = {
         (str(row.get("variant")), str(row.get("facet"))): row
         for row in stratified
@@ -1022,10 +1046,10 @@ def generate_stage5_visuals(
     plt.xticks(x, labels)
     plt.ylim(0, 1)
     plt.ylabel("Score")
-    plt.title("Stage 5 V3 vs V4 by Facet Complexity")
+    plt.title("Stage 5 V1 vs V2 by Facet Complexity")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(assets_dir / "stage5_v3_v4_stratified_bar.png")
+    plt.savefig(assets_dir / "stage5_v1_v2_stratified_bar.png")
     plt.close()
 
     if heatmap:
@@ -1101,7 +1125,7 @@ def run(config: Stage4Config) -> int:
         print("Reranker ready", flush=True)
 
         decomposer = None
-        if config.include_v4:
+        if config.include_v2:
             print(f"Initializing claim decomposer: {config.decomposer_model}", flush=True)
             decomposer = initialize_decomposer(config.decomposer_model)
             print("Claim decomposer ready", flush=True)
@@ -1152,9 +1176,9 @@ def parse_args(argv: Sequence[str] | None = None) -> Stage4Config:
     parser.add_argument("--min-refs", type=int, default=2)
     parser.add_argument("--model-name", default="BAAI/bge-reranker-v2-m3")
     parser.add_argument(
-        "--include-v4",
+        "--include-v2",
         action="store_true",
-        help="Evaluate Stage 5 decomposition + aggregation as V4.",
+        help="Include V2 (Claim Decomposition) in evaluation",
     )
     parser.add_argument("--decomposer-model", default="gemini-3-flash-preview")
     parser.add_argument("--output-dir", type=Path, default=Path(__file__).resolve().parents[2] / "eval" / "stage4")
@@ -1171,7 +1195,7 @@ def parse_args(argv: Sequence[str] | None = None) -> Stage4Config:
         hide_fraction=args.hide_fraction,
         min_refs=args.min_refs,
         model_name=args.model_name,
-        include_v4=args.include_v4,
+        include_v2=args.include_v2,
         decomposer_model=args.decomposer_model,
         output_dir=args.output_dir,
         assets_dir=args.assets_dir,

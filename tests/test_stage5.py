@@ -1,6 +1,5 @@
 # pyright: reportMissingImports=false
 
-import sys
 import unittest
 from entities import Decomposition, RetrievalResult, Subclaim
 from evaluation.runner import EvaluationResult
@@ -154,17 +153,17 @@ class Stage5ArtifactHelperTests(unittest.TestCase):
 
         rows = build_stage5_stratified_metrics(
             {
-                "V3": VariantOutput("V3", result),
-                "V4": VariantOutput("V4", result),
+                "V1": VariantOutput("V1", result),
+                "V2": VariantOutput("V2", result),
             },
             decompositions,
         )
 
         by_key = {(row["variant"], row["facet"]): row for row in rows}
-        self.assertEqual(by_key[("V4", "single")]["n"], 1)
-        self.assertEqual(by_key[("V4", "multi")]["n"], 1)
-        self.assertAlmostEqual(by_key[("V3", "multi")]["recall@10"], 1.0)
-        self.assertAlmostEqual(by_key[("V4", "single")]["ndcg@10"], 0.25)
+        self.assertEqual(by_key[("V2", "single")]["n"], 1)
+        self.assertEqual(by_key[("V2", "multi")]["n"], 1)
+        self.assertAlmostEqual(by_key[("V1", "multi")]["recall@10"], 1.0)
+        self.assertAlmostEqual(by_key[("V2", "single")]["ndcg@10"], 0.25)
 
     def test_subclaim_histogram_counts_decompositions(self) -> None:
         histogram = build_stage5_subclaim_histogram(

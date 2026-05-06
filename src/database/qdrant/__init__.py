@@ -1,6 +1,5 @@
 """Qdrant database package."""
 
-from .retriever import HybridRetriever
 from .store import (
     DEFAULT_DENSE_DIM,
     DENSE_VECTOR_NAME,
@@ -15,7 +14,6 @@ from .store import (
 __all__ = [
     "DEFAULT_DENSE_DIM",
     "DENSE_VECTOR_NAME",
-    "HybridRetriever",
     "PaperVector",
     "QdrantPaperStore",
     "SPARSE_VECTOR_NAME",
