@@ -1,8 +1,9 @@
 """Hybrid Qdrant retrieval over the indexed paper collection."""
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-from qdrant_client.http.models import Fusion, FusionQuery, Prefetch, SparseVector
+from qdrant_client.http.models import Fusion, FusionQuery, Prefetch, QueryRequest, SparseVector
 
 from entities.retrieval_result import RetrievalResult
 from utils import logger
@@ -37,58 +38,88 @@ class HybridRetriever:
 
     def retrieve(self, query: str, top_k: int = 10) -> list[RetrievalResult]:
         """Retrieve the top-k most relevant papers for query."""
-        dense_vec = self._encode_dense(query)
-        sparse_indices, sparse_values = self._encode_sparse(query)
+        results = self.retrieve_batch([query], top_k=top_k)
+        return results[0] if results else []
+
+    def retrieve_batch(
+        self, queries: Sequence[str], top_k: int = 10
+    ) -> list[list[RetrievalResult]]:
+        """Retrieve top-k for many queries in one round trip.
+
+        Encodes all queries together (a single forward pass through both the
+        dense and sparse encoders) and issues a single Qdrant ``query_batch_points``
+        call instead of N individual queries. Returns one result list per query
+        in the same order as ``queries``.
+        """
+        if not queries:
+            return []
+
+        dense_vecs = self._encode_dense_batch(queries)
+        sparse_pairs = self._encode_sparse_batch(queries)
 
         logger.debug(
-            "Querying Qdrant collection=%r top_k=%d dense_dim=%d sparse_nnz=%d",
+            "Batch querying Qdrant collection=%r n_queries=%d top_k=%d",
             self.collection,
+            len(queries),
             top_k,
-            len(dense_vec),
-            len(sparse_indices),
         )
 
-        response = self.client.query_points(
-            collection_name=self.collection,
-            prefetch=[
-                Prefetch(
-                    query=dense_vec,
-                    using="dense",
-                    limit=self.prefetch_limit,
-                ),
-                Prefetch(
-                    query=SparseVector(
-                        indices=sparse_indices,
-                        values=sparse_values,
+        requests = [
+            QueryRequest(
+                prefetch=[
+                    Prefetch(
+                        query=dense_vec,
+                        using="dense",
+                        limit=self.prefetch_limit,
                     ),
-                    using="sparse",
-                    limit=self.prefetch_limit,
-                ),
-            ],
-            query=FusionQuery(fusion=Fusion.RRF),
-            limit=top_k,
-            with_payload=True,
+                    Prefetch(
+                        query=SparseVector(indices=indices, values=values),
+                        using="sparse",
+                        limit=self.prefetch_limit,
+                    ),
+                ],
+                query=FusionQuery(fusion=Fusion.RRF),
+                limit=top_k,
+                with_payload=True,
+            )
+            for dense_vec, (indices, values) in zip(dense_vecs, sparse_pairs)
+        ]
+
+        responses = self.client.query_batch_points(
+            collection_name=self.collection,
+            requests=requests,
         )
 
-        results = [self._point_to_result(point) for point in response.points]
-        logger.debug("Retrieved %d results for query=%r", len(results), query[:80])
-        return results
+        return [
+            [self._point_to_result(point) for point in response.points]
+            for response in responses
+        ]
 
     def _encode_dense(self, query: str) -> list[float]:
-        """Encode query with the instruction-prefixed E5 model."""
-        embedding = self.dense.encode(
-            [f"{_QUERY_PREFIX}{query}"],
+        """Encode a single query with the instruction-prefixed E5 model."""
+        return self._encode_dense_batch([query])[0]
+
+    def _encode_dense_batch(self, queries: Sequence[str]) -> list[list[float]]:
+        """Encode many queries in one forward pass."""
+        embeddings = self.dense.encode(
+            [f"{_QUERY_PREFIX}{q}" for q in queries],
             normalize_embeddings=True,
         )
-        return self._as_list(embedding[0])
+        return [self._as_list(emb) for emb in embeddings]
 
     def _encode_sparse(self, query: str) -> tuple[list[int], list[float]]:
-        """Encode query with SPLADE and return indices plus values."""
-        sparse_embedding = next(iter(self.sparse.embed([query])))
-        return (
-            self._as_list(sparse_embedding.indices),
-            self._as_list(sparse_embedding.values),
-        )
+        """Encode a single query with SPLADE and return indices plus values."""
+        return self._encode_sparse_batch([query])[0]
+
+    def _encode_sparse_batch(
+        self, queries: Sequence[str]
+    ) -> list[tuple[list[int], list[float]]]:
+        """Encode many queries with SPLADE; preserves input order."""
+        embeddings = list(self.sparse.embed(list(queries)))
+        return [
+            (self._as_list(emb.indices), self._as_list(emb.values))
+            for emb in embeddings
+        ]
 
     @staticmethod
     def _as_list(values) -> list:

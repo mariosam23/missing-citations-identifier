@@ -101,7 +101,12 @@ class SpecificityFilter(FilterBase):
 
 
 class PostFilterPipeline:
-    """Applies a sequence of filters to retrieval candidates."""
+    """Applies a sequence of filters to retrieval candidates.
+
+    ``stats`` reflects the most recent ``apply()`` call only. Use
+    ``cumulative_stats`` if you want totals across many calls; both update
+    together. Call ``reset_cumulative_stats()`` to zero the cumulative tracker.
+    """
 
     def __init__(self, filters: Sequence[FilterBase] | None = None):
         self.filters = filters if filters is not None else [
@@ -110,17 +115,32 @@ class PostFilterPipeline:
             SelfCitationFilter(),
             SpecificityFilter(),
         ]
-        self.stats: dict[str, FilterStats] = {f.name: FilterStats() for f in self.filters}
+        self.stats: dict[str, FilterStats] = self._fresh_stats()
+        self.cumulative_stats: dict[str, FilterStats] = self._fresh_stats()
+
+    def _fresh_stats(self) -> dict[str, FilterStats]:
+        return {f.name: FilterStats() for f in self.filters}
+
+    def reset_cumulative_stats(self) -> None:
+        """Zero the cumulative-across-calls tracker."""
+        self.cumulative_stats = self._fresh_stats()
 
     def apply(self, candidates: Sequence[RetrievalResult], context: FilterContext) -> list[RetrievalResult]:
+        # Fresh per-call stats so callers reusing the pipeline across many
+        # examples don't see leaked counts from previous applies.
+        self.stats = self._fresh_stats()
         current = list(candidates)
         for f in self.filters:
             before = len(current)
             current = f.apply(current, context)
             after = len(current)
-            
+
             self.stats[f.name].before_count += before
             self.stats[f.name].after_count += after
             self.stats[f.name].removed_count += (before - after)
+
+            self.cumulative_stats[f.name].before_count += before
+            self.cumulative_stats[f.name].after_count += after
+            self.cumulative_stats[f.name].removed_count += (before - after)
 
         return current

@@ -9,6 +9,7 @@ from entities import AggregationStrategy, Decomposition, Subclaim
 from prompts import DECOMPOSER_SYSTEM_PROMPT, DECOMPOSER_USER_PROMPT_TEMPLATE
 
 from utils import logger
+from utils.config import config
 
 
 class CompletionClient(Protocol):
@@ -26,9 +27,10 @@ class ClaimDecomposer:
 
     def __init__(
         self,
-        model: str = "gemini-3-flash-preview",
+        model: str | None = None,
         client: CompletionClient | None = None,
     ) -> None:
+        model = model or config.DECOMPOSER_MODEL
         if client is None:
             from llm.genai_client import LLMClient
 

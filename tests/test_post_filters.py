@@ -119,5 +119,44 @@ class TestPostFilters(unittest.TestCase):
         self.assertEqual(pipeline.stats["SpecificityFilter"].removed_count, 2)
 
 
+class TestPostFilterPipelineStats(unittest.TestCase):
+    """Stats must reflect only the most recent apply() call.
+
+    The cumulative tracker accumulates across calls.
+    """
+
+    def test_per_call_stats_reset_between_applies(self):
+        pipeline = PostFilterPipeline()
+        first = [
+            RetrievalResult("1", "A", 0.9, year=2020),
+            RetrievalResult("2", "B", 0.8, year=2030),  # temporal drop
+        ]
+        second = [
+            RetrievalResult("3", "C", 0.7, year=2020),
+            RetrievalResult("4", "D", 0.6, year=2020),
+        ]
+        ctx = FilterContext(query_year=2024)
+
+        pipeline.apply(first, ctx)
+        self.assertEqual(pipeline.stats["TemporalFilter"].removed_count, 1)
+
+        pipeline.apply(second, ctx)
+        # Per-call stats reset, so the temporal filter removed nothing this time.
+        self.assertEqual(pipeline.stats["TemporalFilter"].removed_count, 0)
+        # Cumulative stats still carry the earlier removal.
+        self.assertEqual(pipeline.cumulative_stats["TemporalFilter"].removed_count, 1)
+
+    def test_reset_cumulative_stats(self):
+        pipeline = PostFilterPipeline()
+        candidates = [
+            RetrievalResult("1", "A", 0.9, year=2020),
+            RetrievalResult("2", "B", 0.8, year=2030),
+        ]
+        pipeline.apply(candidates, FilterContext(query_year=2024))
+        self.assertEqual(pipeline.cumulative_stats["TemporalFilter"].removed_count, 1)
+        pipeline.reset_cumulative_stats()
+        self.assertEqual(pipeline.cumulative_stats["TemporalFilter"].removed_count, 0)
+
+
 if __name__ == '__main__':
     unittest.main()
