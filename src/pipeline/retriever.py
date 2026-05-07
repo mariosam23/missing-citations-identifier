@@ -108,4 +108,5 @@ class HybridRetriever:
             year=payload.get("year"),
             venue=payload.get("venue"),
             cited_by_count=payload.get("cited_by_count"),
+            abstract=payload.get("abstract"),
         )

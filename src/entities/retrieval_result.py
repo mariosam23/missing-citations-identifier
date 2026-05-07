@@ -20,6 +20,7 @@ class RetrievalResult:
     year: int | None = None
     venue: str | None = None
     cited_by_count: int | None = None
+    abstract: str | None = None
 
     def with_score(self, new_score: float) -> "RetrievalResult":
         """Return a copy with an updated score (used by rerankers)."""
@@ -33,6 +34,7 @@ class RetrievalResult:
             "year": self.year,
             "venue": self.venue,
             "cited_by_count": self.cited_by_count,
+            "abstract": self.abstract,
         }
 
     def __str__(self) -> str:

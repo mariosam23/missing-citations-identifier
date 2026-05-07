@@ -1,6 +1,4 @@
-import sys
 import unittest
-from pathlib import Path
 from types import SimpleNamespace
 
 
@@ -116,6 +114,45 @@ class EmbeddingIndexStoreTests(unittest.TestCase):
         self.assertEqual(store.upserted[0].payload["paper_id"], "p2")
         self.assertEqual(store.upserted[0].payload["year"], 2024)
         self.assertEqual(store.existing_calls[0][1], 2)
+
+    def test_upsert_accepts_paperId_and_always_includes_abstract_payload(self) -> None:
+        store = FakeStore()
+        dense = FakeDenseModel()
+        index = EmbeddingIndex(
+            qdrant_client=None,
+            dense_model=dense,
+            sparse_model=FakeSparseModel(),
+            store=store,
+        )
+        count = index.upsert_papers(
+            [{"paperId": "p9", "title": "T", "abstract": "Body text", "year": 2020}],
+            skip_existing=False,
+        )
+        self.assertEqual(count, 1)
+        self.assertEqual(dense.encoded_texts, ["passage: T. Body text"])
+        self.assertEqual(store.upserted[0].payload["paper_id"], "p9")
+        self.assertEqual(store.upserted[0].payload["abstract"], "Body text")
+
+    def test_skip_existing_false_reindexes_even_when_point_exists(self) -> None:
+        store = FakeStore()
+        dense = FakeDenseModel()
+        index = EmbeddingIndex(
+            qdrant_client=None,
+            dense_model=dense,
+            sparse_model=FakeSparseModel(),
+            store=store,
+        )
+        existing_id = index._stable_id("p1")
+        store.existing_ids = {existing_id}
+
+        count = index.upsert_papers(
+            [{"paper_id": "p1", "title": "Updated", "abstract": "New abstract"}],
+            skip_existing=False,
+        )
+
+        self.assertEqual(count, 1)
+        self.assertEqual(dense.encoded_texts, ["passage: Updated. New abstract"])
+        self.assertEqual(store.upserted[0].payload["abstract"], "New abstract")
 
 
 class FakeQdrantClient:

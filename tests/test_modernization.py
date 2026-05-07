@@ -2,9 +2,6 @@ import importlib
 import sys
 import unittest
 from database.postgres.base import Base
-from database.postgres.tables.citation import Citation
-from database.postgres.tables.corpus_paper import CorpusPaper
-from database.postgres.tables.paper import Paper
 from entities import RankedPaper, RetrievalResult
 
 

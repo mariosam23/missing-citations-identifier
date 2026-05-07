@@ -6,7 +6,8 @@ IDs. Qdrant-specific collection and point operations live in
 """
 
 import uuid
-from typing import TYPE_CHECKING
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any
 
 from database.qdrant import DEFAULT_DENSE_DIM, PaperVector, QdrantPaperStore
 from utils import logger
@@ -58,9 +59,23 @@ class EmbeddingIndex:
         """Return the number of indexed points in the collection."""
         return self.store.count()
 
-    def upsert_papers(self, papers: list[dict]) -> int:
-        """Embed and upsert a list of paper dicts into Qdrant."""
-        papers = self._filter_unindexed_papers(papers)
+    def upsert_papers(self, papers: list[Any], *, skip_existing: bool = True) -> int:
+        """Embed and upsert paper records into Qdrant.
+
+        Each item may be a ``dict`` (``paper_id`` or ``paperId``, optional
+        ``abstract`` / ``title`` / metadata) or an ORM object with the same
+        attributes as :class:`database.postgres.tables.paper.Paper`.
+
+        Parameters
+        ----------
+        skip_existing:
+            When True (default), papers whose point id already exists in the
+            collection are skipped. Set False to refresh vectors and payloads
+            (e.g. after adding ``abstract`` to the schema).
+        """
+        papers = [self._normalize_paper_record(p) for p in papers]
+        if skip_existing:
+            papers = self._filter_unindexed_papers(papers)
         if not papers:
             logger.info("No new papers to index for collection %r.", self.collection)
             return 0
@@ -100,6 +115,7 @@ class EmbeddingIndex:
                     payload={
                         "paper_id": paper["paper_id"],
                         "title": paper.get("title", ""),
+                        "abstract": paper.get("abstract", ""),
                         "year": paper.get("year"),
                         "venue": paper.get("venue"),
                         "cited_by_count": paper.get("cited_by_count"),
@@ -115,6 +131,58 @@ class EmbeddingIndex:
         title = paper.get("title") or ""
         abstract = paper.get("abstract") or ""
         return f"{_PASSAGE_PREFIX}{title}. {abstract}".strip()
+
+    @staticmethod
+    def _normalize_paper_record(paper: Any) -> dict[str, Any]:
+        """Map a dict-like row or ORM instance to the internal indexing shape."""
+        if isinstance(paper, Mapping):
+            pid = paper.get("paper_id")
+            if pid is None:
+                pid = paper.get("paperId")
+            if pid is None:
+                raise KeyError("paper record must include 'paper_id' or 'paperId'")
+            title = paper.get("title") or ""
+            abstract = paper.get("abstract")
+            if abstract is None:
+                abstract = ""
+            else:
+                abstract = str(abstract)
+            year = paper.get("year")
+            if year is None:
+                pub = paper.get("publication_date")
+                if pub is not None and hasattr(pub, "year"):
+                    year = int(pub.year)
+            return {
+                "paper_id": str(pid),
+                "title": str(title) if title else "",
+                "abstract": abstract,
+                "year": year,
+                "venue": paper.get("venue"),
+                "cited_by_count": paper.get("cited_by_count"),
+            }
+
+        pid = getattr(paper, "paper_id", None) or getattr(paper, "paperId", None)
+        if pid is None:
+            raise TypeError("paper object must have paper_id or paperId")
+        title = getattr(paper, "title", None) or ""
+        abstract = getattr(paper, "abstract", None)
+        if abstract is None:
+            abstract = ""
+        else:
+            abstract = str(abstract)
+        year = getattr(paper, "year", None)
+        if year is None:
+            pub = getattr(paper, "publication_date", None)
+            if pub is not None and hasattr(pub, "year"):
+                year = int(pub.year)
+        return {
+            "paper_id": str(pid),
+            "title": str(title) if title else "",
+            "abstract": abstract,
+            "year": year,
+            "venue": getattr(paper, "venue", None),
+            "cited_by_count": getattr(paper, "cited_by_count", None),
+        }
 
     @staticmethod
     def _stable_id(paper_id: str) -> str:

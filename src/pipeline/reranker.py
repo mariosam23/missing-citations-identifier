@@ -81,7 +81,8 @@ class CrossEncoderReranker:
 
     @staticmethod
     def _candidate_text(candidate: RetrievalResult) -> str:
-        return candidate.title or candidate.paper_id
+        parts = [p.strip() for p in (candidate.title, candidate.abstract) if p and p.strip()]
+        return " ".join(parts) or candidate.paper_id
 
     @staticmethod
     def _as_scores(scores) -> "Sequence[float]":
