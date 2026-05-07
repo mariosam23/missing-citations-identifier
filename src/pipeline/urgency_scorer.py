@@ -45,6 +45,7 @@ class UrgencyScorer:
         CitationIntent.METHOD: 1.0,
         CitationIntent.RESULT: 0.85,
         CitationIntent.BACKGROUND: 0.65,
+        CitationIntent.OTHER: 0.5,
         None: 0.5,
     }
 
@@ -125,9 +126,13 @@ class UrgencyScorer:
         if not candidate_pairs:
             return {}
 
+        # Batch the retrieval probes — one round trip instead of N — when the
+        # underlying retriever supports it. Falls back to per-sentence calls
+        # for retrievers that only expose ``retrieve``.
+        queries = [sentence.get_retrieval_text() for _, sentence in candidate_pairs]
+        probe_results = self._probe_similarity_batch(queries)
         raw_scores: dict[int, tuple[float, float, float]] = {}
-        for index, sentence in candidate_pairs:
-            top1_score, mean_top5 = self._probe_similarity(sentence.get_retrieval_text())
+        for (index, _), (top1_score, mean_top5) in zip(candidate_pairs, probe_results):
             similarity = self._combine_similarity(top1_score, mean_top5)
             raw_scores[index] = (top1_score, mean_top5, similarity)
 
@@ -190,15 +195,33 @@ class UrgencyScorer:
         )
 
     def _probe_similarity(self, query: str) -> tuple[float, float]:
-        results = self.retriever.retrieve(query, top_k=self.probe_k)
-        if not results:
-            logger.warning("Probe retrieved no results for query=%r", query[:80])
-            return 0.0, 0.0
+        return self._probe_similarity_batch([query])[0]
 
-        scores = [max(float(result.score), 0.0) for result in results]
-        top1_score = scores[0]
-        mean_top5 = sum(scores[: self.mean_k]) / min(len(scores), self.mean_k)
-        return top1_score, mean_top5
+    def _probe_similarity_batch(
+        self, queries: Sequence[str]
+    ) -> list[tuple[float, float]]:
+        if not queries:
+            return []
+
+        batch_fn = getattr(self.retriever, "retrieve_batch", None)
+        if callable(batch_fn):
+            results_per_query = batch_fn(list(queries), top_k=self.probe_k)
+        else:
+            results_per_query = [
+                self.retriever.retrieve(query, top_k=self.probe_k) for query in queries
+            ]
+
+        out: list[tuple[float, float]] = []
+        for query, results in zip(queries, results_per_query):
+            if not results:
+                logger.warning("Probe retrieved no results for query=%r", query[:80])
+                out.append((0.0, 0.0))
+                continue
+            scores = [max(float(result.score), 0.0) for result in results]
+            top1_score = scores[0]
+            mean_top5 = sum(scores[: self.mean_k]) / min(len(scores), self.mean_k)
+            out.append((top1_score, mean_top5))
+        return out
 
     def _combine_similarity(self, top1_score: float, mean_top5: float) -> float:
         return (
