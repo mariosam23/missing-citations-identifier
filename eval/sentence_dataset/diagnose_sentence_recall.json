@@ -1,0 +1,535 @@
+{
+  "n_pairs": 57,
+  "n_in_qdrant": 57,
+  "recall_curve_sentence": {
+    "1": 0.0,
+    "5": 0.0,
+    "10": 0.0,
+    "50": 0.03508771929824561,
+    "100": 0.07017543859649122,
+    "200": 0.08771929824561403
+  },
+  "recall_curve_context": {
+    "1": 0.0,
+    "5": 0.03508771929824561,
+    "10": 0.03508771929824561,
+    "50": 0.05263157894736842,
+    "100": 0.08771929824561403,
+    "200": 0.14035087719298245
+  },
+  "per_pair": [
+    {
+      "sentence_id": "Automatic Prompt Optimization with Gradient Descent and Beam Search:s0:14",
+      "target": "W3122241445",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "Automatic Prompt Optimization with Gradient Descent and Beam Search:s0:167",
+      "target": "W3122241445",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Related Work",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:3",
+      "target": "W2964110616",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:3",
+      "target": "W2963662654",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:3",
+      "target": "W2970771982",
+      "rank_sentence": 41,
+      "rank_context": 69,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:4",
+      "target": "W2970641574",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:4",
+      "target": "W2923014074",
+      "rank_sentence": 94,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:5",
+      "target": "W3156636935",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:9",
+      "target": "W2963662654",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:16",
+      "target": "W2970854433",
+      "rank_sentence": 134,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:22",
+      "target": "W2963662654",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:29",
+      "target": "W2739896562",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Unsupervised Feature-based Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:29",
+      "target": "W2970641574",
+      "rank_sentence": null,
+      "rank_context": 97,
+      "is_multi_facet": true,
+      "section": "Unsupervised Feature-based Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:32",
+      "target": "W2923014074",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Unsupervised Feature-based Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:34",
+      "target": "W3173783447",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Unsupervised Feature-based Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:35",
+      "target": "W2923014074",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Unsupervised Feature-based Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:40",
+      "target": "W2923014074",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Unsupervised Feature-based Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:41",
+      "target": "W2787560479",
+      "rank_sentence": null,
+      "rank_context": 150,
+      "is_multi_facet": false,
+      "section": "Unsupervised Feature-based Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:45",
+      "target": "W2964110616",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Unsupervised Fine-tuning Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:45",
+      "target": "W2970771982",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Unsupervised Fine-tuning Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:45",
+      "target": "W2963662654",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Unsupervised Fine-tuning Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:48",
+      "target": "W2963662654",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Unsupervised Fine-tuning Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:50",
+      "target": "W2970771982",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Unsupervised Fine-tuning Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:50",
+      "target": "W2963662654",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Unsupervised Fine-tuning Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:50",
+      "target": "W2964110616",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Unsupervised Fine-tuning Approaches",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:51",
+      "target": "W2787560479",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Transfer Learning from Supervised Data",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:68",
+      "target": "W2970231061",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "BERT",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:77",
+      "target": "W2963662654",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Pre-training BERT",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:100",
+      "target": "W3173783447",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Pre-training BERT",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:104",
+      "target": "W2612953412",
+      "rank_sentence": null,
+      "rank_context": 189,
+      "is_multi_facet": false,
+      "section": "Pre-training data",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:106",
+      "target": "W2964110616",
+      "rank_sentence": null,
+      "rank_context": 5,
+      "is_multi_facet": false,
+      "section": "Pre-training data",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:197",
+      "target": "W2964110616",
+      "rank_sentence": 27,
+      "rank_context": 5,
+      "is_multi_facet": false,
+      "section": "Effect of Model Size",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:201",
+      "target": "W2787560479",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Effect of Model Size",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:235",
+      "target": "W2950339735",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Conclusion",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:264",
+      "target": "W2923014074",
+      "rank_sentence": null,
+      "rank_context": 26,
+      "is_multi_facet": false,
+      "section": "A.5 Illustrations of Fine-tuning on Different Tasks",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:267",
+      "target": "W2923014074",
+      "rank_sentence": 81,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "SST-2",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "BERT:s0:270",
+      "target": "W3156636935",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "STS-B",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:16",
+      "target": "W1843891098",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:16",
+      "target": "W2949615363",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:16",
+      "target": "W2963963856",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:17",
+      "target": "W3163465952",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:17",
+      "target": "W2964110616",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:21",
+      "target": "W2964110616",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:22",
+      "target": "W2964110616",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:24",
+      "target": "W2949615363",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Introduction",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:34",
+      "target": "W2889518897",
+      "rank_sentence": null,
+      "rank_context": 190,
+      "is_multi_facet": true,
+      "section": "Background",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:34",
+      "target": "W2933138175",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Background",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:41",
+      "target": "W2493916176",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Model Architecture",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:61",
+      "target": "W2949615363",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Scaled Dot-Product Attention",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:78",
+      "target": "W3163465952",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Applications of Attention in our Model",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:78",
+      "target": "W2949615363",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Applications of Attention in our Model",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:94",
+      "target": "W2963206679",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Embeddings and Softmax",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:117",
+      "target": "W3163465952",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Why Self-Attention",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:117",
+      "target": "W4322718191",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": true,
+      "section": "Why Self-Attention",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:141",
+      "target": "W2970771982",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Optimizer",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:146",
+      "target": "W2964116313",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Regularization",
+      "in_qdrant": true
+    },
+    {
+      "sentence_id": "NIPS-2017-attention-is-all-you-need-Paper:s0:161",
+      "target": "W3163465952",
+      "rank_sentence": null,
+      "rank_context": null,
+      "is_multi_facet": false,
+      "section": "Machine Translation",
+      "in_qdrant": true
+    }
+  ]
+}

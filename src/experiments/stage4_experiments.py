@@ -40,9 +40,11 @@ class Stage4Config:
     max_examples: int
     top_k: int
     candidate_k: int
+    candidates_per_subclaim: int
     seed: int
     hide_fraction: float
     min_refs: int
+    min_abstract_chars: int
     model_name: str
     include_v2: bool
     decomposer_model: str
@@ -92,6 +94,7 @@ def load_db_hide_seek_examples(
     seed: int = 42,
     hide_fraction: float = 0.3,
     min_refs: int = 2,
+    min_abstract_chars: int = 50,
 ) -> list[BenchmarkExample]:
     """Build hide-and-seek examples from local Postgres papers/citations.
 
@@ -99,9 +102,16 @@ def load_db_hide_seek_examples(
     and hides a seeded subset of its references that also exist in the local
     paper table. The latter approximates references available to the indexed
     retrieval corpus.
+
+    ``min_abstract_chars`` quality-gates the benchmark: source papers must have
+    an abstract of at least that many characters, and only target papers with
+    an abstract of at least that many characters are eligible to be hidden.
+    Title-only documents make the title+abstract retrieval signal degenerate
+    (see ``scripts/diagnose_recall.py``), so this gate is required for the
+    experiment to have statistical power. Set to 0 to disable.
     """
     try:
-        from sqlalchemy import select
+        from sqlalchemy import func, select
         from sqlalchemy.orm import aliased
 
         from database.postgres.engine import get_session
@@ -116,9 +126,10 @@ def load_db_hide_seek_examples(
     rng = random.Random(seed)
     target_paper = aliased(Paper)
     refs_by_source: dict[str, list[str]] = defaultdict(list)
+    eligible_targets_by_source: dict[str, set[str]] = defaultdict(set)
     source_rows: dict[str, tuple[str | None, str | None, Any]] = {}
 
-    row_limit = max(max_examples * max(min_refs, 1) * 20, 1000)
+    row_limit = max(max_examples * max(min_refs, 1) * 40, 4000)
     stmt = (
         select(
             Paper.paperId,
@@ -126,14 +137,16 @@ def load_db_hide_seek_examples(
             Paper.abstract,
             Citation.target_paper_id,
             Paper.publication_date,
+            func.coalesce(func.length(target_paper.abstract), 0).label("target_abs_len"),
         )
         .join(Citation, Citation.source_paper_id == Paper.paperId)
         .join(target_paper, target_paper.paperId == Citation.target_paper_id)
         .where(Paper.paperId.is_not(None))
         .where(Citation.target_paper_id.is_not(None))
-        .order_by(Paper.paperId)
-        .limit(row_limit)
     )
+    if min_abstract_chars > 0:
+        stmt = stmt.where(func.coalesce(func.length(Paper.abstract), 0) >= min_abstract_chars)
+    stmt = stmt.order_by(Paper.paperId).limit(row_limit)
 
     try:
         with get_session() as session:
@@ -141,23 +154,32 @@ def load_db_hide_seek_examples(
     except Exception as e:  # pragma: no cover - depends on local DB stack
         raise RuntimeError(f"Failed to load examples from Postgres: {e}") from e
 
-    for source_id, title, abstract, target_id, pub_date in rows:
+    for source_id, title, abstract, target_id, pub_date, target_abs_len in rows:
         query = _short_query(title, abstract)
         if not query:
             continue
         sid = str(source_id)
+        tid = str(target_id)
         source_rows[sid] = (title, abstract, pub_date)
-        refs_by_source[sid].append(str(target_id))
+        refs_by_source[sid].append(tid)
+        if int(target_abs_len or 0) >= min_abstract_chars:
+            eligible_targets_by_source[sid].add(tid)
 
     examples: list[BenchmarkExample] = []
     for source_id, refs in refs_by_source.items():
         unique_refs = list(dict.fromkeys(refs))
         if len(unique_refs) < min_refs:
             continue
+
+        eligible = [r for r in unique_refs if r in eligible_targets_by_source[source_id]]
+        if not eligible:
+            continue
+
         title, abstract, pub_date = source_rows[source_id]
-        hidden = random_hidden_subset(unique_refs, hide_fraction=hide_fraction, rng=rng)
+        hidden = random_hidden_subset(eligible, hide_fraction=hide_fraction, rng=rng)
         if not hidden:
             continue
+
         query = _short_query(title, abstract)
         query_year = pub_date.year if pub_date else None
         examples.append(
@@ -175,6 +197,8 @@ def load_db_hide_seek_examples(
                     "indexed_reference_ids": unique_refs,
                     "indexed_reference_count": len(unique_refs),
                     "total_reference_count": len(unique_refs),
+                    "eligible_target_count": len(eligible),
+                    "min_abstract_chars": min_abstract_chars,
                     "citation_worthy": True,
                 },
             )
@@ -185,7 +209,8 @@ def load_db_hide_seek_examples(
     if not examples:
         raise RuntimeError(
             "No DB hide-and-seek examples were created. Check that papers have "
-            "title/abstract text and citations whose targets exist in papers."
+            "title/abstract text and citations whose targets exist in papers, "
+            f"and that min_abstract_chars={min_abstract_chars} is not too strict."
         )
     return examples
 
@@ -197,6 +222,7 @@ def load_examples(config: Stage4Config) -> list[BenchmarkExample]:
             seed=config.seed,
             hide_fraction=config.hide_fraction,
             min_refs=config.min_refs,
+            min_abstract_chars=config.min_abstract_chars,
         )
 
     if config.jsonl_path is None:
@@ -205,14 +231,14 @@ def load_examples(config: Stage4Config) -> list[BenchmarkExample]:
     return examples[: config.max_examples]
 
 
-def initialize_retriever():
+def initialize_retriever(prefetch_limit: int = 200):
     """Reuse the Stage 4A demo initializer to get a Qdrant-backed retriever."""
     try:
         from experiments.retrieval_demo import initialize_retriever
     except Exception as e:
         raise RuntimeError(f"Failed to import retrieval initializer: {e}") from e
 
-    return initialize_retriever()
+    return initialize_retriever(prefetch_limit=prefetch_limit)
 
 
 def initialize_reranker(model_name: str):
@@ -226,13 +252,113 @@ def initialize_reranker(model_name: str):
     return reranker
 
 
-def initialize_decomposer(model_name: str):
+class _CachedDecomposer:
+    """Wraps a ClaimDecomposer with a JSON disk cache.
+
+    Why: the experiment is pinned to a free-tier Gemini model (5 req/min). A
+    single 100-example V2 run hammers the rate limit and 90% of decompositions
+    fall back to ``single_claim`` (the original query unchanged), which makes
+    V2 indistinguishable from V1. Caching successful decompositions lets us
+    pay the rate-limit cost exactly once and cleanly re-run V2 thereafter.
+    """
+
+    _SCHEMA_VERSION = 1
+    # Free-tier Gemini is 5 requests/minute. 13s between actual API calls keeps
+    # us under that with a small safety margin.
+    _MIN_INTERVAL_S = 13.0
+
+    def __init__(self, inner, cache_path: Path) -> None:
+        self._inner = inner
+        self._cache_path = cache_path
+        self._cache: dict[str, dict[str, Any]] = {}
+        self._dirty = False
+        self._last_api_call: float = 0.0
+        if cache_path.exists():
+            try:
+                payload = json.loads(cache_path.read_text(encoding="utf-8"))
+                if isinstance(payload, dict) and payload.get("version") == self._SCHEMA_VERSION:
+                    entries = payload.get("entries")
+                    if isinstance(entries, dict):
+                        self._cache = entries
+                logger.info(
+                    "Loaded %d cached decompositions from %s",
+                    len(self._cache),
+                    cache_path,
+                )
+            except Exception as exc:
+                logger.warning("Could not load decomposition cache %s: %s", cache_path, exc)
+
+    @staticmethod
+    def _key(claim: str) -> str:
+        import hashlib
+
+        return hashlib.sha256(claim.strip().encode("utf-8")).hexdigest()
+
+    def decompose(self, claim: str):
+        from entities import AggregationStrategy, Decomposition, Subclaim
+
+        key = self._key(claim)
+        cached = self._cache.get(key)
+        if cached and len(cached.get("subclaims", [])) > 1:
+            return Decomposition(
+                original_text=claim,
+                subclaims=tuple(
+                    Subclaim(text=str(s["text"]), importance=float(s["importance"]))
+                    for s in cached["subclaims"]
+                ),
+                aggregation=AggregationStrategy(str(cached.get("aggregation", "WEIGHTED")).upper()),
+            )
+
+        # Rate-limit pace: ensure at least _MIN_INTERVAL_S since the last live
+        # API call (cache hits don't count).
+        now = time.perf_counter()
+        wait = self._MIN_INTERVAL_S - (now - self._last_api_call)
+        if self._last_api_call > 0 and wait > 0:
+            time.sleep(wait)
+        self._last_api_call = time.perf_counter()
+
+        decomp = self._inner.decompose(claim)
+        # Only cache non-trivial decompositions; a single-subclaim fallback was
+        # almost certainly a rate-limit failure and we want to retry next time.
+        if len(decomp.subclaims) > 1:
+            self._cache[key] = {
+                "claim": claim,
+                "subclaims": [
+                    {"text": s.text, "importance": s.importance} for s in decomp.subclaims
+                ],
+                "aggregation": decomp.aggregation.value
+                if hasattr(decomp.aggregation, "value")
+                else str(decomp.aggregation),
+            }
+            self._dirty = True
+            self._flush()
+        return decomp
+
+    def _flush(self) -> None:
+        if not self._dirty:
+            return
+        self._cache_path.parent.mkdir(parents=True, exist_ok=True)
+        self._cache_path.write_text(
+            json.dumps(
+                {"version": self._SCHEMA_VERSION, "entries": self._cache},
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        self._dirty = False
+
+
+def initialize_decomposer(model_name: str, cache_path: Path | None = None):
     try:
         from pipeline.claim_decomposer import ClaimDecomposer
     except Exception as e:
         raise RuntimeError(f"Failed to import claim decomposer: {e}") from e
 
-    return ClaimDecomposer(model=model_name)
+    inner = ClaimDecomposer(model=model_name)
+    if cache_path is None:
+        return inner
+    return _CachedDecomposer(inner, cache_path)
 
 
 def _paper_ids(results: Sequence[Any]) -> list[str]:
@@ -342,17 +468,34 @@ def make_decomposed_predictor(
     decomposition_cache: dict[str, Any],
     aggregate_cache: dict[str, list[Any]],
     filter_pipeline: PostFilterPipeline | None = None,
+    final_reranker=None,
+    final_rerank_k: int = 100,
 ) -> Callable[[BenchmarkExample], list[str]]:
+    """Predictor for V2 (decomposition).
+
+    The optional ``final_reranker`` reranks the fused candidate list with the
+    *full* query (not the per-subclaim text). This keeps V2 comparable to V1
+    (which also reranks with the full query) — the only difference is the
+    candidate set fed to the reranker (decomposed-and-fused vs. hybrid).
+    """
+
     def predict(example: BenchmarkExample) -> list[str]:
         if not _is_citation_worthy(example):
             return []
         if example.example_id not in decomposition_cache:
             decomposition_cache[example.example_id] = decomposer.decompose(example.query_text)
         if example.example_id not in aggregate_cache:
-            aggregate_cache[example.example_id] = decomposed_retriever.retrieve_and_aggregate(
+            fused = decomposed_retriever.retrieve_and_aggregate(
                 decomposition_cache[example.example_id],
-                top_k=candidate_k,
+                top_k=final_rerank_k,
             )
+            if final_reranker is not None and fused:
+                fused = final_reranker.rerank(
+                    example.query_text,
+                    fused,
+                    top_k=final_rerank_k,
+                )
+            aggregate_cache[example.example_id] = fused
         candidates = aggregate_cache[example.example_id]
         if filter_pipeline:
             candidates = _apply_filters(candidates, example, filter_pipeline)
@@ -398,6 +541,27 @@ def compute_urgency_probes(
     return probes
 
 
+def _logging_predict(name: str, predict, total: int, every: int = 5):
+    """Wrap a predict fn so it prints a progress line every ``every`` examples."""
+    counter = {"n": 0, "started": time.perf_counter()}
+
+    def wrapped(example: BenchmarkExample) -> list[str]:
+        out = predict(example)
+        counter["n"] += 1
+        n = counter["n"]
+        if n % every == 0 or n == total:
+            elapsed = time.perf_counter() - counter["started"]
+            rate = n / elapsed if elapsed > 0 else 0.0
+            print(
+                f"  [{name}] {n}/{total} examples ({rate:.2f}/s, "
+                f"elapsed {elapsed:.1f}s)",
+                flush=True,
+            )
+        return out
+
+    return wrapped
+
+
 def evaluate_variants(
     examples: Sequence[BenchmarkExample],
     retriever,
@@ -405,6 +569,7 @@ def evaluate_variants(
     *,
     top_k: int,
     candidate_k: int,
+    candidates_per_subclaim: int = 30,
     decomposer=None,
     filter_pipeline: PostFilterPipeline | None = None,
 ) -> tuple[list[VariantOutput], dict[str, UrgencyProbe], Stage5RunData | None]:
@@ -412,6 +577,7 @@ def evaluate_variants(
     hybrid_cache: dict[str, list[Any]] = {}
     candidate_cache: dict[str, list[Any]] = {}
     rerank_cache: dict[str, list[Any]] = {}
+    n = len(examples)
 
     v0_predict = make_cached_hybrid_predictor(
         retriever, candidate_k=candidate_k, top_k=top_k, cache=hybrid_cache, filter_pipeline=filter_pipeline
@@ -426,10 +592,12 @@ def evaluate_variants(
         filter_pipeline=filter_pipeline,
     )
 
-    outputs = [
-        VariantOutput("V0", evaluator.evaluate(examples, v0_predict)),
-        VariantOutput("V1", evaluator.evaluate(examples, v1_predict)),
-    ]
+    print(f"Evaluating V0 (hybrid) on {n} examples ...", flush=True)
+    v0_out = evaluator.evaluate(examples, _logging_predict("V0", v0_predict, n))
+    print(f"Evaluating V1 (hybrid + rerank) on {n} examples ...", flush=True)
+    v1_out = evaluator.evaluate(examples, _logging_predict("V1", v1_predict, n))
+    outputs = [VariantOutput("V0", v0_out), VariantOutput("V1", v1_out)]
+
     urgency = compute_urgency_probes(examples, hybrid_cache)
     stage5_run: Stage5RunData | None = None
     if decomposer is not None:
@@ -437,21 +605,35 @@ def evaluate_variants(
 
         decomposition_cache: dict[str, Any] = {}
         aggregate_cache: dict[str, list[Any]] = {}
+        # Per-subclaim retrieval has no per-subclaim rerank: the aggregator
+        # fuses ranked lists, then we (optionally) rerank the fused top-K once
+        # with the FULL query inside ``make_decomposed_predictor`` if needed.
+        # Per-subclaim rerank was ~5x more rerank passes per query and the
+        # bge-reranker is the dominant CPU cost.
         decomposed_retriever = DecomposedRetriever(
             retriever,
-            reranker=reranker,
-            candidates_per_subclaim=candidate_k,
+            reranker=None,
+            candidates_per_subclaim=candidates_per_subclaim,
         )
         v2_predict = make_decomposed_predictor(
             decomposer,
             decomposed_retriever,
-            candidate_k=candidate_k,
+            candidate_k=candidates_per_subclaim,
             top_k=top_k,
             decomposition_cache=decomposition_cache,
             aggregate_cache=aggregate_cache,
             filter_pipeline=filter_pipeline,
+            final_reranker=reranker,
+            final_rerank_k=candidate_k,
         )
-        outputs.append(VariantOutput("V2", evaluator.evaluate(examples, v2_predict)))
+        print(
+            f"Evaluating V2 (decomposition, "
+            f"{candidates_per_subclaim}/subclaim, final rerank top-{candidate_k}) "
+            f"on {n} examples ...",
+            flush=True,
+        )
+        v2_out = evaluator.evaluate(examples, _logging_predict("V2", v2_predict, n))
+        outputs.append(VariantOutput("V2", v2_out))
         stage5_run = Stage5RunData(
             decomposition_cache=decomposition_cache,
             aggregate_cache=aggregate_cache,
@@ -857,9 +1039,15 @@ def write_outputs(
     )
     bootstrap_json = {metric: asdict(result) for metric, result in bootstrap_v1_vs_v0.items()}
     bootstrap_v2_vs_v1 = None
+    bootstrap_v2_vs_v0 = None
     if "V2" in outputs_by_name:
         bootstrap_v2_vs_v1 = compute_bootstrap(
             outputs_by_name["V1"].result,
+            outputs_by_name["V2"].result,
+            seed=config.seed,
+        )
+        bootstrap_v2_vs_v0 = compute_bootstrap(
+            outputs_by_name["V0"].result,
             outputs_by_name["V2"].result,
             seed=config.seed,
         )
@@ -876,6 +1064,8 @@ def write_outputs(
                 "seed": config.seed,
                 "hide_fraction": config.hide_fraction,
                 "min_refs": config.min_refs,
+                "min_abstract_chars": config.min_abstract_chars,
+                "candidates_per_subclaim": config.candidates_per_subclaim,
                 "model_name": config.model_name,
                 "include_v2": config.include_v2,
                 "decomposer_model": config.decomposer_model,
@@ -888,6 +1078,10 @@ def write_outputs(
             "bootstrap_v2_vs_v1": {
                 metric: asdict(result)
                 for metric, result in (bootstrap_v2_vs_v1 or {}).items()
+            },
+            "bootstrap_v2_vs_v0": {
+                metric: asdict(result)
+                for metric, result in (bootstrap_v2_vs_v0 or {}).items()
             },
         },
     )
@@ -908,6 +1102,17 @@ def write_outputs(
             bootstrap_v2_vs_v1,
             variant_name="V2",
             baseline_name="V1",
+        )
+    if bootstrap_v2_vs_v0 is not None:
+        write_json(
+            config.output_dir / "bootstrap_v2_vs_v0.json",
+            {metric: asdict(result) for metric, result in bootstrap_v2_vs_v0.items()},
+        )
+        write_bootstrap_markdown(
+            config.output_dir / "bootstrap_v2_vs_v0.md",
+            bootstrap_v2_vs_v0,
+            variant_name="V2",
+            baseline_name="V0",
         )
     stage5_artifacts: dict[str, str] = {}
     if stage5_run is not None and "V2" in outputs_by_name:
@@ -1116,8 +1321,11 @@ def run(config: Stage4Config) -> int:
         examples = load_examples(config)
         print(f"Loaded {len(examples)} examples from {config.source}", flush=True)
 
-        print("Initializing Qdrant-backed hybrid retriever...", flush=True)
-        retriever, num_papers = initialize_retriever()
+        print(
+            f"Initializing Qdrant-backed hybrid retriever (prefetch={config.candidate_k})...",
+            flush=True,
+        )
+        retriever, num_papers = initialize_retriever(prefetch_limit=config.candidate_k)
         print(f"Retriever ready ({num_papers} papers indexed)", flush=True)
 
         print(f"Loading reranker model: {config.model_name}", flush=True)
@@ -1126,8 +1334,13 @@ def run(config: Stage4Config) -> int:
 
         decomposer = None
         if config.include_v2:
-            print(f"Initializing claim decomposer: {config.decomposer_model}", flush=True)
-            decomposer = initialize_decomposer(config.decomposer_model)
+            cache_path = config.output_dir / "decomposition_cache.json"
+            print(
+                f"Initializing claim decomposer: {config.decomposer_model} "
+                f"(disk cache: {cache_path})",
+                flush=True,
+            )
+            decomposer = initialize_decomposer(config.decomposer_model, cache_path=cache_path)
             print("Claim decomposer ready", flush=True)
 
         filter_pipeline = PostFilterPipeline()
@@ -1138,6 +1351,7 @@ def run(config: Stage4Config) -> int:
             reranker,
             top_k=config.top_k,
             candidate_k=config.candidate_k,
+            candidates_per_subclaim=config.candidates_per_subclaim,
             decomposer=decomposer,
             filter_pipeline=filter_pipeline,
         )
@@ -1170,10 +1384,41 @@ def parse_args(argv: Sequence[str] | None = None) -> Stage4Config:
     parser.add_argument("--jsonl-path", type=Path, default=None)
     parser.add_argument("--max-examples", type=int, default=100)
     parser.add_argument("--top-k", type=int, default=10)
-    parser.add_argument("--candidate-k", type=int, default=30)
+    parser.add_argument(
+        "--candidate-k",
+        type=int,
+        default=100,
+        help=(
+            "Candidates pulled from hybrid retrieval before reranking. Set high "
+            "enough to give the reranker real material to work on; "
+            "see scripts/diagnose_recall.py for the recall vs K curve."
+        ),
+    )
+    parser.add_argument(
+        "--candidates-per-subclaim",
+        type=int,
+        default=30,
+        help=(
+            "Per-subclaim retrieval budget for V2 (decomposition). Smaller than "
+            "candidate_k because each query yields ~3-5 subclaims and the "
+            "aggregator merges all of their candidate lists. The dominant CPU "
+            "cost is the cross-encoder reranker; this knob is the main one for "
+            "controlling V2 wall time."
+        ),
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--hide-fraction", type=float, default=0.3)
     parser.add_argument("--min-refs", type=int, default=2)
+    parser.add_argument(
+        "--min-abstract-chars",
+        type=int,
+        default=50,
+        help=(
+            "Minimum abstract length (chars) required for both source paper and "
+            "held-out targets. Title-only documents make the title+abstract "
+            "retrieval signal degenerate. Set to 0 to disable."
+        ),
+    )
     parser.add_argument("--model-name", default="BAAI/bge-reranker-v2-m3")
     parser.add_argument(
         "--include-v2",
@@ -1191,9 +1436,11 @@ def parse_args(argv: Sequence[str] | None = None) -> Stage4Config:
         max_examples=args.max_examples,
         top_k=args.top_k,
         candidate_k=args.candidate_k,
+        candidates_per_subclaim=args.candidates_per_subclaim,
         seed=args.seed,
         hide_fraction=args.hide_fraction,
         min_refs=args.min_refs,
+        min_abstract_chars=args.min_abstract_chars,
         model_name=args.model_name,
         include_v2=args.include_v2,
         decomposer_model=args.decomposer_model,

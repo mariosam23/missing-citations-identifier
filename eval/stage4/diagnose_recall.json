@@ -1,0 +1,3725 @@
+{
+  "config": {
+    "max_examples": 100,
+    "deep_k": 200,
+    "seed": 42,
+    "qdrant_points": 90481,
+    "n_pairs": 450,
+    "n_hidden_in_qdrant": 450,
+    "n_found": 115,
+    "n_missed": 335,
+    "src_with_abstract": 52,
+    "tgt_with_abstract": 308
+  },
+  "recall_curve": {
+    "1": 0.0022222222222222222,
+    "5": 0.03333333333333333,
+    "10": 0.05555555555555555,
+    "20": 0.07555555555555556,
+    "50": 0.12666666666666668,
+    "100": 0.18666666666666668,
+    "200": 0.25555555555555554
+  },
+  "per_example": [
+    {
+      "example_id": "W100047375",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W1571472016",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W135104305",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2151238122",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 0.75,
+      "top1_id": "W100047375",
+      "top1_title": "Parallel Algorithm Configuration"
+    },
+    {
+      "example_id": "W1000848100",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2133013156",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2119595900",
+          "rank": 5,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2153756422",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1000848100",
+      "top1_title": "Learning Inverse Dynamics by Gaussian process Begrression under the Multi-Task Learning Framework"
+    },
+    {
+      "example_id": "W100104462",
+      "n_hidden": 4,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1971784203",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2130851950",
+          "rank": 44,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1943383135",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2128221272",
+          "rank": 84,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W100104462",
+      "top1_title": "A Mixture Model for Clustering Ensembles"
+    },
+    {
+      "example_id": "W100113310",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2028569720",
+          "rank": 170,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1607768087",
+          "rank": 121,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W100113310",
+      "top1_title": "Representation and hidden bias II: eliminating defining length bias in genetic search via shuffle crossover"
+    },
+    {
+      "example_id": "W100130460",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2069501481",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W100130460",
+      "top1_title": "Prosody Analysis for Speaker Affect Determination"
+    },
+    {
+      "example_id": "W10021998",
+      "n_hidden": 3,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2175582831",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2137813581",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1802356529",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W10021998",
+      "top1_title": "Loss Functions for Discriminative Training of Energy-Based Models"
+    },
+    {
+      "example_id": "W100337813",
+      "n_hidden": 3,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W187058510",
+          "rank": 186,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2022204871",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2156652490",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W100337813",
+      "top1_title": "Recognition of Affect, Judgment, and Appreciation in Text"
+    },
+    {
+      "example_id": "W100367037",
+      "n_hidden": 5,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2158169396",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2161914416",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2161969291",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1984912494",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2533739470",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W100367037",
+      "top1_title": "A Unified Framework for Multi-target Tracking and Collective Activity Recognition"
+    },
+    {
+      "example_id": "W1003773566",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2011632873",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2165654401",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1003773566",
+      "top1_title": "[39] Unified approach to alignment and phylogenies"
+    },
+    {
+      "example_id": "W1004382800",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2013094602",
+          "rank": 82,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1980839158",
+          "rank": 2,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2044754442",
+          "rank": 187,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1004382800",
+      "top1_title": "The Influence of Domain Knowledge on Inferencing In Low-Aptitude Individuals"
+    },
+    {
+      "example_id": "W1005811612",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2494779131",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2035476608",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1530262073",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 0.8333334,
+      "top1_id": "W1005811612",
+      "top1_title": "Minimizing Computation in Convolutional Neural Networks"
+    },
+    {
+      "example_id": "W100623710",
+      "n_hidden": 12,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2038721957",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2147152072",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2116064496",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2097009961",
+          "rank": 125,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2007709031",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2064580901",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4235505822",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1974413746",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1934041838",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2057487175",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1597533204",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2056590938",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 0.7,
+      "top1_id": "W2120861206",
+      "top1_title": "A Fast and Simple Algorithm for Training Neural Probabilistic Language Models"
+    },
+    {
+      "example_id": "W100686880",
+      "n_hidden": 7,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2101938307",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2168356304",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2031454541",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1511986666",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2118246710",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2150066425",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1589504938",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W100686880",
+      "top1_title": "Stixmantics: A Medium-Level Model for Real-Time Semantic Scene Understanding"
+    },
+    {
+      "example_id": "W1007293483",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2160709761",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1966917791",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2095456658",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1007293483",
+      "top1_title": "Maxent, Mathematics, and Information Theory"
+    },
+    {
+      "example_id": "W1008041189",
+      "n_hidden": 7,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2048479872",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2240086165",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2170931964",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2073588290",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2135729325",
+          "rank": 171,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2015774256",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1984314602",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1008041189",
+      "top1_title": "Elaborative Strategies in Verbal Learning and Memory"
+    },
+    {
+      "example_id": "W1008192762",
+      "n_hidden": 15,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1606745945",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2168686206",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2017567194",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2036389069",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1983370520",
+          "rank": 170,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4299526360",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1995017141",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2070226660",
+          "rank": 90,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2032237291",
+          "rank": 80,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2093764694",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2142687107",
+          "rank": 43,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2068156098",
+          "rank": 63,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2002056170",
+          "rank": 185,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2141530825",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2055369795",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1008192762",
+      "top1_title": "Mineral transformations and biogeochemical cycles: a geomycological perspective"
+    },
+    {
+      "example_id": "W100882334",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1935274614",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1996347293",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W100882334",
+      "top1_title": "A clash of intuitions: the current state of nonmonotonic multiple inheritance systems"
+    },
+    {
+      "example_id": "W1008849588",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W28766783",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4233254181",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 0.8333334,
+      "top1_id": "W2053041513",
+      "top1_title": "An Introduction to Spatial Point Processes and Markov Random Fields"
+    },
+    {
+      "example_id": "W1009222391",
+      "n_hidden": 4,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2951278869",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1969138419",
+          "rank": 8,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2610496362",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1973991804",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1009222391",
+      "top1_title": "Towards a Robust Metric of Polarity"
+    },
+    {
+      "example_id": "W1009399813",
+      "n_hidden": 7,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2082784219",
+          "rank": 84,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2006070853",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1989018171",
+          "rank": 9,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2067812234",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2054943171",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2007637701",
+          "rank": 3,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2168574344",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1009399813",
+      "top1_title": "Coulomb Bound States of Strongly Interacting Photons"
+    },
+    {
+      "example_id": "W1010415138",
+      "n_hidden": 8,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2069429561",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2251537235",
+          "rank": 136,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2099779943",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1614298861",
+          "rank": 26,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2797563284",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2251939518",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2251869843",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2132827946",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1010415138",
+      "top1_title": "Do Multi-Sense Embeddings Improve Natural Language Understanding?"
+    },
+    {
+      "example_id": "W1012624898",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2003630133",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1498691846",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1012624898",
+      "top1_title": "7 Lipid Analysis and the Relationship to Chemotaxonomy"
+    },
+    {
+      "example_id": "W101345952",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2102491957",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2912565176",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1934425758",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101345952",
+      "top1_title": "An Outline of a Theory of Three-Way Decisions"
+    },
+    {
+      "example_id": "W101414327",
+      "n_hidden": 8,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2166010828",
+          "rank": 102,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2135502357",
+          "rank": 6,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2120240539",
+          "rank": 90,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4231340930",
+          "rank": 71,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2133621813",
+          "rank": 11,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2031489346",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2104170135",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2167865917",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101414327",
+      "top1_title": "MIForests: Multiple-Instance Learning with Randomized Trees"
+    },
+    {
+      "example_id": "W101422005",
+      "n_hidden": 5,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2136504847",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2166706824",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2136922672",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2168816626",
+          "rank": 24,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2114524997",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101422005",
+      "top1_title": "Active Deep Networks for Semi-Supervised Sentiment Classification"
+    },
+    {
+      "example_id": "W101435204",
+      "n_hidden": 13,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2154564336",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2075138946",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2987687226",
+          "rank": 91,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2060887031",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2052207834",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1999706070",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1978553093",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2114207424",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2109394932",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1974984900",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1970006170",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1977821353",
+          "rank": 37,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1985989979",
+          "rank": 56,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 0.5833333,
+      "top1_id": "W2913803685",
+      "top1_title": "Quantum Information"
+    },
+    {
+      "example_id": "W101436286",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1965965675",
+          "rank": 3,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101436286",
+      "top1_title": "Maximal Rank of $m\\times n\\times(mn-k)$ Tensors"
+    },
+    {
+      "example_id": "W10148009",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2149706766",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W10148009",
+      "top1_title": "Methodologies for Trend Detection in Textual Data Mining"
+    },
+    {
+      "example_id": "W101497934",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2101210369",
+          "rank": 12,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1574901103",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101497934",
+      "top1_title": "Word Sense Induction: Triplet-Based Clustering and Automatic Evaluation"
+    },
+    {
+      "example_id": "W101498165",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2087966340",
+          "rank": 2,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101498165",
+      "top1_title": "Linear hashing with partial expansions"
+    },
+    {
+      "example_id": "W1015831083",
+      "n_hidden": 8,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2063698478",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2579555219",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2087674946",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2116360511",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1996463738",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2157904933",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W134309601",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1878893887",
+          "rank": 51,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1015831083",
+      "top1_title": "A Theory of Human Memory: Self-Organization and Performance of Sensory-Motor Codes, Maps, and Plans"
+    },
+    {
+      "example_id": "W101616332",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2233233025",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2088492763",
+          "rank": 134,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101616332",
+      "top1_title": "Complete Characterization of Fairness in Secure Two-Party Computation of Boolean Functions"
+    },
+    {
+      "example_id": "W101651648",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2162311237",
+          "rank": 8,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101651648",
+      "top1_title": "The Representation of Meaning in the UMLS"
+    },
+    {
+      "example_id": "W101693742",
+      "n_hidden": 5,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2082612735",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1554663460",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1770825568",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2049384587",
+          "rank": 2,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1570713908",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101693742",
+      "top1_title": "Linear Discriminant Analysis in Document Classification"
+    },
+    {
+      "example_id": "W101953049",
+      "n_hidden": 5,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W4367314869",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W101953049",
+          "rank": 1,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2164600289",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4238317525",
+          "rank": 94,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2002698441",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101953049",
+      "top1_title": "Information Privacy in a Globally Networked Society: Implications for IS Research"
+    },
+    {
+      "example_id": "W101971317",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2165612380",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2043909051",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W101971317",
+      "top1_title": "Testing the applicability of intelligent methods for information retrieval*"
+    },
+    {
+      "example_id": "W1019830208",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2149769193",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2095705004",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1019830208",
+      "top1_title": "Predicting the sequence specificities of DNA- and RNA-binding proteins by deep learning"
+    },
+    {
+      "example_id": "W1020953626",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2066495677",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2167482691",
+          "rank": 39,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 0.8333334,
+      "top1_id": "W1020953626",
+      "top1_title": "A fast adaptive layout algorithm for undirected graphs (extended abstract and system demonstration)"
+    },
+    {
+      "example_id": "W102110531",
+      "n_hidden": 26,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2168575967",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2120357670",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2156046656",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1997824816",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1987124984",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2060592690",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1993693161",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2135961695",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2126797747",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1493772365",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2151834591",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2038403654",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2115852701",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1520020354",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1968466673",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2060491487",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2033679763",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2007377366",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1679907412",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2137247190",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1801951652",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2158058159",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2151805516",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1688033190",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1979183780",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2960071975",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 0.625,
+      "top1_id": "W4207080468",
+      "top1_title": "The Psychology of Learning and Motivation"
+    },
+    {
+      "example_id": "W1021606457",
+      "n_hidden": 6,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2155225996",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W3125449341",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1987258130",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2057643324",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4300870773",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2112081648",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1021606457",
+      "top1_title": "Dysfunctional information system behaviors are not all created the same: Challenges to the generalizability of security-based research"
+    },
+    {
+      "example_id": "W1023032151",
+      "n_hidden": 15,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2326958296",
+          "rank": 5,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2105846236",
+          "rank": 102,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2057643324",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2132743748",
+          "rank": 119,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W333764539",
+          "rank": 165,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W3148930403",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2052299306",
+          "rank": 120,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2075585362",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2100739170",
+          "rank": 11,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W3106889297",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2097879961",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2108401663",
+          "rank": 94,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2127407135",
+          "rank": 69,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2327327889",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1985977391",
+          "rank": 33,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1023032151",
+      "top1_title": "On the adoption of partial least squares in psychological research: Caveat emptor"
+    },
+    {
+      "example_id": "W102312040",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1595159159",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2498631646",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W102312040",
+      "top1_title": "Evolutionary Algorithms with Competing Heuristics in Computational Statistics"
+    },
+    {
+      "example_id": "W102334056",
+      "n_hidden": 4,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1956559956",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2049633694",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1574877594",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2145494108",
+          "rank": 16,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W102334056",
+      "top1_title": "A hybrid generative/discriminative approach to semi-supervised classifier design"
+    },
+    {
+      "example_id": "W102369970",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2797114046",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1941659294",
+          "rank": 11,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2125055259",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W102369970",
+      "top1_title": "Class Imbalances versus Class Overlapping: An Analysis of a Learning System Behavior"
+    },
+    {
+      "example_id": "W102405042",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1512267351",
+          "rank": 10,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W102405042",
+      "top1_title": "A multi-level planning and navigation system for a mobile robot: a first approach to HILARE"
+    },
+    {
+      "example_id": "W102413479",
+      "n_hidden": 3,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1509515766",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1554734378",
+          "rank": 40,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2154642793",
+          "rank": 27,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W102413479",
+      "top1_title": "ROCCER: an algorithm for rule learning based on ROC analysis"
+    },
+    {
+      "example_id": "W1024421181",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2020156682",
+          "rank": 3,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1531542706",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W101508493",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 0.7,
+      "top1_id": "W2132396702",
+      "top1_title": "Closed-form solutions for physically based shape modeling and recognition"
+    },
+    {
+      "example_id": "W102487131",
+      "n_hidden": 4,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2046261509",
+          "rank": 13,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1554487381",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2138537392",
+          "rank": 2,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1860639442",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W102487131",
+      "top1_title": "The CMA Evolution Strategy: A Comparing Review"
+    },
+    {
+      "example_id": "W1026270304",
+      "n_hidden": 8,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2036317923",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2163605009",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2136922672",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W189277179",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2148461049",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1705588077",
+          "rank": 38,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2152424459",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2161388792",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 0.8333334,
+      "top1_id": "W2950621961",
+      "top1_title": "Training Very Deep Networks"
+    },
+    {
+      "example_id": "W102708294",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2022166150",
+          "rank": 66,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1586197708",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 0.8333334,
+      "top1_id": "W102708294",
+      "top1_title": "DBpedia: A Nucleus for a Web of Open Data"
+    },
+    {
+      "example_id": "W1027152254",
+      "n_hidden": 7,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2050339382",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2033431321",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1987873266",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1878893887",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2157646826",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W3189797024",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2024736643",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1027152254",
+      "top1_title": "The Logic of Memory Representations"
+    },
+    {
+      "example_id": "W103128726",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W3022436500",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W103128726",
+      "top1_title": "Backpropagation Can Give Rise to Spurious Local Minima Even for Networks without Hidden Layers."
+    },
+    {
+      "example_id": "W103204726",
+      "n_hidden": 4,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2134731454",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2141790691",
+          "rank": 3,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1598251544",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1951269370",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W103204726",
+      "top1_title": "Latent Variable Models for Semantic Orientations of Phrases"
+    },
+    {
+      "example_id": "W1032684693",
+      "n_hidden": 9,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1949116567",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2115628259",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2166049352",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2107698128",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1993845689",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2055132753",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2033832873",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2159564241",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2139468722",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1032684693",
+      "top1_title": "Context as Supervisory Signal: Discovering Objects with Predictable Context"
+    },
+    {
+      "example_id": "W103340358",
+      "n_hidden": 6,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2134008243",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1997922049",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2133299088",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2069153192",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2105436061",
+          "rank": 53,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2077943220",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W103340358",
+      "top1_title": "PathSim"
+    },
+    {
+      "example_id": "W1034159276",
+      "n_hidden": 8,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2095705004",
+          "rank": 2,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1665214252",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2163605009",
+          "rank": 76,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2294059674",
+          "rank": 73,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1694178301",
+          "rank": 173,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1523493493",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W3147600416",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1485147275",
+          "rank": 25,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 0.75,
+      "top1_id": "W1034159276",
+      "top1_title": "Towards dropout training for convolutional neural networks"
+    },
+    {
+      "example_id": "W103475893",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2034767804",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W103475893",
+      "top1_title": "On the Asymptotic Behaviour of Posterior Distributions"
+    },
+    {
+      "example_id": "W103634997",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2015191210",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4213009331",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 0.8333334,
+      "top1_id": "W2047260110",
+      "top1_title": "Automatic Extraction of Useful Facet Hierarchies from Text Databases"
+    },
+    {
+      "example_id": "W1038736503",
+      "n_hidden": 8,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2163605009",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2169805405",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4301045096",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2110798204",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2161969291",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1915761309",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2103504761",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W3147600416",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1038736503",
+      "top1_title": "Multi-scale deep networks and regression forests for direct bi-ventricular volume estimation"
+    },
+    {
+      "example_id": "W103925342",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W1497047052",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2059329655",
+          "rank": 127,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2045386399",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W103925342",
+      "top1_title": "Geochemistry of greater Ekofisk crude oils"
+    },
+    {
+      "example_id": "W103951555",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W4239283087",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2084585578",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 0.8333334,
+      "top1_id": "W2105963649",
+      "top1_title": "Defining Uncertainty: A Conceptual Basis for Uncertainty Management in Model-Based Decision Support"
+    },
+    {
+      "example_id": "W103965747",
+      "n_hidden": 3,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2089967664",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2149684865",
+          "rank": 171,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2150102617",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W103965747",
+      "top1_title": "Feature generation for text categorization using world knowledge"
+    },
+    {
+      "example_id": "W104184427",
+      "n_hidden": 8,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1828163288",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W196761320",
+          "rank": 31,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2023695846",
+          "rank": 61,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W3141595720",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1408639475",
+          "rank": 3,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2124541940",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2118706537",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2152424459",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W104184427",
+      "top1_title": "On the importance of initialization and momentum in deep learning"
+    },
+    {
+      "example_id": "W104211377",
+      "n_hidden": 14,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2143884379",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1904365287",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4249293656",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2218318129",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2162915993",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2169488311",
+          "rank": 14,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2171490498",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2100495367",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4238404964",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2293078015",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2015861736",
+          "rank": 35,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2103359087",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1999192586",
+          "rank": 7,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W22861983",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W2139427956",
+      "top1_title": "Unsupervised Learning of Invariant Feature Hierarchies with Applications to Object Recognition"
+    },
+    {
+      "example_id": "W1042754413",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2020999234",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2138309709",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W109881820",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 0.8333334,
+      "top1_id": "W1963648150",
+      "top1_title": "The Bayesian analysis of a pivotal pharmacokinetic study"
+    },
+    {
+      "example_id": "W104351827",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2171265988",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2147880316",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W104351827",
+      "top1_title": "On Improving the Efficiency of the Iterative Proportional Fitting Procedure"
+    },
+    {
+      "example_id": "W1045349118",
+      "n_hidden": 11,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W1666447063",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1953606363",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2156935079",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W3140910462",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2125517959",
+          "rank": 18,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2118712128",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1974287593",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2129144539",
+          "rank": 105,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2129906471",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2023492421",
+          "rank": 111,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1999954155",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1045349118",
+      "top1_title": "MLSMOTE: Approaching imbalanced multilabel learning through synthetic instance generation"
+    },
+    {
+      "example_id": "W104574262",
+      "n_hidden": 6,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2134982367",
+          "rank": 40,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2148522164",
+          "rank": 74,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2119595900",
+          "rank": 99,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2143104527",
+          "rank": 19,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2133013156",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2130903752",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W104574262",
+      "top1_title": "Learning high-order task relationships in multi-task learning"
+    },
+    {
+      "example_id": "W104820689",
+      "n_hidden": 3,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1518076737",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W13176313",
+          "rank": 72,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1568555062",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W104820689",
+      "top1_title": "A hybrid anytime algorithm for the construction of causal models from sparse data"
+    },
+    {
+      "example_id": "W104847522",
+      "n_hidden": 1,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W1548802052",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 0.75,
+      "top1_id": "W2062811295",
+      "top1_title": "Internal statistics of a single natural image"
+    },
+    {
+      "example_id": "W104877536",
+      "n_hidden": 5,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2002089154",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2063301742",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2096390054",
+          "rank": 175,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2031495811",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W4302339081",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W104877536",
+      "top1_title": "Randomness, Interactive Proofs, and Zero-Knowledge \u2014 A Survey"
+    },
+    {
+      "example_id": "W105128510",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2157795344",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1513618424",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W105128510",
+      "top1_title": "Resampling-Based Multiple Hypothesis Testing with Applications to Genomics: New Developments in the R/Bioconductor Package multtest"
+    },
+    {
+      "example_id": "W105166688",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2039577202",
+          "rank": 107,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2048884548",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W105166688",
+      "top1_title": "Carole Paradis and Jean-Fran\u00e7ois Prunet (eds.) (1991). The special status of coronals: internal and external evidence. (<i>Phonetics and Phonology 2</i>). San Diego: Academic Press. Pp. xvii + 231."
+    },
+    {
+      "example_id": "W105475431",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1955645522",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1655958391",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W105475431",
+      "top1_title": "Language identification of encrypted VoIP traffic: Alejandra y Roberto or Alice and Bob?"
+    },
+    {
+      "example_id": "W105478623",
+      "n_hidden": 5,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2152240519",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2105614108",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2030867075",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2091654902",
+          "rank": 111,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1979308046",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W105478623",
+      "top1_title": "Universal two-qubit interactions, measurement, and cooling for quantum simulation and computing"
+    },
+    {
+      "example_id": "W105487563",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2132685693",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2148745705",
+          "rank": 72,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W105487563",
+      "top1_title": "Nonparametric Density Estimation via Diffusion Mixing"
+    },
+    {
+      "example_id": "W105717235",
+      "n_hidden": 1,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W1968727462",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W105717235",
+      "top1_title": "Oceanic Plagiogranite Revisited"
+    },
+    {
+      "example_id": "W105751747",
+      "n_hidden": 1,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2986699428",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1569320505",
+      "top1_title": "Adaptive filtering prediction and control"
+    },
+    {
+      "example_id": "W1058055990",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W1972617376",
+          "rank": 28,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1984828485",
+          "rank": 107,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2093668679",
+          "rank": 52,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1058055990",
+      "top1_title": "Digital soil mapping: A brief history and some lessons"
+    },
+    {
+      "example_id": "W106053879",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1505730451",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W106053879",
+      "top1_title": "An investigation into reactive planning in complex domains"
+    },
+    {
+      "example_id": "W106128968",
+      "n_hidden": 3,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1981887917",
+          "rank": 49,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2903919837",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1982483258",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W106128968",
+      "top1_title": "Spatial Clustering for Inhomogeneous Populations"
+    },
+    {
+      "example_id": "W106510103",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2127470768",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2169359757",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W106510103",
+      "top1_title": "Settling the Complexity of 2-Player Nash-Equilibrium"
+    },
+    {
+      "example_id": "W10654782",
+      "n_hidden": 7,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2164545296",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1988371994",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2036995039",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2171074980",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2022731279",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2135830616",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2109364787",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W10654782",
+      "top1_title": "Benchmarking the superconducting Josephson Phase Qubit: The violation of Bell's inequality"
+    },
+    {
+      "example_id": "W106560026",
+      "n_hidden": 1,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2041280856",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W106560026",
+      "top1_title": "A Heuristic Adaptive Controller for a Sinter Plant"
+    },
+    {
+      "example_id": "W106837255",
+      "n_hidden": 7,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W1502980253",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1964424952",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W41967720",
+          "rank": 24,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2066476588",
+          "rank": 134,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2010551443",
+          "rank": 163,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W657075062",
+          "rank": 5,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1491907246",
+          "rank": 148,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 0.7,
+      "top1_id": "W106837255",
+      "top1_title": "Eye Movements and Cognitive Processes in Reading, Visual Search, and Scene Perception"
+    },
+    {
+      "example_id": "W106934005",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2104670598",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2117942072",
+          "rank": 10,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W106934005",
+      "top1_title": "On maximum clique problems in very large graphs"
+    },
+    {
+      "example_id": "W107021117",
+      "n_hidden": 9,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1984141735",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2118587067",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2017927472",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1998871699",
+          "rank": 40,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2141807666",
+          "rank": 74,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2055063781",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2063445365",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2120636855",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2052167135",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W107021117",
+      "top1_title": "A Review of Hierarchical Classification"
+    },
+    {
+      "example_id": "W107025004",
+      "n_hidden": 4,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2122049982",
+          "rank": 8,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1499241274",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1582331515",
+          "rank": 7,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2144789413",
+          "rank": 27,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W107025004",
+      "top1_title": "PRECIP: Towards Practical and Retrofittable Confidential Information Protection."
+    },
+    {
+      "example_id": "W10704533",
+      "n_hidden": 7,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2001792610",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2155693943",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1797288984",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2121227244",
+          "rank": 141,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W3021713638",
+          "rank": 4,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W47415966",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2132957691",
+          "rank": 34,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W10704533",
+      "top1_title": "A Bit of Progress in Language Modeling Extended Version"
+    },
+    {
+      "example_id": "W107054272",
+      "n_hidden": 4,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W1714211023",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1500868819",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2009551863",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2020135152",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W107054272",
+      "top1_title": "Continuous Upper Confidence Trees"
+    },
+    {
+      "example_id": "W10710988",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2168165432",
+          "rank": 41,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1625390266",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W10710988",
+      "top1_title": "Monte-Carlo Planning for Pathfinding in Real-Time Strategy Games"
+    },
+    {
+      "example_id": "W1071251684",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W4205184193",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2131744502",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1071251684",
+      "top1_title": "Hate Speech Detection with Comment Embeddings"
+    },
+    {
+      "example_id": "W1071368427",
+      "n_hidden": 6,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2101196063",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1998956117",
+          "rank": 6,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2135046866",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W3146166473",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2150593711",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2068181924",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1071368427",
+      "top1_title": "Advances in nowcasting influenza-like illness rates using search query logs"
+    },
+    {
+      "example_id": "W107306860",
+      "n_hidden": 4,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2065861851",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1594962278",
+          "rank": 156,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2151023586",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2094934653",
+          "rank": 73,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W107306860",
+      "top1_title": "Active Learning with Committees for Text Categorization"
+    },
+    {
+      "example_id": "W107402462",
+      "n_hidden": 2,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W136846643",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1981367467",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W107402462",
+      "top1_title": "Unsupervised Domain Relevance Estimation for Word Sense Disambiguation."
+    },
+    {
+      "example_id": "W107408668",
+      "n_hidden": 1,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W2120284346",
+          "rank": 51,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W107408668",
+      "top1_title": "TEXT DETECTION WITH CONVOLUTIONAL NEURAL NETWORKS"
+    },
+    {
+      "example_id": "W107509755",
+      "n_hidden": 4,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2036149274",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W3767694",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2036389121",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2122912498",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W107509755",
+      "top1_title": "Predicting Unethical Behavior: A Comparison of the Theory of Reasoned Action and the Theory of Planned Behavior"
+    },
+    {
+      "example_id": "W1075449022",
+      "n_hidden": 2,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W1966114254",
+          "rank": 117,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1748197048",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W1075449022",
+      "top1_title": "Craving for Alcohol, Loss of Control, and Relapse: A Cognitive-Behavioral Analysis"
+    },
+    {
+      "example_id": "W107583932",
+      "n_hidden": 13,
+      "src_has_abstract": true,
+      "ranks": [
+        {
+          "target": "W1585546214",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1545148916",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2120465407",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1530699444",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W2139709458",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": false
+        },
+        {
+          "target": "W1970602736",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1601974704",
+          "rank": 178,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2139418546",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2119567691",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2083143894",
+          "rank": 24,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2341171179",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2161521419",
+          "rank": 29,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1520252399",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W107583932",
+      "top1_title": "On the Sample Complexity of Reinforcement Learning"
+    },
+    {
+      "example_id": "W107619411",
+      "n_hidden": 3,
+      "src_has_abstract": false,
+      "ranks": [
+        {
+          "target": "W2029207476",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W2108384452",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        },
+        {
+          "target": "W1995875735",
+          "rank": null,
+          "in_qdrant": true,
+          "tgt_has_abstract": true
+        }
+      ],
+      "top1_score": 1.0,
+      "top1_id": "W2343251476",
+      "top1_title": "Comparison of approximation methods to Kullback\u2013Leibler divergence between Gaussian mixture models for satellite image retrieval"
+    }
+  ]
+}

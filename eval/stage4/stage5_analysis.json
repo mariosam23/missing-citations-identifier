@@ -1,0 +1,195 @@
+{
+  "aggregation_heatmap": [
+    {
+      "aggregation_strategy": "WEIGHTED",
+      "mrr": 0.15203703703703703,
+      "ndcg@10": 0.14398061062296294,
+      "recall@10": 0.20666666666666667
+    }
+  ],
+  "qualitative_examples": [
+    {
+      "example_id": "W100104462",
+      "query": "A Mixture Model for Clustering Ensembles. Clustering ensembles have emerged as a powerful method for improving both the robustness and the stability of unsupervised classification solutions. However, finding a consensus clustering from multiple partitions is a difficult problem that can be approached from graph-based, combinatorial or statistical perspectives. We offer a probabilistic model of consensus using a finite mixture of multinomial distributions in a space of clusterings. A combined partition is found as a solution to the corresponding maximum likelihood problem using the EM algorithm. The excellent scalability of this algorithm and comprehensible underlying model are particularly important for clustering of large datasets. This study compares the performance of the EM consensus algorithm with other fusion approaches for clustering ensembles. We also analyze clustering ensembles with incomplete information and the effect of missing cluster labels on the quality of overall consensus. Experimental results demonstrate the effectiveness of the proposed method on large real-world datasets.",
+      "retrieved_papers": [
+        {
+          "paper_id": "W100104462",
+          "score": 3.3280892372131348,
+          "title": "A Mixture Model for Clustering Ensembles"
+        },
+        {
+          "paper_id": "W1539187029",
+          "score": 1.4498178958892822,
+          "title": "A Survey: Clustering Ensembles Techniques"
+        },
+        {
+          "paper_id": "W2002767255",
+          "score": 0.10726089775562286,
+          "title": "A SURVEY OF CLUSTERING ENSEMBLE ALGORITHMS"
+        },
+        {
+          "paper_id": "W2109820980",
+          "score": 0.0241139717400074,
+          "title": "Assessing a mixture model for clustering with the integrated completed likelihood"
+        },
+        {
+          "paper_id": "W2122491887",
+          "score": -0.11050756275653839,
+          "title": "Using diversity in cluster ensembles"
+        }
+      ],
+      "subclaims": [
+        {
+          "importance": 0.3,
+          "text": "Clustering ensembles improve the robustness and stability of unsupervised classification solutions."
+        },
+        {
+          "importance": 0.3,
+          "text": "Finding a consensus clustering from multiple partitions can be approached from graph-based, combinatorial, or statistical perspectives."
+        },
+        {
+          "importance": 0.25,
+          "text": "A finite mixture of multinomial distributions can be used as a probabilistic model for consensus in clustering ensembles."
+        },
+        {
+          "importance": 0.15,
+          "text": "Clustering ensembles can be evaluated for performance with incomplete information and missing cluster labels."
+        }
+      ]
+    },
+    {
+      "example_id": "W100113310",
+      "query": "Representation and hidden bias II: eliminating defining length bias in genetic search via shuffle crossover. The traditional crossover operator used in genetic search exhibits a position-dependent bias called the dcfining-length bias. We show how this bias results in hidden biases that are difficult to anticipate and compensate for. We introduce a new crossover operator, shuffle crossover, that eliminates the position dependent bias of the traditional crossover operator by shuffling the representation prior to applying crossover. We also present experimental results that show that shuffle crossover outperforms traditional crossover on a suite of five function optimization problems.",
+      "retrieved_papers": [
+        {
+          "paper_id": "W100113310",
+          "score": 7.610719203948975,
+          "title": "Representation and hidden bias II: eliminating defining length bias in genetic search via shuffle crossover"
+        },
+        {
+          "paper_id": "W99032621",
+          "score": 0.6034444570541382,
+          "title": "A study of permutation crossover operators on the traveling salesman problem"
+        },
+        {
+          "paper_id": "W14039637",
+          "score": 0.3633449673652649,
+          "title": "Adapting Crossover in Evolutionary Algorithms"
+        },
+        {
+          "paper_id": "W2328803995",
+          "score": 0.03703344613313675,
+          "title": "Improving Genetic Algorithm with Fine-Tuned Crossover and Scaled Architecture"
+        },
+        {
+          "paper_id": "W3121811447",
+          "score": -0.06603573262691498,
+          "title": "Crossover, Macromutation, and Population-Based Search"
+        }
+      ],
+      "subclaims": [
+        {
+          "importance": 0.2,
+          "text": "The traditional crossover operator used in genetic search exhibits a position-dependent bias called the defining-length bias."
+        },
+        {
+          "importance": 0.2,
+          "text": "Defining-length bias results in hidden biases that are difficult to anticipate and compensate for."
+        },
+        {
+          "importance": 0.3,
+          "text": "Shuffle crossover eliminates the position dependent bias of the traditional crossover operator by shuffling the representation prior to applying crossover."
+        },
+        {
+          "importance": 0.3,
+          "text": "Shuffle crossover outperforms traditional crossover on a suite of five function optimization problems."
+        }
+      ]
+    },
+    {
+      "example_id": "W100130460",
+      "query": "Prosody Analysis for Speaker Affect Determination. Introduction Speech is a complex waveform containing verbal (e.g. phoneme, syllable, and word) and nonverbal (e.g. speaker identity, emotional state, and tone) information. Both the verbal and nonverbal aspects of speech are extremely important in interpersonal communication and human-machine interaction. However, work in machine perception of speech has focused primarily on the verbal, or content-oriented, goals of speech recognition, speech compression, and speech labeling. Usage of nonverbal information has been limited to speaker identification applications. While the success of research in these areas is well documented, this success is fundamentally limited by the effect of nonverbal information on the speech waveform. The extralinguistic aspect of speech is considered a source of variability that theoretically can be minimized with an appropriate preprocessing technique; determination of such robust techniques is however, far from trivial.",
+      "retrieved_papers": [
+        {
+          "paper_id": "W100130460",
+          "score": 5.295334815979004,
+          "title": "Prosody Analysis for Speaker Affect Determination"
+        },
+        {
+          "paper_id": "W2084288097",
+          "score": -0.745528519153595,
+          "title": "Vocal cues to speaker affect: Testing two models"
+        },
+        {
+          "paper_id": "W2136879537",
+          "score": -1.0609138011932373,
+          "title": "A Study of Interspeaker Variability in Speaker Verification"
+        },
+        {
+          "paper_id": "W2103387126",
+          "score": -1.2912535667419434,
+          "title": "Speaker-independent isolated word recognition based on emphasized spectral dynamics"
+        },
+        {
+          "paper_id": "W2050693797",
+          "score": -1.3250643014907837,
+          "title": "Effectiveness of linear prediction characteristics of the speech wave for automatic speaker identification and verification"
+        }
+      ],
+      "subclaims": [
+        {
+          "importance": 0.2,
+          "text": "Speech is a complex waveform containing both verbal information (phonemes, words) and nonverbal information (speaker identity, emotional state, and tone)."
+        },
+        {
+          "importance": 0.2,
+          "text": "Verbal and nonverbal aspects of speech are critical for interpersonal communication and human-machine interaction."
+        },
+        {
+          "importance": 0.3,
+          "text": "Machine perception of speech has focused primarily on verbal content, with nonverbal information usage largely limited to speaker identification."
+        },
+        {
+          "importance": 0.3,
+          "text": "Nonverbal/extralinguistic information acts as a source of variability in speech waveforms that limits recognition success and is difficult to minimize through preprocessing."
+        }
+      ]
+    }
+  ],
+  "stratified_v1_v2": [
+    {
+      "facet": "single",
+      "n": 1,
+      "ndcg@10": 0.3562071871080222,
+      "recall@10": 1.0,
+      "variant": "V1"
+    },
+    {
+      "facet": "multi",
+      "n": 29,
+      "ndcg@10": 0.1126720065611394,
+      "recall@10": 0.1850574712643678,
+      "variant": "V1"
+    },
+    {
+      "facet": "single",
+      "n": 1,
+      "ndcg@10": 1.0,
+      "recall@10": 1.0,
+      "variant": "V2"
+    },
+    {
+      "facet": "multi",
+      "n": 29,
+      "ndcg@10": 0.11446270064444444,
+      "recall@10": 0.1793103448275862,
+      "variant": "V2"
+    }
+  ],
+  "subclaim_histogram": {
+    "1": 1,
+    "2": 1,
+    "3": 3,
+    "4": 25
+  }
+}

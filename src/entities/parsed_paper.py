@@ -5,12 +5,21 @@ from dataclasses import dataclass, field
 class ParsedPaper:
     """
     Data class representing a parsed academic paper.
+
+    ``bibliography`` keeps each reference associated with its GROBID-assigned
+    ``xml:id`` (``b0``, ``b1``, …). Section text contains ``[CITE:bX]`` markers
+    inserted at the position of every in-text citation, so downstream sentence
+    extraction can recover *which* bibliography entries were cited *where*.
+
+    ``references`` is kept as a flat list of raw reference strings for backward
+    compatibility with code that just needs the bibliography contents.
     """
 
     title: str
     abstract: str
     references: list[str] = field(default_factory=list)
     sections: dict[str, str] = field(default_factory=dict)
+    bibliography: dict[str, str] = field(default_factory=dict)
 
     @property
     def full_text(self) -> str:
@@ -34,6 +43,7 @@ class ParsedPaper:
             "abstract": self.abstract,
             "references": self.references,
             "sections": self.sections,
+            "bibliography": self.bibliography,
         }
 
     def __str__(self) -> str:

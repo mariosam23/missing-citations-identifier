@@ -1,0 +1,58 @@
+{
+  "per_pdf": {
+    "Automatic Prompt Optimization with Gradient Descent and Beam Search.pdf": {
+      "bibliography_size": 30,
+      "refs_total": 30,
+      "refs_unresolved": 28,
+      "refs_resolved": 2,
+      "refs_in_index": 2,
+      "sentences_total": 204,
+      "sentences_with_citation": 30,
+      "sentences_with_bibkeys": 29,
+      "rows_emitted": 2,
+      "rows_multi_facet": 0
+    },
+    "BERT.pdf": {
+      "bibliography_size": 55,
+      "refs_total": 55,
+      "refs_unresolved": 25,
+      "refs_resolved": 30,
+      "refs_in_index": 30,
+      "sentences_total": 288,
+      "sentences_with_citation": 41,
+      "sentences_with_bibkeys": 36,
+      "rows_emitted": 27,
+      "rows_multi_facet": 5
+    },
+    "NIPS-2017-attention-is-all-you-need-Paper.pdf": {
+      "bibliography_size": 32,
+      "refs_total": 32,
+      "refs_unresolved": 17,
+      "refs_resolved": 15,
+      "refs_in_index": 15,
+      "sentences_total": 182,
+      "sentences_with_citation": 26,
+      "sentences_with_bibkeys": 26,
+      "rows_emitted": 14,
+      "rows_multi_facet": 5
+    }
+  },
+  "totals": {
+    "bibliography_size": 117,
+    "refs_total": 117,
+    "refs_unresolved": 70,
+    "refs_resolved": 47,
+    "refs_in_index": 47,
+    "sentences_total": 674,
+    "sentences_with_citation": 97,
+    "sentences_with_bibkeys": 91,
+    "rows_emitted": 43,
+    "rows_multi_facet": 10
+  },
+  "resolver_stats": {
+    "exact_doi": 0,
+    "fuzzy_title": 0,
+    "openalex": 103,
+    "unresolved": 14
+  }
+}

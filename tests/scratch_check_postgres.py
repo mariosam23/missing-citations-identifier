@@ -26,7 +26,7 @@ with get_session() as session:
         .where(Paper.abstract.is_not(None), Paper.abstract != "")
         .limit(3)
     ).all()
-    print(f"\n=== Sample papers with abstracts ===")
+    print("\n=== Sample papers with abstracts ===")
     for pid, title, abstract in samples:
         print(f"  ID: {pid}")
         print(f"  Title: {(title or '')[:80]}")

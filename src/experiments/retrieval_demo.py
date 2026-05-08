@@ -165,8 +165,15 @@ def format_result_table(
     return "\n".join(lines)
 
 
-def initialize_retriever() -> tuple[Any, int]:
+def initialize_retriever(prefetch_limit: int = 200) -> tuple[Any, int]:
     """Initialize and verify the hybrid retriever.
+
+    Parameters
+    ----------
+    prefetch_limit:
+        How many candidates each of the dense / sparse legs returns before RRF
+        fusion. Must be at least as large as the largest ``candidate_k`` any
+        downstream consumer plans to request, or fusion silently truncates.
 
     Returns
     -------
@@ -242,7 +249,7 @@ def initialize_retriever() -> tuple[Any, int]:
             dense_model=dense,
             sparse_model=sparse,
             collection=config.QDRANT_COLLECTION_NAME,
-            prefetch_limit=50,
+            prefetch_limit=prefetch_limit,
         )
         print("    ✓ Retriever initialized", flush=True)
     except Exception as e:

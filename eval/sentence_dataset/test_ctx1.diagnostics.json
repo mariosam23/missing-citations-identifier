@@ -1,0 +1,115 @@
+{
+  "per_pdf": {
+    "Automatic Prompt Optimization with Gradient Descent and Beam Search.pdf": {
+      "bibliography_size": 30,
+      "refs_total": 30,
+      "refs_unresolved": 28,
+      "refs_resolved": 2,
+      "refs_in_index": 2,
+      "sentences_total": 204,
+      "sentences_with_citation": 30,
+      "sentences_with_bibkeys": 29,
+      "rows_emitted": 2,
+      "rows_multi_facet": 0
+    },
+    "BERT.pdf": {
+      "bibliography_size": 55,
+      "refs_total": 55,
+      "refs_unresolved": 25,
+      "refs_resolved": 30,
+      "refs_in_index": 30,
+      "sentences_total": 288,
+      "sentences_with_citation": 41,
+      "sentences_with_bibkeys": 36,
+      "rows_emitted": 27,
+      "rows_multi_facet": 5
+    },
+    "NIPS-2017-attention-is-all-you-need-Paper.pdf": {
+      "bibliography_size": 32,
+      "refs_total": 32,
+      "refs_unresolved": 17,
+      "refs_resolved": 15,
+      "refs_in_index": 15,
+      "sentences_total": 182,
+      "sentences_with_citation": 26,
+      "sentences_with_bibkeys": 26,
+      "rows_emitted": 14,
+      "rows_multi_facet": 5
+    },
+    "W1660133578.pdf": {
+      "bibliography_size": 19,
+      "refs_total": 19,
+      "refs_resolved": 19,
+      "refs_in_index": 19,
+      "sentences_total": 245,
+      "sentences_with_citation": 0,
+      "sentences_with_bibkeys": 0,
+      "rows_emitted": 0,
+      "rows_multi_facet": 0
+    },
+    "W1667964228.pdf": {
+      "bibliography_size": 21,
+      "refs_total": 21,
+      "refs_unresolved": 20,
+      "refs_resolved": 1,
+      "refs_in_index": 1,
+      "sentences_total": 322,
+      "sentences_with_citation": 7,
+      "sentences_with_bibkeys": 4,
+      "rows_emitted": 0,
+      "rows_multi_facet": 0
+    },
+    "W1988961156.pdf": {
+      "bibliography_size": 13,
+      "refs_total": 13,
+      "refs_resolved": 4,
+      "refs_in_index": 4,
+      "refs_unresolved": 9,
+      "sentences_total": 141,
+      "sentences_with_citation": 12,
+      "sentences_with_bibkeys": 12,
+      "rows_emitted": 3,
+      "rows_multi_facet": 0
+    },
+    "W2052295501.pdf": {
+      "bibliography_size": 69,
+      "refs_total": 69,
+      "refs_resolved": 69,
+      "refs_in_index": 69,
+      "sentences_total": 203,
+      "sentences_with_citation": 31,
+      "sentences_with_bibkeys": 19,
+      "rows_emitted": 19,
+      "rows_multi_facet": 0
+    },
+    "W2167941657.pdf": {
+      "bibliography_size": 30,
+      "refs_total": 30,
+      "refs_resolved": 30,
+      "refs_in_index": 30,
+      "sentences_total": 248,
+      "sentences_with_citation": 23,
+      "sentences_with_bibkeys": 13,
+      "rows_emitted": 13,
+      "rows_multi_facet": 0
+    }
+  },
+  "totals": {
+    "bibliography_size": 269,
+    "refs_total": 269,
+    "refs_unresolved": 99,
+    "refs_resolved": 170,
+    "refs_in_index": 170,
+    "sentences_total": 1833,
+    "sentences_with_citation": 170,
+    "sentences_with_bibkeys": 139,
+    "rows_emitted": 78,
+    "rows_multi_facet": 10
+  },
+  "resolver_stats": {
+    "exact_doi": 0,
+    "fuzzy_title": 0,
+    "openalex": 233,
+    "unresolved": 36
+  }
+}

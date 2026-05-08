@@ -18,6 +18,20 @@ logger = logging.getLogger(__name__)
 # Basic DOI regex pattern. Look for 10.NNNN/....
 DOI_PATTERN = re.compile(r"(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)")
 
+# Match OpenAlex Work IDs in either bare (W123…) or URL form. The local
+# ``papers.paperId`` column stores them in bare form so we strip the prefix.
+OPENALEX_ID_PATTERN = re.compile(r"(?:openalex\.org/)?(W\d{6,})", re.IGNORECASE)
+
+
+def extract_openalex_id(text: str | None) -> str | None:
+    """Pull an OpenAlex Work ID from a raw string or URL, normalizing case."""
+    if not text:
+        return None
+    match = OPENALEX_ID_PATTERN.search(text)
+    if not match:
+        return None
+    return match.group(1).upper()
+
 
 def extract_doi(text: str) -> str | None:
     """Extract and normalize a DOI from raw reference text."""
@@ -126,15 +140,19 @@ class ReferenceResolver:
         return None
 
     def _resolve_by_openalex(self, raw_reference: str) -> ResolvedReference | None:
-        """Fallback to OpenAlex API if configured."""
+        """Fallback to the OpenAlex Works search API.
+
+        The local ``papers.paperId`` column stores OpenAlex Work IDs (``W…``),
+        so once OpenAlex returns a candidate work we read its ID directly and
+        check it against the local corpus — no DOI round-trip required. We
+        still pull the DOI for record-keeping.
+        """
         if not hasattr(config, "OPEN_ALEX_EMAIL") or not config.OPEN_ALEX_EMAIL:
             return None
 
-        # Call OpenAlex
         email = config.OPEN_ALEX_EMAIL
         api_key = getattr(config, "OPEN_ALEX_API_KEY", None)
 
-        # We can use /works?search=...
         url = "https://api.openalex.org/works"
         params: dict[str, str | int] = {
             "search": raw_reference,
@@ -148,40 +166,39 @@ class ReferenceResolver:
             resp = requests.get(url, params=params, timeout=10)
             if resp.status_code != 200:
                 return None
-            
+
             data = resp.json()
             results = data.get("results", [])
             if not results:
                 return None
-            
+
             best = results[0]
-            # Verify if this match is good enough? 
-            # We don't have OpenAlex score directly usable for absolute threshold, 
-            # but we can try fuzzy matching the best title against the raw string.
-            best_title = best.get("title", "")
-            doi_url = best.get("doi", "")
+            best_title = best.get("title", "") or ""
+            doi_url = best.get("doi") or ""
             doi = doi_url.replace("https://doi.org/", "") if doi_url else None
+            openalex_id = extract_openalex_id(best.get("id"))
 
-            # If we don't have a Semantic Scholar ID or similar, we might use OpenAlex ID or DOI
-            # We need to map to our local `paper_id` if it exists.
-            # We will use the OpenAlex DOI to query local DB, and if that fails, 
-            # we just return the OpenAlex result with unresolved paper_id?
-            # Or if it's OpenAlex, do we just return the OpenAlex ID?
-            # Wait, the pipeline assumes we are mapping to `corpus paper IDs using Postgres first and OpenAlex as fallback`.
-            
-            local_id = None
-            # Check local DB by OpenAlex DOI
-            if doi:
-                with get_session() as session:
-                    local_paper = session.query(Paper).filter(Paper.doi == doi.lower()).first()
-                    if local_paper:
-                        local_id = str(local_paper.paperId)
+            # Confidence proxy: similarity between the candidate title and the
+            # raw reference text. Anchors the threshold so we don't accept
+            # OpenAlex's first hit when it's clearly off.
+            confidence = (
+                difflib.SequenceMatcher(
+                    None,
+                    normalize_title(best_title),
+                    normalize_title(raw_reference),
+                ).ratio()
+                if best_title
+                else 0.0
+            )
 
+            local_id = self._lookup_local_paper(openalex_id, doi)
             if not local_id:
-                # We failed to map it to a local ID.
                 return ResolvedReference(
                     raw_reference=raw_reference,
+                    title=best_title,
+                    doi=doi,
                     method="unresolved",
+                    confidence=confidence,
                     unresolved_reason="Found in OpenAlex but not in local corpus.",
                 )
 
@@ -191,12 +208,31 @@ class ReferenceResolver:
                 title=best_title,
                 doi=doi,
                 method="openalex",
-                confidence=0.8, # Estimated
+                confidence=confidence,
             )
 
         except Exception as e:
             logger.warning(f"OpenAlex fallback failed: {e}")
-        
+
+        return None
+
+    @staticmethod
+    def _lookup_local_paper(openalex_id: str | None, doi: str | None) -> str | None:
+        """Try OpenAlex Work ID first (the local primary key), DOI as a fallback."""
+        if not openalex_id and not doi:
+            return None
+        try:
+            with get_session() as session:
+                if openalex_id:
+                    paper = session.get(Paper, openalex_id)
+                    if paper:
+                        return str(paper.paperId)
+                if doi:
+                    paper = session.query(Paper).filter(Paper.doi == doi.lower()).first()
+                    if paper:
+                        return str(paper.paperId)
+        except Exception as e:
+            logger.warning(f"Local lookup failed for openalex_id={openalex_id} doi={doi}: {e}")
         return None
 
     def _fuzzy_match_title(self, query: str, candidates: dict[str, str]) -> tuple[str, float] | None:

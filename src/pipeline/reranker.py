@@ -79,10 +79,24 @@ class CrossEncoderReranker:
             self._model = CrossEncoder(self._model_name)
         return self._model
 
-    @staticmethod
-    def _candidate_text(candidate: RetrievalResult) -> str:
-        parts = [p.strip() for p in (candidate.title, candidate.abstract) if p and p.strip()]
-        return " ".join(parts) or candidate.paper_id
+    # Cap candidate text to avoid feeding multi-thousand-char abstracts into the
+    # cross-encoder. The reranker only needs enough text to discriminate; on CPU
+    # the forward-pass cost is dominated by sequence length.
+    _MAX_CANDIDATE_CHARS = 600
+
+    @classmethod
+    def _candidate_text(cls, candidate: RetrievalResult) -> str:
+        title = (candidate.title or "").strip()
+        abstract = (candidate.abstract or "").strip()
+        if title and abstract:
+            text = f"{title}. {abstract}"
+        elif title:
+            text = title
+        elif abstract:
+            text = abstract
+        else:
+            return candidate.paper_id
+        return text[: cls._MAX_CANDIDATE_CHARS]
 
     @staticmethod
     def _as_scores(scores) -> "Sequence[float]":

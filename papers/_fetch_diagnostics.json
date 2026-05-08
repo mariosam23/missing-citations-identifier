@@ -1,0 +1,152 @@
+{
+  "target_n": 5,
+  "attempted": 17,
+  "succeeded": 5,
+  "counters": {
+    "no_open_pdf_url": 9,
+    "downloaded_best_oa": 5,
+    "download_failed": 3
+  },
+  "per_paper": [
+    {
+      "paper_id": "W2161229593",
+      "title": "Data Privacy through Optimal k-Anonymization",
+      "cited_by_count": 1126,
+      "year": 2005,
+      "status": "no_open_pdf_url"
+    },
+    {
+      "paper_id": "W1992656046",
+      "title": "Optimal Design of a Class of Welded Structures Using Geometric Programming",
+      "cited_by_count": 486,
+      "year": 1976,
+      "status": "no_open_pdf_url"
+    },
+    {
+      "paper_id": "W1667964228",
+      "title": "FASTUS: A Cascaded Finite-State Transducer for Extracting Information from Natural-Language Text",
+      "cited_by_count": 255,
+      "year": 1997,
+      "status": "downloaded",
+      "pdf_url": "https://arxiv.org/pdf/cmp-lg/9705013",
+      "source": "best_oa",
+      "path": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\papers\\W1667964228.pdf"
+    },
+    {
+      "paper_id": "W2106525823",
+      "title": "Graph-based approach for airborne light detection and ranging segmentation",
+      "cited_by_count": 1767,
+      "year": 2017,
+      "status": "download_failed",
+      "pdf_url": "https://www.spiedigitallibrary.org/journals/journal-of-applied-remote-sensing/volume-11/issue-1/015020/Graph-based-approach-for-airborne-light-detection-and-ranging-segmentation/10.1117/1.JRS.11.015020.pdf",
+      "source": "best_oa"
+    },
+    {
+      "paper_id": "W1981252059",
+      "title": "Sparse Matrix-Vector multiplication on FPGAs",
+      "cited_by_count": 225,
+      "year": 2005,
+      "status": "no_open_pdf_url"
+    },
+    {
+      "paper_id": "W4249593981",
+      "title": "Modeling the Drop-Out Mechanism in Repeated-Measures Studies",
+      "cited_by_count": 273,
+      "year": 1995,
+      "status": "no_open_pdf_url"
+    },
+    {
+      "paper_id": "W2966926453",
+      "title": "Deformable ConvNets V2: More Deformable, Better Results",
+      "cited_by_count": 2590,
+      "year": 2019,
+      "status": "no_open_pdf_url"
+    },
+    {
+      "paper_id": "W2998792609",
+      "title": "Deep Learning for Person Re-Identification: A Survey and Outlook",
+      "cited_by_count": 2037,
+      "year": 2021,
+      "status": "no_open_pdf_url"
+    },
+    {
+      "paper_id": "W2029423003",
+      "title": "Theoretical Foundation of the Balanced Minimum Evolution Method of Phylogenetic Inference and Its Relationship to Weighted Least-Squares Tree Fitting",
+      "cited_by_count": 282,
+      "year": 2003,
+      "status": "download_failed",
+      "pdf_url": "https://academic.oup.com/mbe/article-pdf/21/3/587/3768834/msh049.pdf",
+      "source": "best_oa"
+    },
+    {
+      "paper_id": "W2123921160",
+      "title": "From few to many: illumination cone models for face recognition under variable lighting and pose",
+      "cited_by_count": 4954,
+      "year": 2001,
+      "status": "no_open_pdf_url"
+    },
+    {
+      "paper_id": "W2131448427",
+      "title": "Microbial Methylation of Metalloids: Arsenic, Antimony, and Bismuth",
+      "cited_by_count": 583,
+      "year": 2002,
+      "status": "no_open_pdf_url"
+    },
+    {
+      "paper_id": "W1660133578",
+      "title": "An efficient approach to clustering in large multimedia databases with noise",
+      "cited_by_count": 1169,
+      "year": 1998,
+      "status": "downloaded",
+      "pdf_url": "https://kops.uni-konstanz.de/server/api/core/bitstreams/fea33c8c-e42e-4050-9072-9c0b56ab131f/content",
+      "source": "best_oa",
+      "path": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\papers\\W1660133578.pdf"
+    },
+    {
+      "paper_id": "W2064076387",
+      "title": "Image Quality Metrics: PSNR vs. SSIM",
+      "cited_by_count": 4324,
+      "year": 2010,
+      "status": "no_open_pdf_url"
+    },
+    {
+      "paper_id": "W2052295501",
+      "title": "Assessment of tumor heterogeneity: an emerging imaging tool for clinical practice?",
+      "cited_by_count": 872,
+      "year": 2012,
+      "status": "downloaded",
+      "pdf_url": "https://insightsimaging.springeropen.com/counter/pdf/10.1007/s13244-012-0196-6",
+      "source": "best_oa",
+      "path": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\papers\\W2052295501.pdf"
+    },
+    {
+      "paper_id": "W2167941657",
+      "title": "Canonical Correspondence Analysis: A New Eigenvector Technique for Multivariate Direct Gradient Analysis",
+      "cited_by_count": 5930,
+      "year": 1986,
+      "status": "downloaded",
+      "pdf_url": "https://edepot.wur.nl/248061",
+      "source": "best_oa",
+      "path": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\papers\\W2167941657.pdf"
+    },
+    {
+      "paper_id": "W2282485379",
+      "title": "The influence of social presence on acceptance of a companion robot by older people",
+      "cited_by_count": 254,
+      "year": 2008,
+      "status": "download_failed",
+      "pdf_url": "https://rua.ua.es/dspace/bitstream/10045/12586/1/JoPha_2_2_05.pdf",
+      "source": "best_oa"
+    },
+    {
+      "paper_id": "W1988961156",
+      "title": "Macroscopically distinct quantum-superposition states as a bosonic code for amplitude damping",
+      "cited_by_count": 469,
+      "year": 1999,
+      "status": "downloaded",
+      "pdf_url": "https://arxiv.org/pdf/quant-ph/9809037",
+      "source": "best_oa",
+      "path": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\papers\\W1988961156.pdf"
+    }
+  ]
+}

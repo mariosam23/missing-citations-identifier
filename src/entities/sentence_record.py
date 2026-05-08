@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 
@@ -20,6 +20,11 @@ class SentenceRecord:
     previous_sentence: str | None = None
     next_sentence: str | None = None
 
+    # GROBID bibliography keys (e.g. "b3") of every reference cited in this
+    # sentence. Empty when ``has_citation`` is False or when GROBID failed to
+    # link a marker to a bib entry.
+    cited_bibkeys: list[str] = field(default_factory=list)
+
     # --- Filled by Phase 2 (classification) ---
     citation_worthy: bool | None = None
     worthiness_score: float | None = None  # model confidence [0,1]
@@ -40,6 +45,7 @@ class SentenceRecord:
             "has_citation": self.has_citation,
             "previous_sentence": self.previous_sentence,
             "next_sentence": self.next_sentence,
+            "cited_bibkeys": list(self.cited_bibkeys),
             "citation_intent": self.citation_intent.name if self.citation_intent else None,
             "citation_worthy": self.citation_worthy,
             "worthiness_score": self.worthiness_score,
