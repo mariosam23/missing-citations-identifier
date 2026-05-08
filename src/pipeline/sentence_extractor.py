@@ -1,5 +1,3 @@
-import re
-
 from utils.model_manager import get_sentence_nlp
 from entities.parsed_paper import ParsedPaper
 from entities.sentence_record import SentenceRecord
@@ -8,38 +6,16 @@ from utils.regex_patterns import (
     WHITESPACE_CLEANUP_PATTERN,
     BULLET_MARKER_PATTERN,
     BARE_PUNCTUATION_PATTERN,
-    HEADING_LIKE_SENTENCE_PATTERN
+    HEADING_LIKE_SENTENCE_PATTERN,
+    ORPHAN_SEMICOLON_PATTERN,
+    EMPTY_PAREN_PATTERN,
+    DOUBLED_PUNCTUATION_PATTERN,
+    SPACE_BEFORE_PUNCTUATION_PATTERN,
+    SPACE_AFTER_OPEN_PAREN_PATTERN,
+    GROBID_CITE_MARKER_PATTERN,
+    RESIDUAL_AUTHOR_YEAR_PATTERN,
+    _SENTENCE_END_PUNCTUATION
 )
-
-# Pattern matching the `[CITE:bX]` markers injected by GrobidPDFParser. The
-# bibkey is captured so we can attribute each marker back to a bibliography
-# entry. Matches GROBID's standard ``b<digits>`` bibkey format and is
-# deliberately strict so it won't false-match arbitrary bracketed text in the
-# body.
-GROBID_CITE_MARKER_PATTERN = re.compile(r"\[CITE:(b\d+)\]")
-
-# GROBID often emits ``<ref target="#b1">Smith, 2020</ref>`` followed by an
-# unwrapped tail like ``"; Peters et al., 2018a"`` between siblings. After we
-# replace the ``<ref>`` with ``[CITE:b1]`` the tail leaks into the retrieval
-# text. This pattern matches a bare author-year (``Smith, 2020``,
-# ``Smith and Lee, 2020``, ``Smith et al., 2020a``) anywhere — without the
-# enclosing parens that the main CITATION_PATTERN requires — so we can scrub
-# the residue.
-RESIDUAL_AUTHOR_YEAR_PATTERN = re.compile(
-    r"(?<![A-Za-z])"
-    r"[A-Z][A-Za-z'`-]+"
-    r"(?:\s+(?:et al\.|&|and)\s+[A-Z][A-Za-z'`-]+|\s+et al\.)?"
-    r",?\s*\(?\d{4}[a-z]?\)?"
-)
-
-# After removing markers + author-year residue, we can be left with empty
-# parenthesised groups (``()``, ``( ; )``, ``(;)``) and stray punctuation
-# clusters. These cleanup patterns finish the job.
-EMPTY_PAREN_PATTERN = re.compile(r"\(\s*[;,\s]*\s*\)")
-ORPHAN_SEMICOLON_PATTERN = re.compile(r"\(\s*;+\s*")
-DOUBLED_PUNCTUATION_PATTERN = re.compile(r"\s*([;,])\s*\1+")
-SPACE_BEFORE_PUNCTUATION_PATTERN = re.compile(r"\s+([.,;:!?\)])")
-SPACE_AFTER_OPEN_PAREN_PATTERN = re.compile(r"\(\s+")
 
 
 def clean_text(text: str) -> str:
@@ -57,9 +33,6 @@ def is_noise(text: str) -> bool:
     if HEADING_LIKE_SENTENCE_PATTERN.match(text):
         return True
     return False
-
-
-_SENTENCE_END_PUNCTUATION = ".?!"
 
 
 def _balance_parens(text: str) -> str:

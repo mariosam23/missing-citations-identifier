@@ -16,26 +16,21 @@ Resolution strategy (in order):
 
 
 import difflib
-import logging
 import re
 from collections.abc import Sequence
 
 import requests
 from sqlalchemy import or_
+from utils.logger import logger
 
 from entities.resolved_reference import ResolvedReference
 from database.postgres.engine import get_session
 from database.postgres.tables.paper import Paper
 from utils.config import config
-
-logger = logging.getLogger(__name__)
-
-# Basic DOI regex pattern. Look for 10.NNNN/....
-DOI_PATTERN = re.compile(r"(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)")
-
-# Match OpenAlex Work IDs in either bare (W123…) or URL form. The local
-# ``papers.paperId`` column stores them in bare form so we strip the prefix.
-OPENALEX_ID_PATTERN = re.compile(r"(?:openalex\.org/)?(W\d{6,})", re.IGNORECASE)
+from utils.regex_patterns import (
+    DOI_PATTERN,
+    OPENALEX_ID_PATTERN,
+)
 
 
 def extract_openalex_id(text: str | None) -> str | None:
@@ -78,6 +73,33 @@ def normalize_title(title: str) -> str:
     return " ".join(normalized.split())
 
 
+def extract_title_from_reference(raw_reference: str) -> str | None:
+    """Extract the paper title from a raw reference string.
+
+    References typically follow: Authors. Year[a-z]. Title. Venue.
+    """
+    year_match = re.search(r"\b(?:19|20)\d{2}[a-z]?\b[.,]?\s+", raw_reference)
+    if not year_match:
+        return None
+
+    after_year = raw_reference[year_match.end():]
+
+    venue_pattern = re.search(
+        r"\.\s+(?:In |arXiv|Proceedings|Journal|Technical|CoRR|Chapter|ACM|IEEE|"
+        r"Association|Advances|Workshop|Transactions|Conference|NIPS|ICLR|ACL|"
+        r"EMNLP|NAACL|ICML|CVPR|NeurIPS|Journalism)",
+        after_year,
+    )
+    if venue_pattern:
+        title = after_year[: venue_pattern.start()]
+    else:
+        first_period = re.search(r"\.\s+", after_year)
+        title = after_year[: first_period.start()] if first_period else after_year
+
+    title = title.strip().rstrip(".,")
+    return title if len(title) > 5 else None
+
+
 def _fuzzy_candidate_tokens(raw_reference: str, *, top_n: int = 3) -> list[str]:
     """Pick a few content tokens from a raw reference for ILIKE filtering."""
     tokens = re.findall(r"[A-Za-z][A-Za-z\-]{3,}", raw_reference)
@@ -86,11 +108,13 @@ def _fuzzy_candidate_tokens(raw_reference: str, *, top_n: int = 3) -> list[str]:
     cleaned.sort(key=len, reverse=True)
     seen: set[str] = set()
     out: list[str] = []
+  
     for token in cleaned:
         if token in seen:
             continue
         seen.add(token)
         out.append(token)
+       
         if len(out) >= top_n:
             break
     return out
@@ -156,10 +180,6 @@ class ReferenceResolver:
         self._cache[raw_reference] = unresolved
         return unresolved
 
-    def resolve_batch(self, raw_references: Sequence[str]) -> list[ResolvedReference]:
-        """Resolve a batch of raw references."""
-        return [self.resolve(ref) for ref in raw_references]
-
     def _resolve_by_doi(self, raw_reference: str, doi: str) -> ResolvedReference | None:
         """Attempt to resolve using DOI against local Postgres."""
         try:
@@ -169,8 +189,8 @@ class ReferenceResolver:
                     return ResolvedReference(
                         raw_reference=raw_reference,
                         resolved_paper_id=str(paper.paperId),
-                        title=paper.title,
-                        doi=paper.doi,
+                        title=str(paper.title) if paper.title is not None else None,
+                        doi=str(paper.doi) if paper.doi is not None else None,
                         method="exact_doi",
                         confidence=1.0,
                     )
@@ -224,16 +244,23 @@ class ReferenceResolver:
             confidence=score,
         )
 
+    _OPENALEX_MIN_CONFIDENCE = 0.7
+
     def _resolve_by_openalex(self, raw_reference: str) -> ResolvedReference | None:
         """Fallback to the OpenAlex Works search API.
 
-        The local ``papers.paperId`` column stores OpenAlex Work IDs (``W…``)
-        so once OpenAlex returns a candidate work we read its ID directly and
-        check it against the local corpus — no DOI round-trip required. If
-        the work isn't in our corpus we still surface its metadata under
-        ``openalex_external`` instead of discarding the API result.
+        Extracts the title from the raw reference string and queries OpenAlex
+        using ``filter=title.search:`` for a precise title lookup (rather than
+        free-text search over the whole reference, which returns related papers
+        rather than the cited one). The returned title is compared against the
+        extracted title — not the full raw reference — so confidence scores are
+        meaningful and a minimum threshold can reliably gate false positives.
         """
         if not getattr(config, "OPEN_ALEX_EMAIL", "") or not config.OPEN_ALEX_EMAIL:
+            return None
+
+        extracted_title = extract_title_from_reference(raw_reference)
+        if not extracted_title:
             return None
 
         email = config.OPEN_ALEX_EMAIL
@@ -242,7 +269,7 @@ class ReferenceResolver:
 
         url = f"{base_url.rstrip('/')}/works"
         params: dict[str, str | int] = {
-            "search": raw_reference,
+            "filter": f"title.search:{extracted_title}",
             "mailto": email,
             "per-page": 1,
         }
@@ -266,18 +293,28 @@ class ReferenceResolver:
             doi = doi_url.replace("https://doi.org/", "").lower() if doi_url else None
             openalex_id = extract_openalex_id(best.get("id"))
 
-            # Confidence proxy: similarity between the candidate title and the
-            # raw reference text. Anchors the threshold so callers can compare
-            # confidence across resolution methods on the same scale.
+            # Compare returned title against the extracted title, not the full
+            # raw reference (a short title vs. a long reference string always
+            # scores artificially low).
             confidence = (
                 difflib.SequenceMatcher(
                     None,
                     normalize_title(best_title),
-                    normalize_title(raw_reference),
+                    normalize_title(extracted_title),
                 ).ratio()
                 if best_title
                 else 0.0
             )
+
+            if confidence < self._OPENALEX_MIN_CONFIDENCE:
+                logger.debug(
+                    "OpenAlex result discarded (confidence %.2f < %.2f): %r → %r",
+                    confidence,
+                    self._OPENALEX_MIN_CONFIDENCE,
+                    extracted_title,
+                    best_title,
+                )
+                return None
 
             local_id = self._lookup_local_paper(openalex_id, doi)
             if local_id:
@@ -290,9 +327,6 @@ class ReferenceResolver:
                     confidence=confidence,
                 )
 
-            # External hit: paper exists in OpenAlex but not in our corpus.
-            # Return the metadata so callers can still cite it instead of
-            # throwing this resolution away.
             return ResolvedReference(
                 raw_reference=raw_reference,
                 resolved_paper_id=None,

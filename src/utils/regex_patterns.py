@@ -47,6 +47,38 @@ PYMUPDF_ABSTRACT_PATTERN = re.compile(
     re.DOTALL,
 )
 
+_SENTENCE_END_PUNCTUATION = ".?!"
+
+# Pattern matching the `[CITE:bX]` markers injected by GrobidPDFParser. The
+# bibkey is captured so we can attribute each marker back to a bibliography
+# entry. Matches GROBID's standard ``b<digits>`` bibkey format and is
+# deliberately strict so it won't false-match arbitrary bracketed text in the
+# body.
+GROBID_CITE_MARKER_PATTERN = re.compile(r"\[CITE:(b\d+)\]")
+
+# GROBID often emits ``<ref target="#b1">Smith, 2020</ref>`` followed by an
+# unwrapped tail like ``"; Peters et al., 2018a"`` between siblings. After we
+# replace the ``<ref>`` with ``[CITE:b1]`` the tail leaks into the retrieval
+# text. This pattern matches a bare author-year (``Smith, 2020``,
+# ``Smith and Lee, 2020``, ``Smith et al., 2020a``) anywhere — without the
+# enclosing parens that the main CITATION_PATTERN requires — so we can scrub
+# the residue.
+RESIDUAL_AUTHOR_YEAR_PATTERN = re.compile(
+    r"(?<![A-Za-z])"
+    r"[A-Z][A-Za-z'`-]+"
+    r"(?:\s+(?:et al\.|&|and)\s+[A-Z][A-Za-z'`-]+|\s+et al\.)?"
+    r",?\s*\(?\d{4}[a-z]?\)?"
+)
+
+# After removing markers + author-year residue, we can be left with empty
+# parenthesised groups (``()``, ``( ; )``, ``(;)``) and stray punctuation
+# clusters. These cleanup patterns finish the job.
+EMPTY_PAREN_PATTERN = re.compile(r"\(\s*[;,\s]*\s*\)")
+ORPHAN_SEMICOLON_PATTERN = re.compile(r"\(\s*;+\s*")
+DOUBLED_PUNCTUATION_PATTERN = re.compile(r"\s*([;,])\s*\1+")
+SPACE_BEFORE_PUNCTUATION_PATTERN = re.compile(r"\s+([.,;:!?\)])")
+SPACE_AFTER_OPEN_PAREN_PATTERN = re.compile(r"\(\s+")
+
 MARKDOWN_HEADED_ABSTRACT_PATTERN = re.compile(
     r"(?i)^#{1,6}\s*abstract\s*\n(.*?)(?=^#{1,6}\s[^#]|\Z)",
     re.MULTILINE | re.DOTALL,
@@ -84,3 +116,11 @@ MARKDOWN_REFERENCE_CLEAN_PREFIX2_PATTERN = re.compile(r"^\[?\d+\]?[\.\s]+")
 MARKDOWN_SECTION_SPLIT_PATTERN = re.compile(r"(?m)^(#{1,6})\s+(.+)$")
 MARKDOWN_SKIP_SECTION_PATTERN = re.compile(r"(?i)^(abstract|references?)$")
 WORD_PATTERN = re.compile(r"[A-Za-z]+(?:[-'][A-Za-z]+)?")
+
+# Basic DOI regex pattern. Look for 10.NNNN/....
+DOI_PATTERN = re.compile(r"(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)")
+
+# Match OpenAlex Work IDs in either bare (W123…) or URL form. The local
+# ``papers.paperId`` column stores them in bare form so we strip the prefix.
+OPENALEX_ID_PATTERN = re.compile(r"(?:openalex\.org/)?(W\d{6,})", re.IGNORECASE)
+
