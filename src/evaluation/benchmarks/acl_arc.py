@@ -29,7 +29,7 @@ ACL_ARC_LABEL_TO_INTENT: dict[str, CitationIntent] = {
     "method": CitationIntent.METHOD,
     "result": CitationIntent.RESULT,
     "outcome": CitationIntent.RESULT,
-    "other": CitationIntent.BACKGROUND,
+    "other": CitationIntent.OTHER,
 }
 
 

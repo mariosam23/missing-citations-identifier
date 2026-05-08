@@ -29,6 +29,7 @@ from evaluation.benchmarks.s2orc import load_hide_seek_jsonl, random_hidden_subs
 from evaluation.metrics import PairedBootstrapResult, paired_bootstrap_ci
 from evaluation.runner import EvaluationResult, RetrievalEvaluator
 from pipeline.post_filters import FilterContext, PostFilterPipeline
+from utils.config import config as app_config
 
 logger = logging.getLogger(__name__)
 
@@ -50,15 +51,6 @@ class Stage4Config:
     decomposer_model: str
     output_dir: Path
     assets_dir: Path
-
-
-@dataclass(frozen=True)
-class UrgencyProbe:
-    example_id: str
-    top1_score: float
-    mean_top5: float
-    support_score: float
-    urgency_score: float
 
 
 @dataclass(frozen=True)
@@ -365,16 +357,6 @@ def _paper_ids(results: Sequence[Any]) -> list[str]:
     return [str(result.paper_id) for result in results]
 
 
-def _is_citation_worthy(example: BenchmarkExample) -> bool:
-    raw = example.metadata.get("citation_worthy", True)
-    if isinstance(raw, bool):
-        return raw
-    if isinstance(raw, str):
-        return raw.strip().lower() not in {"false", "0", "no", "n", "uncitable"}
-    return True
-
-
-
 def _apply_filters(
     candidates: list[Any],
     example: BenchmarkExample,
@@ -416,17 +398,6 @@ def make_cached_hybrid_predictor(
     return predict
 
 
-def make_worthiness_predictor(
-    base_predict: Callable[[BenchmarkExample], list[str]],
-) -> Callable[[BenchmarkExample], list[str]]:
-    def predict(example: BenchmarkExample) -> list[str]:
-        if not _is_citation_worthy(example):
-            return []
-        return base_predict(example)
-
-    return predict
-
-
 def make_rerank_predictor(
     retriever,
     reranker,
@@ -438,8 +409,6 @@ def make_rerank_predictor(
     filter_pipeline: PostFilterPipeline | None = None,
 ) -> Callable[[BenchmarkExample], list[str]]:
     def predict(example: BenchmarkExample) -> list[str]:
-        if not _is_citation_worthy(example):
-            return []
         if example.example_id not in candidate_cache:
             candidate_cache[example.example_id] = retriever.retrieve(
                 example.query_text,
@@ -480,8 +449,6 @@ def make_decomposed_predictor(
     """
 
     def predict(example: BenchmarkExample) -> list[str]:
-        if not _is_citation_worthy(example):
-            return []
         if example.example_id not in decomposition_cache:
             decomposition_cache[example.example_id] = decomposer.decompose(example.query_text)
         if example.example_id not in aggregate_cache:
@@ -504,45 +471,13 @@ def make_decomposed_predictor(
     return predict
 
 
-def compute_urgency_probes(
-    examples: Sequence[BenchmarkExample],
-    hybrid_cache: Mapping[str, Sequence[Any]],
-    *,
-    mean_k: int = 5,
-) -> dict[str, UrgencyProbe]:
-    """Derive the Stage 4C retrieval-support signal from cached V0 results."""
-    raw: dict[str, tuple[float, float, float]] = {}
-    for example in examples:
-        results = list(hybrid_cache.get(example.example_id, []))
-        scores = [max(float(result.score), 0.0) for result in results]
-        top1_score = scores[0] if scores else 0.0
-        mean_top5 = sum(scores[:mean_k]) / min(len(scores), mean_k) if scores else 0.0
-        support_score = 0.7 * top1_score + 0.3 * mean_top5
-        raw[example.example_id] = (top1_score, mean_top5, support_score)
-
-    support_values = [value[2] for value in raw.values()]
-    low = min(support_values) if support_values else 0.0
-    high = max(support_values) if support_values else 0.0
-
-    probes: dict[str, UrgencyProbe] = {}
-    for example in examples:
-        top1_score, mean_top5, support_score = raw[example.example_id]
-        if high <= low:
-            normalized = 1.0 if support_score > 0.0 else 0.0
-        else:
-            normalized = (support_score - low) / (high - low)
-        probes[example.example_id] = UrgencyProbe(
-            example_id=example.example_id,
-            top1_score=top1_score,
-            mean_top5=mean_top5,
-            support_score=support_score,
-            urgency_score=normalized if _is_citation_worthy(example) else 0.0,
-        )
-    return probes
-
-
 def _logging_predict(name: str, predict, total: int, every: int = 5):
-    """Wrap a predict fn so it prints a progress line every ``every`` examples."""
+    """Wrap a predict fn so it prints a progress line every ``every`` examples.
+
+    Stage 4 evaluation runs are silent for several minutes on CPU; surfacing
+    a per-query rate makes it possible to tell ``in-progress`` from ``stuck``
+    without resorting to ``tasklist``.
+    """
     counter = {"n": 0, "started": time.perf_counter()}
 
     def wrapped(example: BenchmarkExample) -> list[str]:
@@ -562,6 +497,7 @@ def _logging_predict(name: str, predict, total: int, every: int = 5):
     return wrapped
 
 
+
 def evaluate_variants(
     examples: Sequence[BenchmarkExample],
     retriever,
@@ -572,7 +508,7 @@ def evaluate_variants(
     candidates_per_subclaim: int = 30,
     decomposer=None,
     filter_pipeline: PostFilterPipeline | None = None,
-) -> tuple[list[VariantOutput], dict[str, UrgencyProbe], Stage5RunData | None]:
+) -> tuple[list[VariantOutput], Stage5RunData | None]:
     evaluator = RetrievalEvaluator(ks=(1, 5, 10))
     hybrid_cache: dict[str, list[Any]] = {}
     candidate_cache: dict[str, list[Any]] = {}
@@ -597,8 +533,6 @@ def evaluate_variants(
     print(f"Evaluating V1 (hybrid + rerank) on {n} examples ...", flush=True)
     v1_out = evaluator.evaluate(examples, _logging_predict("V1", v1_predict, n))
     outputs = [VariantOutput("V0", v0_out), VariantOutput("V1", v1_out)]
-
-    urgency = compute_urgency_probes(examples, hybrid_cache)
     stage5_run: Stage5RunData | None = None
     if decomposer is not None:
         from pipeline.aggregator import DecomposedRetriever
@@ -638,7 +572,7 @@ def evaluate_variants(
             decomposition_cache=decomposition_cache,
             aggregate_cache=aggregate_cache,
         )
-    return outputs, urgency, stage5_run
+    return outputs, stage5_run
 
 
 def _safe_metric(row: Mapping[str, Any], metric: str) -> float:
@@ -680,7 +614,6 @@ def write_json(path: Path, data: Any) -> None:
 def write_per_example_csv(
     path: Path,
     outputs: Sequence[VariantOutput],
-    urgency: Mapping[str, UrgencyProbe],
     stage5_run: Stage5RunData | None = None,
     filter_pipeline: PostFilterPipeline | None = None,
 ) -> None:
@@ -689,7 +622,6 @@ def write_per_example_csv(
     for output in outputs:
         for row in output.result.per_example:
             eid = str(row.get("example_id", ""))
-            probe = urgency.get(eid)
             decomposition = _decomposition_for(
                 eid,
                 stage5_run.decomposition_cache if stage5_run is not None else None,
@@ -698,10 +630,6 @@ def write_per_example_csv(
                 {
                     "variant": output.name,
                     **row,
-                    "top1_score": probe.top1_score if probe else "",
-                    "mean_top5": probe.mean_top5 if probe else "",
-                    "support_score": probe.support_score if probe else "",
-                    "urgency_score": probe.urgency_score if probe else "",
                     "subclaim_count": len(_decomposition_subclaims(decomposition))
                     if decomposition is not None
                     else "",
@@ -1012,7 +940,7 @@ def write_stage5_analysis(
     return {
         "analysis_json": str(analysis_path),
         "qualitative_examples_md": str(qualitative_path),
-        "stratified_bar": str(config.assets_dir / "stage5_v3_v4_stratified_bar.png"),
+        "stratified_bar": str(config.assets_dir / "stage5_v1_v2_stratified_bar.png"),
         "aggregation_heatmap": str(config.assets_dir / "stage5_aggregation_heatmap.png"),
         "subclaim_histogram": str(config.assets_dir / "stage5_subclaim_histogram.png"),
     }
@@ -1025,7 +953,6 @@ def write_outputs(
     num_papers: int,
     elapsed_s: float,
     outputs: Sequence[VariantOutput],
-    urgency: Mapping[str, UrgencyProbe],
     stage5_run: Stage5RunData | None = None,
     filter_pipeline: PostFilterPipeline | None = None,
 ) -> None:
@@ -1132,8 +1059,8 @@ def write_outputs(
             "stage5_artifacts": stage5_artifacts,
         },
     )
-    write_per_example_csv(config.output_dir / "per_example.csv", outputs, urgency, stage5_run)
-    generate_visuals(config.assets_dir, outputs, urgency)
+    write_per_example_csv(config.output_dir / "per_example.csv", outputs, stage5_run)
+    generate_visuals(config.assets_dir, outputs)
 
 
 def _metric_values(result: EvaluationResult, metric: str) -> list[float]:
@@ -1147,7 +1074,6 @@ def _metric_values(result: EvaluationResult, metric: str) -> list[float]:
 def generate_visuals(
     assets_dir: Path,
     outputs: Sequence[VariantOutput],
-    urgency: Mapping[str, UrgencyProbe],
 ) -> None:
     try:
         import matplotlib
@@ -1191,23 +1117,6 @@ def generate_visuals(
     plt.tight_layout()
     plt.savefig(assets_dir / "stage4_recall10_boxplot.png")
     plt.close()
-
-    v0_rows = _rows_by_id(outputs[0].result)
-    points = [
-        (probe.urgency_score, _safe_metric(v0_rows[example_id], "recall@10"))
-        for example_id, probe in urgency.items()
-        if example_id in v0_rows
-    ]
-    if points:
-        plt.figure(figsize=(7, 5))
-        xs, ys = zip(*points)
-        plt.scatter(xs, ys, alpha=0.7)
-        plt.xlabel("Urgency score")
-        plt.ylabel("V0 Recall@10")
-        plt.title("Urgency Score vs Retrieval Success")
-        plt.tight_layout()
-        plt.savefig(assets_dir / "stage4_urgency_scatter.png")
-        plt.close()
 
 
 def generate_stage5_visuals(
@@ -1345,7 +1254,7 @@ def run(config: Stage4Config) -> int:
 
         filter_pipeline = PostFilterPipeline()
 
-        outputs, urgency, stage5_run = evaluate_variants(
+        outputs, stage5_run = evaluate_variants(
             examples,
             retriever,
             reranker,
@@ -1362,7 +1271,6 @@ def run(config: Stage4Config) -> int:
             num_papers=num_papers,
             elapsed_s=elapsed_s,
             outputs=outputs,
-            urgency=urgency,
             stage5_run=stage5_run,
             filter_pipeline=filter_pipeline,
         )
@@ -1419,13 +1327,13 @@ def parse_args(argv: Sequence[str] | None = None) -> Stage4Config:
             "retrieval signal degenerate. Set to 0 to disable."
         ),
     )
-    parser.add_argument("--model-name", default="BAAI/bge-reranker-v2-m3")
+    parser.add_argument("--model-name", default=app_config.RERANKER_MODEL)
     parser.add_argument(
         "--include-v2",
         action="store_true",
         help="Include V2 (Claim Decomposition) in evaluation",
     )
-    parser.add_argument("--decomposer-model", default="gemini-3-flash-preview")
+    parser.add_argument("--decomposer-model", default=app_config.DECOMPOSER_MODEL)
     parser.add_argument("--output-dir", type=Path, default=Path(__file__).resolve().parents[2] / "eval" / "stage4")
     parser.add_argument("--assets-dir", type=Path, default=Path(__file__).resolve().parents[2] / "thesis" / "assets")
     args = parser.parse_args(argv)
@@ -1452,6 +1360,19 @@ def parse_args(argv: Sequence[str] | None = None) -> Stage4Config:
 def main(argv: Sequence[str] | None = None) -> int:
     setup_logging(logging.WARNING)
     config = parse_args(argv)
+
+    # Fail fast on missing required settings rather than blowing up mid-run.
+    required = ["QDRANT_URL"]
+    if config.source == "db":
+        required.append("DB_URL")
+    if config.include_v2:
+        required.append("GEMINI_API_KEY")
+    try:
+        app_config.validate_required(*required)
+    except RuntimeError as exc:
+        print(f"ERROR: {exc}", flush=True)
+        return 2
+
     return run(config)
 
 

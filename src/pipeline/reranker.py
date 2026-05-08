@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from entities import RetrievalResult
 from utils import logger
+from utils.config import config
 
 if TYPE_CHECKING:
     from sentence_transformers import CrossEncoder
@@ -23,10 +24,10 @@ class CrossEncoderReranker:
 
     def __init__(
         self,
-        model_name: str = "BAAI/bge-reranker-v2-m3",
+        model_name: str | None = None,
         model: "CrossEncoder | None" = None,
     ) -> None:
-        self._model_name = model_name
+        self._model_name = model_name or config.RERANKER_MODEL
         self._model = model
 
     def rerank(

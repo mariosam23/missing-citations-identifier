@@ -6,6 +6,7 @@ class CitationIntent(Enum):
     BACKGROUND = "BACKGROUND"
     METHOD = "METHOD"
     RESULT = "RESULT"
+    OTHER = "OTHER"
 
 
 @dataclass

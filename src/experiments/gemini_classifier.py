@@ -8,12 +8,14 @@ from llm.genai_client import LLMClient
 from prompts import CLASSIFIER_SYSTEM_PROMPT, CLASSIFIER_USER_PROMPT_TEMPLATE
 from entities import SentenceRecord, CitationIntent
 from entities import ParsedPaper
+from utils.config import config
 
 
 INTENT_MAP = {
     "BACKGROUND": CitationIntent.BACKGROUND,
     "METHOD": CitationIntent.METHOD,
     "RESULT": CitationIntent.RESULT,
+    "OTHER": CitationIntent.OTHER,
 }
 
 # gemini-3.1-flash-lite-preview
@@ -22,10 +24,11 @@ INTENT_MAP = {
 class GeminiClassifier:
     def __init__(
         self,
-        model: str = "gemini-3-flash-preview",
+        model: str | None = None,
         batch_size: int = 10,
         delay_between_calls_seconds: float = 60.0,
     ):
+        model = model or config.CLASSIFIER_MODEL
         self.client = LLMClient(model=model, temperature=0.1, max_tokens=4096)
         self.batch_size = batch_size
         self.delay_between_calls_seconds = delay_between_calls_seconds

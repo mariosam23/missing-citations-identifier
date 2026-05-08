@@ -4,6 +4,7 @@ from pathlib import Path
 import requests
 
 from entities import ParsedPaper
+from utils.config import config
 
 # GROBID's TEI ``xml:id`` attribute lives in the standard XML namespace.
 _XML_ID_ATTR = "{http://www.w3.org/XML/1998/namespace}id"
@@ -32,16 +33,17 @@ class GrobidPDFParser:
     sentence they fell into.
     """
 
-    def __init__(self, pdf_path: str, grobid_url: str = "http://localhost:8070"):
+    def __init__(self, pdf_path: str, grobid_url: str | None = None):
         """
         Initialize the GrobidPDFParser.
 
         Args:
             pdf_path (str): Path to the PDF file to be parsed.
-            grobid_url (str): The URL of the GROBID server. Defaults to "http://localhost:8070".
+            grobid_url (str | None): The URL of the GROBID server. Defaults to
+                ``config.GROBID_URL`` when omitted.
         """
         self.pdf_path = pdf_path
-        self.grobid_url = grobid_url.rstrip("/")
+        self.grobid_url = (grobid_url or config.GROBID_URL).rstrip("/")
         self.namespace = {"tei": "http://www.tei-c.org/ns/1.0"}
 
     def parse(self) -> ParsedPaper:
