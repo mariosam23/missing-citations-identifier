@@ -1,0 +1,139 @@
+{
+  "bootstrap_v1_vs_v0": {
+    "mrr": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "n_boot": 2000,
+      "p_value_two_sided": 1.0
+    },
+    "ndcg@10": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "n_boot": 2000,
+      "p_value_two_sided": 1.0
+    },
+    "recall@10": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "n_boot": 2000,
+      "p_value_two_sided": 1.0
+    }
+  },
+  "bootstrap_v2_vs_v0": {
+    "mrr": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "n_boot": 2000,
+      "p_value_two_sided": 1.0
+    },
+    "ndcg@10": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "n_boot": 2000,
+      "p_value_two_sided": 1.0
+    },
+    "recall@10": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "n_boot": 2000,
+      "p_value_two_sided": 1.0
+    }
+  },
+  "bootstrap_v2_vs_v1": {
+    "mrr": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "n_boot": 2000,
+      "p_value_two_sided": 1.0
+    },
+    "ndcg@10": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "n_boot": 2000,
+      "p_value_two_sided": 1.0
+    },
+    "recall@10": {
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "mean_a": 0.0,
+      "mean_b": 0.0,
+      "mean_diff": 0.0,
+      "n_boot": 2000,
+      "p_value_two_sided": 1.0
+    }
+  },
+  "config": {
+    "candidate_k": 50,
+    "candidates_per_subclaim": 20,
+    "decomposer_model": "gemini-2.5-flash-lite",
+    "hide_fraction": 1.0,
+    "include_v2": true,
+    "jsonl_path": "eval\\sentence_dataset\\test.jsonl",
+    "max_examples": 50,
+    "min_abstract_chars": 50,
+    "min_refs": 2,
+    "model_name": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    "seed": 42,
+    "source": "jsonl",
+    "top_k": 10
+  },
+  "elapsed_s": 434.06193639998673,
+  "n_examples": 30,
+  "n_indexed_papers": 90481,
+  "variants": {
+    "V0": {
+      "mrr": 0.0,
+      "ndcg@10": 0.0,
+      "precision@1": 0.0,
+      "precision@10": 0.0,
+      "precision@5": 0.0,
+      "recall@1": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    },
+    "V1": {
+      "mrr": 0.0,
+      "ndcg@10": 0.0,
+      "precision@1": 0.0,
+      "precision@10": 0.0,
+      "precision@5": 0.0,
+      "recall@1": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    },
+    "V2": {
+      "mrr": 0.0,
+      "ndcg@10": 0.0,
+      "precision@1": 0.0,
+      "precision@10": 0.0,
+      "precision@5": 0.0,
+      "recall@1": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    }
+  }
+}

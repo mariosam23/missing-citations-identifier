@@ -1,0 +1,29 @@
+{
+  "mrr": {
+    "ci_high": 0.0,
+    "ci_low": 0.0,
+    "mean_a": 0.0,
+    "mean_b": 0.0,
+    "mean_diff": 0.0,
+    "n_boot": 2000,
+    "p_value_two_sided": 1.0
+  },
+  "ndcg@10": {
+    "ci_high": 0.0,
+    "ci_low": 0.0,
+    "mean_a": 0.0,
+    "mean_b": 0.0,
+    "mean_diff": 0.0,
+    "n_boot": 2000,
+    "p_value_two_sided": 1.0
+  },
+  "recall@10": {
+    "ci_high": 0.0,
+    "ci_low": 0.0,
+    "mean_a": 0.0,
+    "mean_b": 0.0,
+    "mean_diff": 0.0,
+    "n_boot": 2000,
+    "p_value_two_sided": 1.0
+  }
+}

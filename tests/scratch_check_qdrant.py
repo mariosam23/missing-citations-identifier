@@ -11,12 +11,13 @@ pts, _ = c.scroll("papers", limit=5, with_payload=True)
 
 print(f"=== Sampled {len(pts)} points from 'papers' collection ===\n")
 for p in pts:
-    keys = sorted(p.payload.keys())
-    abstract = p.payload.get("abstract")
+    payload = p.payload or {}
+    keys = sorted(payload.keys())
+    abstract = payload.get("abstract")
     has_abstract = abstract is not None and len(str(abstract).strip()) > 0
     print(f"  ID:           {p.id}")
     print(f"  Payload keys: {keys}")
-    print(f"  Title:        {(p.payload.get('title') or '')[:80]}")
+    print(f"  Title:        {(payload.get('title') or '')[:80]}")
     print(f"  Has abstract: {has_abstract}")
     if has_abstract:
         print(f"  Abstract:     {str(abstract)[:100]}...")

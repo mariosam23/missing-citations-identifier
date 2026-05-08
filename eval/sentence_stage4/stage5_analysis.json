@@ -1,0 +1,167 @@
+{
+  "aggregation_heatmap": [
+    {
+      "aggregation_strategy": "WEIGHTED",
+      "mrr": 0.0,
+      "ndcg@10": 0.0,
+      "recall@10": 0.0
+    }
+  ],
+  "qualitative_examples": [
+    {
+      "example_id": "BERT:s0:3",
+      "query": "Language model pre-training has been shown to be effective for improving many natural language processing tasks.",
+      "retrieved_papers": [
+        {
+          "paper_id": "W2974875810",
+          "score": 9.10973072052002,
+          "title": "TinyBERT: Distilling BERT for Natural Language Understanding"
+        },
+        {
+          "paper_id": "W3105966348",
+          "score": 9.109169960021973,
+          "title": "TinyBERT: Distilling BERT for Natural Language Understanding"
+        },
+        {
+          "paper_id": "W3154229486",
+          "score": 7.540648937225342,
+          "title": "Whitening Sentence Representations for Better Semantics and Faster Retrieval"
+        },
+        {
+          "paper_id": "W3046375318",
+          "score": 7.512683868408203,
+          "title": "Domain-Specific Language Model Pretraining for Biomedical Natural Language Processing"
+        },
+        {
+          "paper_id": "W2898700502",
+          "score": 7.274914264678955,
+          "title": "Sentence Encoders on STILTs: Supplementary Training on Intermediate Labeled-data Tasks"
+        }
+      ],
+      "subclaims": [
+        {
+          "importance": 1.0,
+          "text": "Language model pre-training has been shown to be effective for improving many natural language processing tasks."
+        }
+      ]
+    },
+    {
+      "example_id": "BERT:s0:4",
+      "query": "These include sentence-level tasks such as natural language inference and paraphrasing",
+      "retrieved_papers": [
+        {
+          "paper_id": "W2963719234",
+          "score": 5.386436462402344,
+          "title": "Natural Language Inference over Interaction Space"
+        },
+        {
+          "paper_id": "W2756386045",
+          "score": 5.386436462402344,
+          "title": "Natural Language Inference over Interaction Space"
+        },
+        {
+          "paper_id": "W2950700477",
+          "score": 4.655847549438477,
+          "title": "HellaSwag: Can a Machine Really Finish Your Sentence?"
+        },
+        {
+          "paper_id": "W2898700502",
+          "score": 3.801370143890381,
+          "title": "Sentence Encoders on STILTs: Supplementary Training on Intermediate Labeled-data Tasks"
+        },
+        {
+          "paper_id": "W2790235966",
+          "score": 3.3786070346832275,
+          "title": "SentEval: An Evaluation Toolkit for Universal Sentence Representations"
+        }
+      ],
+      "subclaims": [
+        {
+          "importance": 0.5,
+          "text": "Sentence-level tasks include natural language inference."
+        },
+        {
+          "importance": 0.5,
+          "text": "Sentence-level tasks include paraphrasing."
+        }
+      ]
+    },
+    {
+      "example_id": "BERT:s0:45",
+      "query": "More recently, sentence or document encoders which produce contextual token representations have been pre-trained from unlabeled text and fine-tuned for a supervised downstream task.",
+      "retrieved_papers": [
+        {
+          "paper_id": "W2610748790",
+          "score": 3.797865152359009,
+          "title": "Semi-supervised sequence tagging with bidirectional language models"
+        },
+        {
+          "paper_id": "W2898700502",
+          "score": 2.633470058441162,
+          "title": "Sentence Encoders on STILTs: Supplementary Training on Intermediate Labeled-data Tasks"
+        },
+        {
+          "paper_id": "W2786685006",
+          "score": 1.2141205072402954,
+          "title": "Learning General Purpose Distributed Sentence Representations via Large Scale Multi-task Learning"
+        },
+        {
+          "paper_id": "W3034715004",
+          "score": 1.004990816116333,
+          "title": "PEGASUS: Pre-training with Extracted Gap-sentences for Abstractive Summarization"
+        },
+        {
+          "paper_id": "W2963918774",
+          "score": 0.9532253742218018,
+          "title": "Supervised Learning of Universal Sentence Representations from Natural\\n Language Inference Data"
+        }
+      ],
+      "subclaims": [
+        {
+          "importance": 0.5,
+          "text": "Sentence or document encoders which produce contextual token representations have been pre-trained from unlabeled text."
+        },
+        {
+          "importance": 0.5,
+          "text": "These encoders have been fine-tuned for a supervised downstream task."
+        }
+      ]
+    }
+  ],
+  "stratified_v1_v2": [
+    {
+      "facet": "single",
+      "n": 24,
+      "ndcg@10": 0.0,
+      "recall@10": 0.0,
+      "variant": "V1"
+    },
+    {
+      "facet": "multi",
+      "n": 6,
+      "ndcg@10": 0.0,
+      "recall@10": 0.0,
+      "variant": "V1"
+    },
+    {
+      "facet": "single",
+      "n": 24,
+      "ndcg@10": 0.0,
+      "recall@10": 0.0,
+      "variant": "V2"
+    },
+    {
+      "facet": "multi",
+      "n": 6,
+      "ndcg@10": 0.0,
+      "recall@10": 0.0,
+      "variant": "V2"
+    }
+  ],
+  "subclaim_histogram": {
+    "1": 12,
+    "2": 13,
+    "3": 4,
+    "4": 1
+  }
+}

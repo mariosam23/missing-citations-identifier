@@ -1,0 +1,17 @@
+{
+  "assets_dir": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\thesis\\assets",
+  "n_evaluated": {
+    "V0": 30,
+    "V1": 30,
+    "V2": 30
+  },
+  "n_examples": 30,
+  "output_dir": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\eval\\stage4",
+  "stage5_artifacts": {
+    "aggregation_heatmap": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\thesis\\assets\\stage5_aggregation_heatmap.png",
+    "analysis_json": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\eval\\stage4\\stage5_analysis.json",
+    "qualitative_examples_md": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\thesis\\assets\\stage5_qualitative_examples.md",
+    "stratified_bar": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\thesis\\assets\\stage5_v3_v4_stratified_bar.png",
+    "subclaim_histogram": "C:\\Users\\sampe\\OneDrive\\Desktop\\facultate\\licenta\\missing-citations-identifier\\.claude\\worktrees\\practical-beaver-2919c1\\thesis\\assets\\stage5_subclaim_histogram.png"
+  }
+}
