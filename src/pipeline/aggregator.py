@@ -12,7 +12,7 @@ PerSubclaimResults = Sequence[tuple[Subclaim, Sequence[RetrievalResult]]]
 
 
 class Retriever(Protocol):
-    def retrieve(self, query: str, top_k: int = 10) -> list[RetrievalResult]:
+    def retrieve(self, query: str, top_k: int = 10, max_year: int | None = None) -> list[RetrievalResult]:
         ...
 
 

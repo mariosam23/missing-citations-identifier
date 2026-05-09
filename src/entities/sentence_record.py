@@ -43,6 +43,11 @@ class SentenceRecord:
     def get_retrieval_text(self) -> str:
         """Return the citation-stripped view, falling back to `text` if not set."""
         return self.retrieval_text if self.retrieval_text is not None else self.text
+    
+    def get_retrieval_text_with_context(self) -> str:
+        return " ".join(
+            filter(None, [self.previous_sentence, self.get_retrieval_text(), self.next_sentence])
+        )
 
     def to_dict(self) -> dict:
         return {

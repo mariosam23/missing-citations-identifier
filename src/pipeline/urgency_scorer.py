@@ -32,8 +32,6 @@ class UrgencyFeatures:
 class UrgencyScorer:
     """Assign urgency scores to worthy, uncited sentences and rank them.
 
-    The scoring recipe follows the Stage 4C design:
-
     1. quick hybrid probe against Qdrant
     2. compute ``top1_score`` and ``mean_top5``
     3. normalize similarity within the current document
@@ -74,7 +72,7 @@ class UrgencyScorer:
         *,
         probe_k: int = 10,
         mean_k: int = 5,
-        similarity_threshold: float = 0.03,
+        similarity_threshold: float = 0.15,
         similarity_mix_top1: float = 0.7,
         weights: tuple[float, float, float] = (0.5, 0.3, 0.2),
         intent_weights: Mapping[CitationIntent | None, float] | None = None,
@@ -114,16 +112,15 @@ class UrgencyScorer:
         Only worthy, uncited sentences are scored. All other sentences keep
         ``urgency_score=None``.
         """
-        for sentence in sentences:
+        candidate_pairs: list[tuple[int, SentenceRecord]] = []
+        for idx, sentence in enumerate(sentences):
             if not self._is_candidate(sentence):
                 sentence.urgency_score = None
+            else:
+                candidate_pairs.append((idx, sentence))
 
-        candidate_pairs = [
-            (index, sentence)
-            for index, sentence in enumerate(sentences)
-            if self._is_candidate(sentence)
-        ]
         if not candidate_pairs:
+            logger.info("Out of %d sentences, no uncited sentences were found.", len(sentences))
             return {}
 
         # Batch the retrieval probes — one round trip instead of N — when the
@@ -132,6 +129,7 @@ class UrgencyScorer:
         queries = [sentence.get_retrieval_text() for _, sentence in candidate_pairs]
         probe_results = self._probe_similarity_batch(queries)
         raw_scores: dict[int, tuple[float, float, float]] = {}
+
         for (index, _), (top1_score, mean_top5) in zip(candidate_pairs, probe_results):
             similarity = self._combine_similarity(top1_score, mean_top5)
             raw_scores[index] = (top1_score, mean_top5, similarity)
@@ -191,9 +189,6 @@ class UrgencyScorer:
     def _is_candidate(sentence: SentenceRecord) -> bool:
         from entities.sentence_record import CitationState
         return sentence.citation_state == CitationState.MISSING_CITATION
-
-    def _probe_similarity(self, query: str) -> tuple[float, float]:
-        return self._probe_similarity_batch([query])[0]
 
     def _probe_similarity_batch(
         self, queries: Sequence[str]

@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from qdrant_client.http.models import Fusion, FusionQuery, Prefetch, QueryRequest, SparseVector
+from qdrant_client.models import Filter, FieldCondition, Range
 
 from entities.retrieval_result import RetrievalResult
 from utils import logger
@@ -13,8 +14,8 @@ if TYPE_CHECKING:
 
 
 _QUERY_PREFIX = (
-    "Instruct: Given a scientific claim, retrieve research papers whose "
-    "title and abstract provide evidence or prior work supporting this claim\n"
+    "Instruct: Retrieve the most relevant scientific paper that should "
+    "be cited to support the following text snippet from a research paper\n"
     "Query: "
 )
 
@@ -36,13 +37,13 @@ class HybridRetriever:
         self.collection = collection
         self.prefetch_limit = prefetch_limit
 
-    def retrieve(self, query: str, top_k: int = 10) -> list[RetrievalResult]:
+    def retrieve(self, query: str, top_k: int = 10, max_year: int | None = None) -> list[RetrievalResult]:
         """Retrieve the top-k most relevant papers for query."""
-        results = self.retrieve_batch([query], top_k=top_k)
+        results = self.retrieve_batch([query], top_k=top_k, max_year=max_year)
         return results[0] if results else []
 
     def retrieve_batch(
-        self, queries: Sequence[str], top_k: int = 10
+        self, queries: Sequence[str], top_k: int = 10, max_year: int | None = None
     ) -> list[list[RetrievalResult]]:
         """Retrieve top-k for many queries in one round trip.
 
@@ -64,6 +65,17 @@ class HybridRetriever:
             top_k,
         )
 
+        query_filter = None
+        if max_year is not None:
+            query_filter = Filter(
+                must=[
+                    FieldCondition(
+                        key="year",
+                        range=Range(lte=max_year)
+                    )
+                ]
+            )
+
         requests = [
             QueryRequest(
                 prefetch=[
@@ -81,6 +93,7 @@ class HybridRetriever:
                 query=FusionQuery(fusion=Fusion.RRF),
                 limit=top_k,
                 with_payload=True,
+                filter=query_filter
             )
             for dense_vec, (indices, values) in zip(dense_vecs, sparse_pairs)
         ]
