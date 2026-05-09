@@ -34,7 +34,7 @@ def test_classifier():
     start_idx = min(20, max(0, len(sentences) - 10))
     test_batch = sentences[start_idx:start_idx+10]
     
-    classified_sentences = classifier.classify_sentences(test_batch, paper)
+    classified_sentences = classifier.classify_sentences(test_batch, paper.title, paper.abstract)
     
     for i, s in enumerate(classified_sentences):
         logger.info("\n--- Sentence %d ---", i+1)

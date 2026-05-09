@@ -221,7 +221,7 @@ def evaluate_classifier(
     
     print(f"Classifying {len(sentences)} sentences...")
     # Classify in batches
-    classified = classifier.classify_sentences(sentences, dummy_paper)
+    classified = classifier.classify_sentences(sentences, dummy_paper.title, dummy_paper.abstract)
     
     # Extract predictions and gold labels
     gold_intents = [ex.citation_intent for ex in examples]

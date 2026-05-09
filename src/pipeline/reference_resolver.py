@@ -17,7 +17,6 @@ Resolution strategy (in order):
 
 import difflib
 import re
-from collections.abc import Sequence
 
 import requests
 from sqlalchemy import or_

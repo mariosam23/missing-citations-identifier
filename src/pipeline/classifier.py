@@ -7,7 +7,6 @@ from utils import logger
 from llm.genai_client import LLMClient
 from prompts import CLASSIFIER_SYSTEM_PROMPT, CLASSIFIER_USER_PROMPT_TEMPLATE
 from entities import SentenceRecord, CitationIntent
-from entities import ParsedPaper
 from utils.config import config
 
 
@@ -26,34 +25,41 @@ class GeminiClassifier:
         self,
         model: str | None = None,
         batch_size: int = 10,
-        delay_between_calls_seconds: float = 60.0,
+        delay_between_calls_seconds: float = 30.0,
     ):
         model = model or config.CLASSIFIER_MODEL
         self.client = LLMClient(model=model, temperature=0.1, max_tokens=4096)
         self.batch_size = batch_size
         self.delay_between_calls_seconds = delay_between_calls_seconds
 
-    def classify_sentences(self, sentences: list[SentenceRecord], paper: ParsedPaper) -> list[SentenceRecord]:
+    def classify_sentences(self, sentences: list[SentenceRecord], paper_title: str, paper_abstract: str) -> list[SentenceRecord]:
         """Classify a list of sentences for citation worthiness and intent."""
-        # Process in batches
-        for i in range(0, len(sentences), self.batch_size):
-            batch = sentences[i:i + self.batch_size]
-            batch_number = (i // self.batch_size) + 1
-            total_batches = (len(sentences) + self.batch_size - 1) // self.batch_size
-            logger.info("Sending batch %d/%d to Gemini...", batch_number, total_batches)
-            self._classify_batch(batch, paper)
+        # Filter out sentences that already have a citation to save LLM tokens
+        target_sentences = [s for s in sentences if not s.has_citation]
+        
+        if not target_sentences:
+            logger.info("No sentences require classification (all have citations or list is empty).")
+            return sentences
 
-            if i + self.batch_size < len(sentences) and self.delay_between_calls_seconds > 0:
+        # Process in batches
+        for i in range(0, len(target_sentences), self.batch_size):
+            batch = target_sentences[i:i + self.batch_size]
+            batch_number = (i // self.batch_size) + 1
+            total_batches = (len(target_sentences) + self.batch_size - 1) // self.batch_size
+            logger.info("Sending batch %d/%d to Gemini...", batch_number, total_batches)
+            self._classify_batch(batch, paper_title, paper_abstract)
+
+            if i + self.batch_size < len(target_sentences) and self.delay_between_calls_seconds > 0:
                 logger.info(
                     "Waiting %d seconds before next Gemini API call...", int(self.delay_between_calls_seconds)
                 )
                 time.sleep(self.delay_between_calls_seconds)
         return sentences
 
-    def _classify_batch(self, batch: list[SentenceRecord], paper: ParsedPaper):
+    def _classify_batch(self, batch: list[SentenceRecord], paper_title: str, paper_abstract: str):
         """Classify a batch of sentences using the LLM."""
         try:
-            classifications = self._request_batch_classification(batch, paper)
+            classifications = self._request_batch_classification(batch, paper_title, paper_abstract)
         except ValueError as exc:
             if len(batch) == 1:
                 raise
@@ -63,8 +69,8 @@ class GeminiClassifier:
                 "Batch of %d sentences failed (%s). Retrying as chunks of %d and %d...",
                 len(batch), exc, split_point, len(batch) - split_point
             )
-            self._classify_batch(batch[:split_point], paper)
-            self._classify_batch(batch[split_point:], paper)
+            self._classify_batch(batch[:split_point], paper_title, paper_abstract)
+            self._classify_batch(batch[split_point:], paper_title, paper_abstract)
             return
 
         self._apply_classifications(batch, classifications)
@@ -72,14 +78,15 @@ class GeminiClassifier:
     def _request_batch_classification(
         self,
         batch: list[SentenceRecord],
-        paper: ParsedPaper,
+        paper_title: str,
+        paper_abstract: str
     ) -> list[dict]:
         """Request classifications for a batch and validate the response shape."""
         sentences_text = "\n".join(f"{j}. {s.text}" for j, s in enumerate(batch))
 
         user_prompt = CLASSIFIER_USER_PROMPT_TEMPLATE.format(
-            title=paper.title,
-            abstract=paper.abstract,
+            title=paper_title,
+            abstract=paper_abstract,
             sentences=sentences_text,
         )
 
