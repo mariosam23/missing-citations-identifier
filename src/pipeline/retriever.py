@@ -3,7 +3,15 @@
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-from qdrant_client.http.models import Fusion, FusionQuery, Prefetch, QueryRequest, SparseVector
+from qdrant_client.http.models import (
+    Fusion,
+    FusionQuery,
+    IsEmptyCondition,
+    PayloadField,
+    Prefetch,
+    QueryRequest,
+    SparseVector,
+)
 from qdrant_client.models import Filter, FieldCondition, Range
 
 from entities.retrieval_result import RetrievalResult
@@ -39,8 +47,7 @@ class HybridRetriever:
 
     def retrieve(self, query: str, top_k: int = 10, max_year: int | None = None) -> list[RetrievalResult]:
         """Retrieve the top-k most relevant papers for query."""
-        results = self.retrieve_batch([query], top_k=top_k, max_year=max_year)
-        return results[0] if results else []
+        return self.retrieve_batch([query], top_k=top_k, max_year=max_year)[0]
 
     def retrieve_batch(
         self, queries: Sequence[str], top_k: int = 10, max_year: int | None = None
@@ -65,16 +72,8 @@ class HybridRetriever:
             top_k,
         )
 
-        query_filter = None
-        if max_year is not None:
-            query_filter = Filter(
-                must=[
-                    FieldCondition(
-                        key="year",
-                        range=Range(lte=max_year)
-                    )
-                ]
-            )
+        query_filter = self._build_year_filter(max_year)
+        effective_prefetch = max(self.prefetch_limit, top_k)
 
         requests = [
             QueryRequest(
@@ -82,12 +81,12 @@ class HybridRetriever:
                     Prefetch(
                         query=dense_vec,
                         using="dense",
-                        limit=self.prefetch_limit,
+                        limit=effective_prefetch,
                     ),
                     Prefetch(
                         query=SparseVector(indices=indices, values=values),
                         using="sparse",
-                        limit=self.prefetch_limit,
+                        limit=effective_prefetch,
                     ),
                 ],
                 query=FusionQuery(fusion=Fusion.RRF),
@@ -108,9 +107,61 @@ class HybridRetriever:
             for response in responses
         ]
 
-    def _encode_dense(self, query: str) -> list[float]:
-        """Encode a single query with the instruction-prefixed E5 model."""
-        return self._encode_dense_batch([query])[0]
+    def probe_dense_cosine_batch(
+        self,
+        queries: Sequence[str],
+        top_k: int = 10,
+        max_year: int | None = None,
+    ) -> list[list[RetrievalResult]]:
+        """Dense-only retrieval for urgency probing.
+
+        Bypasses RRF fusion so ``RetrievalResult.score`` is the raw cosine
+        similarity in [0, 1] (dense vectors are normalized at index and query
+        time). The urgency scorer uses this to threshold support against a
+        meaningful similarity scale, instead of an opaque fusion score.
+        """
+        if not queries:
+            return []
+
+        dense_vecs = self._encode_dense_batch(queries)
+        query_filter = self._build_year_filter(max_year)
+
+        requests = [
+            QueryRequest(
+                query=dense_vec,
+                using="dense",
+                limit=top_k,
+                with_payload=True,
+                filter=query_filter,
+            )
+            for dense_vec in dense_vecs
+        ]
+
+        responses = self.client.query_batch_points(
+            collection_name=self.collection,
+            requests=requests,
+        )
+
+        return [
+            [self._point_to_result(point) for point in response.points]
+            for response in responses
+        ]
+
+    def _build_year_filter(self, max_year: int | None) -> Filter | None:
+        """Build a year filter that allows papers with missing/null year.
+
+        Qdrant's numeric ``Range`` excludes points where the field is absent
+        or null. We wrap the range in a ``should`` so that a paper with
+        ``year=None`` (allowed by the indexer) still passes the filter.
+        """
+        if max_year is None:
+            return None
+        return Filter(
+            should=[
+                FieldCondition(key="year", range=Range(lte=max_year)),
+                IsEmptyCondition(is_empty=PayloadField(key="year")),
+            ]
+        )
 
     def _encode_dense_batch(self, queries: Sequence[str]) -> list[list[float]]:
         """Encode many queries in one forward pass."""
@@ -119,10 +170,6 @@ class HybridRetriever:
             normalize_embeddings=True,
         )
         return [self._as_list(emb) for emb in embeddings]
-
-    def _encode_sparse(self, query: str) -> tuple[list[int], list[float]]:
-        """Encode a single query with SPLADE and return indices plus values."""
-        return self._encode_sparse_batch([query])[0]
 
     def _encode_sparse_batch(
         self, queries: Sequence[str]

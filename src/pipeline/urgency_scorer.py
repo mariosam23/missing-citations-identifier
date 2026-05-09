@@ -7,12 +7,21 @@ mixes it with intent and section priors, and stores the result on each
 """
 
 
+from typing import TYPE_CHECKING
+
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+
+if TYPE_CHECKING:
+    from pipeline.retriever import HybridRetriever
 
 from entities import CitationIntent, SentenceRecord
+from entities.sentence_record import CitationState
 
 from utils import logger
+
+
+_MIN_CANDIDATES_FOR_NORMALIZATION = 3
 
 
 @dataclass(frozen=True)
@@ -68,7 +77,7 @@ class UrgencyScorer:
 
     def __init__(
         self,
-        retriever,
+        retriever: "HybridRetriever",
         *,
         probe_k: int = 10,
         mean_k: int = 5,
@@ -106,42 +115,48 @@ class UrgencyScorer:
     def score_sentences(
         self,
         sentences: Sequence[SentenceRecord],
-    ) -> dict[int, UrgencyFeatures]:
-        """Annotate candidate sentences in place and return their features.
+        max_year: int | None = None,
+    ) -> tuple[list[SentenceRecord], dict[int, UrgencyFeatures]]:
+        """Annotate candidate sentences and return a new list with updated scores, along with their features.
 
         Only worthy, uncited sentences are scored. All other sentences keep
-        ``urgency_score=None``.
+        ``urgency_score=None``. The original list is not modified.
         """
-        candidate_pairs: list[tuple[int, SentenceRecord]] = []
+        updated_sentences = []
+        candidate_indices: list[int] = []
+        
         for idx, sentence in enumerate(sentences):
             if not self._is_candidate(sentence):
-                sentence.urgency_score = None
+                updated_sentences.append(replace(sentence, urgency_score=None))
             else:
-                candidate_pairs.append((idx, sentence))
+                updated_sentences.append(replace(sentence))
+                candidate_indices.append(idx)
 
-        if not candidate_pairs:
+        if not candidate_indices:
             logger.info("Out of %d sentences, no uncited sentences were found.", len(sentences))
-            return {}
+            return updated_sentences, {}
 
-        # Batch the retrieval probes — one round trip instead of N — when the
-        # underlying retriever supports it. Falls back to per-sentence calls
-        # for retrievers that only expose ``retrieve``.
-        queries = [sentence.get_retrieval_text() for _, sentence in candidate_pairs]
-        probe_results = self._probe_similarity_batch(queries)
+        queries = [updated_sentences[idx].get_retrieval_text() for idx in candidate_indices]
+        probe_results = self._probe_similarity_batch(queries, max_year=max_year)
         raw_scores: dict[int, tuple[float, float, float]] = {}
 
-        for (index, _), (top1_score, mean_top5) in zip(candidate_pairs, probe_results):
+        for index, (top1_score, mean_top5) in zip(candidate_indices, probe_results):
             similarity = self._combine_similarity(top1_score, mean_top5)
             raw_scores[index] = (top1_score, mean_top5, similarity)
 
         sim_values = [similarity for _, _, similarity in raw_scores.values()]
-        sim_min = min(sim_values)
-        sim_max = max(sim_values)
+        normalize_within_doc = len(sim_values) >= _MIN_CANDIDATES_FOR_NORMALIZATION
+        sim_min = min(sim_values) if normalize_within_doc else 0.0
+        sim_max = max(sim_values) if normalize_within_doc else 0.0
 
         features_by_index: dict[int, UrgencyFeatures] = {}
-        for index, sentence in candidate_pairs:
+        for index in candidate_indices:
+            sentence = updated_sentences[index]
             top1_score, mean_top5, similarity = raw_scores[index]
-            normalized_similarity = self._minmax(similarity, sim_min, sim_max)
+            if normalize_within_doc:
+                normalized_similarity = self._minmax(similarity, sim_min, sim_max)
+            else:
+                normalized_similarity = max(0.0, min(similarity, 1.0))
             intent_weight = self._intent_prior(sentence.citation_intent)
             section_weight = self._section_prior(sentence.section)
             base_urgency = (
@@ -167,15 +182,16 @@ class UrgencyScorer:
             )
 
         logger.debug("Scored %d candidate sentences for urgency", len(features_by_index))
-        return features_by_index
+        return updated_sentences, features_by_index
 
     def rank_sentences(
         self,
         sentences: Sequence[SentenceRecord],
+        max_year: int | None = None,
     ) -> list[SentenceRecord]:
         """Return candidate sentences sorted by descending urgency."""
-        self.score_sentences(sentences)
-        ranked = [sentence for sentence in sentences if sentence.urgency_score is not None]
+        updated_sentences, _ = self.score_sentences(sentences, max_year=max_year)
+        ranked = [sentence for sentence in updated_sentences if sentence.urgency_score is not None]
         ranked.sort(
             key=lambda sentence: (
                 sentence.urgency_score,
@@ -187,22 +203,17 @@ class UrgencyScorer:
 
     @staticmethod
     def _is_candidate(sentence: SentenceRecord) -> bool:
-        from entities.sentence_record import CitationState
         return sentence.citation_state == CitationState.MISSING_CITATION
 
     def _probe_similarity_batch(
-        self, queries: Sequence[str]
+        self, queries: Sequence[str], max_year: int | None = None
     ) -> list[tuple[float, float]]:
         if not queries:
             return []
 
-        batch_fn = getattr(self.retriever, "retrieve_batch", None)
-        if callable(batch_fn):
-            results_per_query = batch_fn(list(queries), top_k=self.probe_k)
-        else:
-            results_per_query = [
-                self.retriever.retrieve(query, top_k=self.probe_k) for query in queries
-            ]
+        results_per_query = self.retriever.probe_dense_cosine_batch(
+            list(queries), top_k=self.probe_k, max_year=max_year
+        )
 
         out: list[tuple[float, float]] = []
         for query, results in zip(queries, results_per_query):
@@ -210,6 +221,7 @@ class UrgencyScorer:
                 logger.warning("Probe retrieved no results for query=%r", query[:80])
                 out.append((0.0, 0.0))
                 continue
+          
             scores = [max(float(result.score), 0.0) for result in results]
             top1_score = scores[0]
             mean_top5 = sum(scores[: self.mean_k]) / min(len(scores), self.mean_k)
@@ -225,6 +237,7 @@ class UrgencyScorer:
     def _support_factor(self, similarity: float) -> float:
         if similarity <= 0.0:
             return 0.0
+       
         if self.similarity_threshold <= 0.0:
             return 1.0
         return min(similarity / self.similarity_threshold, 1.0)

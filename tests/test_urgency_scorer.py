@@ -1,4 +1,4 @@
-"""Tests for the urgency scorer's batched probe path."""
+"""Tests for the urgency scorer's batched probe and small-N normalization."""
 
 import unittest
 from collections.abc import Sequence
@@ -6,85 +6,112 @@ from dataclasses import dataclass
 
 from entities import CitationIntent, SentenceRecord
 from entities.retrieval_result import RetrievalResult
+from entities.sentence_record import CitationState
 from pipeline.urgency_scorer import UrgencyScorer
 
 
 @dataclass
-class _BatchRetriever:
-    """Fake retriever that records how often retrieve / retrieve_batch were called."""
+class _DenseProbeRetriever:
+    """Fake retriever exposing the dense-cosine probe used in production."""
 
     payload: dict[str, list[RetrievalResult]]
-    batch_calls: int = 0
-    single_calls: int = 0
+    probe_calls: int = 0
+    last_max_year: int | None = None
 
-    def retrieve(self, query: str, top_k: int = 10) -> list[RetrievalResult]:
-        self.single_calls += 1
-        return self.payload.get(query, [])
-
-    def retrieve_batch(
-        self, queries: Sequence[str], top_k: int = 10
+    def probe_dense_cosine_batch(
+        self,
+        queries: Sequence[str],
+        top_k: int = 10,
+        max_year: int | None = None,
     ) -> list[list[RetrievalResult]]:
-        self.batch_calls += 1
+        self.probe_calls += 1
+        self.last_max_year = max_year
         return [self.payload.get(q, []) for q in queries]
 
 
-@dataclass
-class _SingleRetriever:
-    """Fake retriever exposing only retrieve(); urgency_scorer should fall back."""
-
-    payload: dict[str, list[RetrievalResult]]
-    calls: int = 0
-
-    def retrieve(self, query: str, top_k: int = 10) -> list[RetrievalResult]:
-        self.calls += 1
-        return self.payload.get(query, [])
-
-
-def _candidate(text: str) -> SentenceRecord:
-    from entities.sentence_record import CitationState
+def _candidate(text: str, intent: CitationIntent = CitationIntent.METHOD) -> SentenceRecord:
     return SentenceRecord(
         text=text,
         section="introduction",
         position_in_section=0.1,
         has_citation=False,
-        citation_intent=CitationIntent.METHOD,
+        citation_intent=intent,
         retrieval_text=text,
         citation_state=CitationState.MISSING_CITATION,
         worthiness_score=0.9,
     )
 
 
-class TestUrgencyScorerBatching(unittest.TestCase):
-    def test_uses_retrieve_batch_when_available(self):
+class TestUrgencyScorerProbe(unittest.TestCase):
+    def test_calls_dense_cosine_probe_in_a_single_batch(self):
         sentences = [_candidate(f"claim about topic {i}") for i in range(4)]
         payload = {
             s.get_retrieval_text(): [RetrievalResult(f"p{i}", "T", 0.7)]
             for i, s in enumerate(sentences)
         }
-        retriever = _BatchRetriever(payload=payload)
+        retriever = _DenseProbeRetriever(payload=payload)
 
         scorer = UrgencyScorer(retriever)
-        features = scorer.score_sentences(sentences)
+        _, features = scorer.score_sentences(sentences, max_year=2024)
 
-        # All four candidates scored in a single batch round trip.
         self.assertEqual(len(features), 4)
-        self.assertEqual(retriever.batch_calls, 1)
-        self.assertEqual(retriever.single_calls, 0)
+        self.assertEqual(retriever.probe_calls, 1)
+        self.assertEqual(retriever.last_max_year, 2024)
 
-    def test_falls_back_to_per_query_retrieve(self):
-        sentences = [_candidate(f"claim {i}") for i in range(3)]
-        payload = {
-            s.get_retrieval_text(): [RetrievalResult(f"p{i}", "T", 0.5)]
-            for i, s in enumerate(sentences)
-        }
-        retriever = _SingleRetriever(payload=payload)
+
+class TestUrgencyScorerNormalization(unittest.TestCase):
+    def test_single_candidate_does_not_force_normalized_similarity_to_one(self):
+        """Regression: with one candidate, _minmax used to return 1.0 always.
+
+        After the fix, normalized_similarity falls back to the raw cosine
+        clipped to [0, 1] when fewer than 3 candidates exist.
+        """
+        sentences = [_candidate("only candidate")]
+        payload = {"only candidate": [RetrievalResult("p", "T", 0.4)]}
+        retriever = _DenseProbeRetriever(payload=payload)
 
         scorer = UrgencyScorer(retriever)
-        features = scorer.score_sentences(sentences)
+        _, features = scorer.score_sentences(sentences)
+        feature = next(iter(features.values()))
 
-        self.assertEqual(len(features), 3)
-        # No retrieve_batch attribute -> one call per candidate.
-        self.assertEqual(retriever.calls, 3)
+        self.assertAlmostEqual(feature.similarity, 0.4)
+        self.assertAlmostEqual(feature.normalized_similarity, 0.4)
+        self.assertNotEqual(feature.normalized_similarity, 1.0)
+
+    def test_two_candidates_keep_absolute_signal(self):
+        """With 2 candidates, fallback should still preserve absolute scale."""
+        s1 = _candidate("first claim")
+        s2 = _candidate("second claim")
+        payload = {
+            "first claim": [RetrievalResult("p1", "T", 0.2)],
+            "second claim": [RetrievalResult("p2", "T", 0.8)],
+        }
+        retriever = _DenseProbeRetriever(payload=payload)
+
+        scorer = UrgencyScorer(retriever)
+        _, features = scorer.score_sentences([s1, s2])
+
+        normalized = sorted(f.normalized_similarity for f in features.values())
+        self.assertNotIn(0.0, normalized)  # min isn't forced to 0
+        self.assertNotIn(1.0, normalized)  # max isn't forced to 1
+        self.assertAlmostEqual(normalized[0], 0.2, places=5)
+        self.assertAlmostEqual(normalized[1], 0.8, places=5)
+
+    def test_three_or_more_candidates_use_minmax_normalization(self):
+        sents = [_candidate(f"claim {i}") for i in range(3)]
+        payload = {
+            "claim 0": [RetrievalResult("p0", "T", 0.2)],
+            "claim 1": [RetrievalResult("p1", "T", 0.5)],
+            "claim 2": [RetrievalResult("p2", "T", 0.9)],
+        }
+        retriever = _DenseProbeRetriever(payload=payload)
+
+        scorer = UrgencyScorer(retriever)
+        _, features = scorer.score_sentences(sents)
+
+        normalized = sorted(f.normalized_similarity for f in features.values())
+        self.assertAlmostEqual(normalized[0], 0.0, places=5)
+        self.assertAlmostEqual(normalized[-1], 1.0, places=5)
 
 
 if __name__ == "__main__":

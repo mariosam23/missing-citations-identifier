@@ -38,7 +38,9 @@ class FakeRetriever:
     def __init__(self, results_by_query: dict[str, list[RetrievalResult]]) -> None:
         self.results_by_query = results_by_query
 
-    def retrieve(self, query: str, top_k: int = 10) -> list[RetrievalResult]:
+    def retrieve(
+        self, query: str, top_k: int = 10, max_year: int | None = None
+    ) -> list[RetrievalResult]:
         return self.results_by_query.get(query, [])[:top_k]
 
 
