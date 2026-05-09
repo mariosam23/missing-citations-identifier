@@ -5,7 +5,10 @@ Citation State Categories ("citation_state"):
 - MISSING_CITATION: The sentence makes a claim, references prior work, or uses a specific method that requires a citation, BUT neither this sentence nor any subsequent sentence in its conceptual block provides a citation marker.
 - COVERED_BY_BLOCK: The sentence makes a claim or summarizes prior work, and while it doesn't have a citation marker itself, it is part of a multi-sentence block that is successfully cited at the end of the block.
 - HAS_CITATION: The sentence explicitly contains a citation marker (e.g., [1], (Smith, 2020)).
-- NOT_CITATION_WORTHY: The sentence does not need a citation (e.g., common knowledge, describes the paper's own novel methods/results, outlines the paper's structure).
+- NOT_CITATION_WORTHY: The sentence does not need a citation. IMPORTANT RULES for this category:
+  * Widely accepted premises/common knowledge in the domain (e.g., 'deep learning is popular', 'word embeddings are integral').
+  * The authors analytically comparing their own proposed methodology against others.
+  * General structural outlines of the paper or descriptions of the paper's own methods/results.
 
 Intent Categories ("citation_intent"):
 - BACKGROUND: Context, related work, or general domain knowledge.
@@ -17,15 +20,15 @@ Output your response as a JSON array of objects, where each object has:
 - "sentence_index": the index of the sentence (0-based)
 - "citation_state": one of the 4 state names above
 - "citation_intent": one of the 4 intent names above
-- "confidence": a float between 0.0 and 1.0 indicating your confidence
+- "urgency_of_citation": a float between 0.0 and 1.0 indicating how critically this specific claim relies on external proof (claim severity/urgency).
 
 Example output format:
 [
-  {"sentence_index": 0, "citation_state": "COVERED_BY_BLOCK", "citation_intent": "BACKGROUND", "confidence": 0.9},
-  {"sentence_index": 1, "citation_state": "COVERED_BY_BLOCK", "citation_intent": "BACKGROUND", "confidence": 0.85},
-  {"sentence_index": 2, "citation_state": "HAS_CITATION", "citation_intent": "BACKGROUND", "confidence": 0.95},
-  {"sentence_index": 3, "citation_state": "NOT_CITATION_WORTHY", "citation_intent": "OTHER", "confidence": 0.99},
-  {"sentence_index": 4, "citation_state": "MISSING_CITATION", "citation_intent": "METHOD", "confidence": 0.9}
+  {"sentence_index": 0, "citation_state": "COVERED_BY_BLOCK", "citation_intent": "BACKGROUND", "urgency_of_citation": 0.2},
+  {"sentence_index": 1, "citation_state": "COVERED_BY_BLOCK", "citation_intent": "BACKGROUND", "urgency_of_citation": 0.15},
+  {"sentence_index": 2, "citation_state": "HAS_CITATION", "citation_intent": "BACKGROUND", "urgency_of_citation": 0.95},
+  {"sentence_index": 3, "citation_state": "NOT_CITATION_WORTHY", "citation_intent": "OTHER", "urgency_of_citation": 0.05},
+  {"sentence_index": 4, "citation_state": "MISSING_CITATION", "citation_intent": "METHOD", "urgency_of_citation": 0.9}
 ]
 '''
 

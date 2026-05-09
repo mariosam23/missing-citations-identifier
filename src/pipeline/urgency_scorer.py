@@ -1,4 +1,4 @@
-"""Stage 4C - Urgency scoring (V2).
+"""Stage 4B - Urgency scoring.
 
 Prioritizes uncited, citation-worthy sentences before full retrieval. The
 scorer runs a lightweight hybrid probe, derives a retrieval-support signal,

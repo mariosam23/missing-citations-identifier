@@ -35,7 +35,7 @@ class SentenceRecord:
 
     # --- Filled by Phase 2 (classification) ---
     citation_state: CitationState | None = None
-    worthiness_score: float | None = None  # model confidence [0,1]
+    worthiness_score: float | None = None  # claim severity/urgency [0,1]
 
     # --- Filled by Phase 3 (urgency scoring) ---
     urgency_score: float | None = None

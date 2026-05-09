@@ -84,7 +84,7 @@ class GrobidPDFParser:
 
     def _extract_abstract(self, root: ET.Element) -> str:
         abstract_elems = root.findall(".//tei:profileDesc/tei:abstract//tei:p", self.namespace)
-        abstract = " ".join([elem.text for elem in abstract_elems if elem.text])
+        abstract = " ".join([self._render_paragraph(elem) for elem in abstract_elems])
         return abstract.strip()
 
     # ------------------------------------------------------------------

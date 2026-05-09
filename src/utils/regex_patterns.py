@@ -41,6 +41,14 @@ CLOSE_PAREN_SPACING_PATTERN = re.compile(r"\s+\)")
 # ==========================================
 MARKDOWN_TITLE_PATTERN = re.compile(r"^#\s+(.+?)(?=\n#|\n\n)", re.MULTILINE | re.DOTALL)
 WHITESPACE_CLEANUP_PATTERN = re.compile(r"\s+")
+HYPHENATION_PATTERN = re.compile(r"(\b[A-Za-z]+)-\s+([A-Za-z]+\b)")
+# Matches GROBID artifacts where a line-break hyphen was kept but the space
+# was stripped, producing e.g. "left-toright".  We detect a lowercase suffix
+# that looks fused after the hyphen and rejoin it.
+GROBID_FUSED_HYPHEN_PATTERN = re.compile(
+    r"\b([a-z]+)-([a-z]{2,})\b"
+)
+
 
 PYMUPDF_ABSTRACT_PATTERN = re.compile(
     r"(?i)\bAbstract\b[\s\n]+(.*?)(?=\n\s*(?:1\.?\s+Introduction|I\.\s+Introduction|Introduction)\b)",
@@ -124,3 +132,74 @@ DOI_PATTERN = re.compile(r"(10\.\d{4,9}/[-._;()/:A-Za-z0-9]+)")
 # ``papers.paperId`` column stores them in bare form so we strip the prefix.
 OPENALEX_ID_PATTERN = re.compile(r"(?:openalex\.org/)?(W\d{6,})", re.IGNORECASE)
 
+# ==========================================
+# Author-Year → Bibkey Resolution Patterns
+# ==========================================
+
+# Extracts (surname, year) pairs from a bibliography string. We look for
+# the *last name* — typically the first token — but since many bib formats
+# use "First Last, …" we grab the *last capitalised word before the first
+# comma* and pair it with the first 4-digit year.
+BIBLIOGRAPHY_SURNAME_PATTERN = re.compile(r"([A-Z][A-Za-z'`-]+)(?=[,.]|\s+and\b)")
+BIBLIOGRAPHY_YEAR_PATTERN = re.compile(r"\b(\d{4})[a-z]?\b")
+
+# Matches an in-text author-year citation — *with capture groups* so we can
+# resolve each one against the bibliography index. Handles:
+#   • (Smith, 2020)  (Smith et al., 2020a)  (Smith & Lee, 2020)
+#   • Smith (2020)   Smith et al. (2020a)
+# Each match yields group("surname") and group("year").
+INTEXT_AUTHOR_YEAR_PATTERN = re.compile(
+    r"(?P<surname>[A-Z][A-Za-z'`-]+)"
+    r"(?:\s+(?:et\s+al\.?|and|&)\s+[A-Z][A-Za-z'`-]+|\s+et\s+al\.?)?"
+    r"[,\s]*"
+    r"\(?(?P<year>\d{4})[a-z]?\)?"
+)
+
+# ==========================================
+# Known Compound Words (PDF Dehyphenation)
+# ==========================================
+# GROBID / PDF extraction frequently strips hyphens from line breaks,
+# producing fused tokens like "lefttoright" or "taskspecific". This set
+# lists known academic compounds so we can re-insert the hyphen or space.
+# Lookup is case-folded.
+KNOWN_DEHYPHENATION_FIXES: dict[str, str] = {
+    "lefttoright": "left-to-right",
+    "righttoleft": "right-to-left",
+    "taskspecific": "task-specific",
+    "domainspecific": "domain-specific",
+    "pretrained": "pre-trained",
+    "pretrain": "pre-train",
+    "pretraining": "pre-training",
+    "pretrains": "pre-trains",
+    "finetuned": "fine-tuned",
+    "finetune": "fine-tune",
+    "finetuning": "fine-tuning",
+    "finegrained": "fine-grained",
+    "stateoftheart": "state-of-the-art",
+    "semisupervised": "semi-supervised",
+    "selfsupervised": "self-supervised",
+    "selfattention": "self-attention",
+    "crosslingual": "cross-lingual",
+    "multilingual": "multilingual",  # not a dehyphenation error
+    "multitask": "multi-task",
+    "zeroshot": "zero-shot",
+    "fewshot": "few-shot",
+    "endtoend": "end-to-end",
+    "largescale": "large-scale",
+    "realworld": "real-world",
+    "longrange": "long-range",
+    "shortterm": "short-term",
+    "longterm": "long-term",
+    "opensource": "open-source",
+    "highquality": "high-quality",
+    "lowresource": "low-resource",
+    "highresource": "high-resource",
+    "contextsensitive": "context-sensitive",
+    "contextdependent": "context-dependent",
+    "contextindependent": "context-independent",
+    "tokenlevel": "token-level",
+    "sentencelevel": "sentence-level",
+    "wordlevel": "word-level",
+    "characterlevel": "character-level",
+    "documentlevel": "document-level",
+}

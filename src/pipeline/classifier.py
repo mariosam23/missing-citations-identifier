@@ -110,11 +110,11 @@ class GeminiClassifier:
             sentence = batch[idx]
             state_str = cls.get("citation_state", "NOT_CITATION_WORTHY")
             intent_str = cls.get("citation_intent", "OTHER")
-            confidence = float(cls.get("confidence", 0.5))
+            urgency = float(cls.get("urgency_of_citation", 0.5))
 
             sentence.citation_state = STATE_MAP.get(state_str, CitationState.NOT_CITATION_WORTHY)
             sentence.citation_intent = INTENT_MAP.get(intent_str)
-            sentence.worthiness_score = confidence
+            sentence.worthiness_score = urgency
 
     @staticmethod
     def _validate_classifications(classifications: list[dict], expected_count: int) -> None:
