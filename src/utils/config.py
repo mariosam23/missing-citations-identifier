@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     RERANKER_MODEL: str = "BAAI/bge-reranker-v2-m3"
     DECOMPOSER_MODEL: str = "gemini-3-flash-preview"
     CLASSIFIER_MODEL: str = "gemini-3-flash-preview"
+    CLASSIFIER_BACKUP: list[str] = [
+        "gemini-3.1-flash-lite",
+        "gemini-3.1-flash-lite-preview",
+        "gemini-2.5-flash",
+        "gemini-2.5-flash-lite"
+    ]
 
     model_config = {
         "env_file": str(_ENV_FILE),

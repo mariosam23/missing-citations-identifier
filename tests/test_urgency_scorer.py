@@ -41,6 +41,7 @@ class _SingleRetriever:
 
 
 def _candidate(text: str) -> SentenceRecord:
+    from entities.sentence_record import CitationState
     return SentenceRecord(
         text=text,
         section="introduction",
@@ -48,7 +49,7 @@ def _candidate(text: str) -> SentenceRecord:
         has_citation=False,
         citation_intent=CitationIntent.METHOD,
         retrieval_text=text,
-        citation_worthy=True,
+        citation_state=CitationState.MISSING_CITATION,
         worthiness_score=0.9,
     )
 

@@ -39,7 +39,7 @@ def test_classifier():
     for i, s in enumerate(classified_sentences):
         logger.info("\n--- Sentence %d ---", i+1)
         logger.info("Text: %s", s.text)
-        logger.info("Citation Worthy: %s", s.citation_worthy)
+        logger.info("Citation State: %s", s.citation_state)
         logger.info("Citation Intent: %s", s.citation_intent)
         logger.info("Worthiness Score: %s", s.worthiness_score)
 

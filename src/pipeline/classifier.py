@@ -17,9 +17,6 @@ INTENT_MAP = {
     "OTHER": CitationIntent.OTHER,
 }
 
-# gemini-3.1-flash-lite-preview
-# gemini-3-flash-preview
-# gemma-4-31b-it
 class GeminiClassifier:
     def __init__(
         self,
@@ -28,28 +25,25 @@ class GeminiClassifier:
         delay_between_calls_seconds: float = 30.0,
     ):
         model = model or config.CLASSIFIER_MODEL
-        self.client = LLMClient(model=model, temperature=0.1, max_tokens=4096)
+        self.client = LLMClient(model=model, temperature=0.1, max_tokens=8000)
         self.batch_size = batch_size
         self.delay_between_calls_seconds = delay_between_calls_seconds
 
     def classify_sentences(self, sentences: list[SentenceRecord], paper_title: str, paper_abstract: str) -> list[SentenceRecord]:
         """Classify a list of sentences for citation worthiness and intent."""
-        # Filter out sentences that already have a citation to save LLM tokens
-        target_sentences = [s for s in sentences if not s.has_citation]
-        
-        if not target_sentences:
-            logger.info("No sentences require classification (all have citations or list is empty).")
+        if not sentences:
+            logger.info("No sentences require classification (list is empty).")
             return sentences
 
         # Process in batches
-        for i in range(0, len(target_sentences), self.batch_size):
-            batch = target_sentences[i:i + self.batch_size]
+        for i in range(0, len(sentences), self.batch_size):
+            batch = sentences[i:i + self.batch_size]
             batch_number = (i // self.batch_size) + 1
-            total_batches = (len(target_sentences) + self.batch_size - 1) // self.batch_size
+            total_batches = (len(sentences) + self.batch_size - 1) // self.batch_size
             logger.info("Sending batch %d/%d to Gemini...", batch_number, total_batches)
             self._classify_batch(batch, paper_title, paper_abstract)
 
-            if i + self.batch_size < len(target_sentences) and self.delay_between_calls_seconds > 0:
+            if i + self.batch_size < len(sentences) and self.delay_between_calls_seconds > 0:
                 logger.info(
                     "Waiting %d seconds before next Gemini API call...", int(self.delay_between_calls_seconds)
                 )
@@ -104,16 +98,23 @@ class GeminiClassifier:
     @staticmethod
     def _apply_classifications(batch: list[SentenceRecord], classifications: list[dict]) -> None:
         """Write parsed classifications back into the sentence records."""
+        from entities.sentence_record import CitationState
+        STATE_MAP = {
+            "MISSING_CITATION": CitationState.MISSING_CITATION,
+            "COVERED_BY_BLOCK": CitationState.COVERED_BY_BLOCK,
+            "HAS_CITATION": CitationState.HAS_CITATION,
+            "NOT_CITATION_WORTHY": CitationState.NOT_CITATION_WORTHY,
+        }
         for cls in classifications:
             idx = cls["sentence_index"]
             sentence = batch[idx]
-            citation_worthy = cls.get("citation_worthy", False)
+            state_str = cls.get("citation_state", "NOT_CITATION_WORTHY")
             intent_str = cls.get("citation_intent", "OTHER")
             confidence = float(cls.get("confidence", 0.5))
 
-            sentence.citation_worthy = citation_worthy
+            sentence.citation_state = STATE_MAP.get(state_str, CitationState.NOT_CITATION_WORTHY)
             sentence.citation_intent = INTENT_MAP.get(intent_str)
-            sentence.worthiness_score = confidence if sentence.citation_worthy else (1 - confidence)
+            sentence.worthiness_score = confidence
 
     @staticmethod
     def _validate_classifications(classifications: list[dict], expected_count: int) -> None:

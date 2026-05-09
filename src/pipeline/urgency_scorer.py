@@ -189,10 +189,8 @@ class UrgencyScorer:
 
     @staticmethod
     def _is_candidate(sentence: SentenceRecord) -> bool:
-        return (
-            not sentence.has_citation
-            and sentence.citation_worthy is True
-        )
+        from entities.sentence_record import CitationState
+        return sentence.citation_state == CitationState.MISSING_CITATION
 
     def _probe_similarity(self, query: str) -> tuple[float, float]:
         return self._probe_similarity_batch([query])[0]

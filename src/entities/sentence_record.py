@@ -9,6 +9,13 @@ class CitationIntent(Enum):
     OTHER = "OTHER"
 
 
+class CitationState(Enum):
+    MISSING_CITATION = "MISSING_CITATION"
+    COVERED_BY_BLOCK = "COVERED_BY_BLOCK"
+    HAS_CITATION = "HAS_CITATION"
+    NOT_CITATION_WORTHY = "NOT_CITATION_WORTHY"
+
+
 @dataclass
 class SentenceRecord:
     text: str                              # with citation markers intact
@@ -27,7 +34,7 @@ class SentenceRecord:
     cited_bibkeys: list[str] = field(default_factory=list)
 
     # --- Filled by Phase 2 (classification) ---
-    citation_worthy: bool | None = None
+    citation_state: CitationState | None = None
     worthiness_score: float | None = None  # model confidence [0,1]
 
     # --- Filled by Phase 3 (urgency scoring) ---
@@ -48,7 +55,7 @@ class SentenceRecord:
             "next_sentence": self.next_sentence,
             "cited_bibkeys": list(self.cited_bibkeys),
             "citation_intent": self.citation_intent.name if self.citation_intent else None,
-            "citation_worthy": self.citation_worthy,
+            "citation_state": self.citation_state.name if self.citation_state else None,
             "worthiness_score": self.worthiness_score,
             "urgency_score": self.urgency_score,
         }
@@ -59,7 +66,7 @@ class SentenceRecord:
             f"SentenceRecord(text={preview!r}, section={self.section!r}, "
             f"pos={self.position_in_section:.2f}, has_cite={self.has_citation}, "
             f"citation_intent={self.citation_intent.name if self.citation_intent else None}, "
-            f"citation_worthy={self.citation_worthy}, "
+            f"citation_state={self.citation_state.name if self.citation_state else None}, "
             f"worthiness_score={self.worthiness_score}, "
             f"urgency_score={self.urgency_score})"
         )

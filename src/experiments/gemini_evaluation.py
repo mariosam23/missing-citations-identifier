@@ -186,7 +186,7 @@ def example_to_sentence_record(example: ClassifierEvalExample) -> SentenceRecord
         position_in_section=0.5,  # placeholder
         has_citation=example.citation_worthy if example.citation_worthy is not None else True,
         citation_intent=example.citation_intent,
-        citation_worthy=example.citation_worthy,
+        citation_state=None,
     )
 
 
@@ -206,6 +206,7 @@ def evaluate_classifier(
     Returns:
         Tuple of (intent_metrics, worthiness_metrics)
     """
+    from entities.sentence_record import CitationState
     
     if dummy_paper is None:
         # Create a minimal dummy paper for context
@@ -228,7 +229,8 @@ def evaluate_classifier(
     predicted_intents = [s.citation_intent for s in classified]
     
     gold_worthy = [ex.citation_worthy for ex in examples]
-    predicted_worthy = [s.citation_worthy for s in classified]
+    # For benchmark evaluation, "citation worthy" means it's not NOT_CITATION_WORTHY
+    predicted_worthy: list[bool | None] = [s.citation_state != CitationState.NOT_CITATION_WORTHY for s in classified]
     
     # Compute metrics
     print("Computing metrics...")
