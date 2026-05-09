@@ -122,15 +122,10 @@ class UrgencyScorer:
         Only worthy, uncited sentences are scored. All other sentences keep
         ``urgency_score=None``. The original list is not modified.
         """
-        updated_sentences = []
-        candidate_indices: list[int] = []
-        
-        for idx, sentence in enumerate(sentences):
-            if not self._is_candidate(sentence):
-                updated_sentences.append(replace(sentence, urgency_score=None))
-            else:
-                updated_sentences.append(replace(sentence))
-                candidate_indices.append(idx)
+        updated_sentences = [replace(sentence, urgency_score=None) for sentence in sentences]
+        candidate_indices = [
+            idx for idx, sentence in enumerate(sentences) if self._is_candidate(sentence)
+        ]
 
         if not candidate_indices:
             logger.info("Out of %d sentences, no uncited sentences were found.", len(sentences))
@@ -168,8 +163,8 @@ class UrgencyScorer:
             support_factor = self._support_factor(similarity)
             urgency = base_urgency * support_factor
 
-            sentence.urgency_score = urgency
-           
+            updated_sentences[index] = replace(updated_sentences[index], urgency_score=urgency)
+
             features_by_index[index] = UrgencyFeatures(
                 top1_score=top1_score,
                 mean_top5=mean_top5,

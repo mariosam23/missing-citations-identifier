@@ -1,6 +1,7 @@
 import json
 import re
 import time
+from dataclasses import replace
 
 from utils import logger
 
@@ -30,28 +31,32 @@ class GeminiClassifier:
         self.delay_between_calls_seconds = delay_between_calls_seconds
 
     def classify_sentences(self, sentences: list[SentenceRecord], paper_title: str, paper_abstract: str) -> list[SentenceRecord]:
-        """Classify a list of sentences for citation worthiness and intent."""
+        """Classify a list of sentences for citation worthiness and intent.
+
+        Returns a new list of `SentenceRecord`s with classification fields
+        populated. The input list and its elements are not modified.
+        """
         if not sentences:
             logger.info("No sentences require classification (list is empty).")
-            return sentences
+            return list(sentences)
 
-        # Process in batches
+        updated: list[SentenceRecord] = []
         for i in range(0, len(sentences), self.batch_size):
             batch = sentences[i:i + self.batch_size]
             batch_number = (i // self.batch_size) + 1
             total_batches = (len(sentences) + self.batch_size - 1) // self.batch_size
             logger.info("Sending batch %d/%d to Gemini...", batch_number, total_batches)
-            self._classify_batch(batch, paper_title, paper_abstract)
+            updated.extend(self._classify_batch(batch, paper_title, paper_abstract))
 
             if i + self.batch_size < len(sentences) and self.delay_between_calls_seconds > 0:
                 logger.info(
                     "Waiting %d seconds before next Gemini API call...", int(self.delay_between_calls_seconds)
                 )
                 time.sleep(self.delay_between_calls_seconds)
-        return sentences
+        return updated
 
-    def _classify_batch(self, batch: list[SentenceRecord], paper_title: str, paper_abstract: str):
-        """Classify a batch of sentences using the LLM."""
+    def _classify_batch(self, batch: list[SentenceRecord], paper_title: str, paper_abstract: str) -> list[SentenceRecord]:
+        """Classify a batch of sentences using the LLM and return updated copies."""
         try:
             classifications = self._request_batch_classification(batch, paper_title, paper_abstract)
         except ValueError as exc:
@@ -63,11 +68,11 @@ class GeminiClassifier:
                 "Batch of %d sentences failed (%s). Retrying as chunks of %d and %d...",
                 len(batch), exc, split_point, len(batch) - split_point
             )
-            self._classify_batch(batch[:split_point], paper_title, paper_abstract)
-            self._classify_batch(batch[split_point:], paper_title, paper_abstract)
-            return
+            first = self._classify_batch(batch[:split_point], paper_title, paper_abstract)
+            second = self._classify_batch(batch[split_point:], paper_title, paper_abstract)
+            return first + second
 
-        self._apply_classifications(batch, classifications)
+        return self._apply_classifications(batch, classifications)
 
     def _request_batch_classification(
         self,
@@ -96,8 +101,10 @@ class GeminiClassifier:
         return classifications
 
     @staticmethod
-    def _apply_classifications(batch: list[SentenceRecord], classifications: list[dict]) -> None:
-        """Write parsed classifications back into the sentence records."""
+    def _apply_classifications(
+        batch: list[SentenceRecord], classifications: list[dict]
+    ) -> list[SentenceRecord]:
+        """Return new sentence records with parsed classification fields applied."""
         from entities.sentence_record import CitationState
         STATE_MAP = {
             "MISSING_CITATION": CitationState.MISSING_CITATION,
@@ -105,16 +112,20 @@ class GeminiClassifier:
             "HAS_CITATION": CitationState.HAS_CITATION,
             "NOT_CITATION_WORTHY": CitationState.NOT_CITATION_WORTHY,
         }
+
+        updates: dict[int, dict] = {}
         for cls in classifications:
             idx = cls["sentence_index"]
-            sentence = batch[idx]
             state_str = cls.get("citation_state", "NOT_CITATION_WORTHY")
             intent_str = cls.get("citation_intent", "OTHER")
             urgency = float(cls.get("urgency_of_citation", 0.5))
+            updates[idx] = {
+                "citation_state": STATE_MAP.get(state_str, CitationState.NOT_CITATION_WORTHY),
+                "citation_intent": INTENT_MAP.get(intent_str),
+                "worthiness_score": urgency,
+            }
 
-            sentence.citation_state = STATE_MAP.get(state_str, CitationState.NOT_CITATION_WORTHY)
-            sentence.citation_intent = INTENT_MAP.get(intent_str)
-            sentence.worthiness_score = urgency
+        return [replace(sentence, **updates[i]) for i, sentence in enumerate(batch)]
 
     @staticmethod
     def _validate_classifications(classifications: list[dict], expected_count: int) -> None:
