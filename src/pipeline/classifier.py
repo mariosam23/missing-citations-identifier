@@ -163,27 +163,43 @@ class GeminiClassifier:
             cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
             cleaned = re.sub(r"\s*```$", "", cleaned)
 
+        truncation_error = ValueError(
+            "Gemini returned a truncated JSON array. "
+            "Reduce batch size or response length."
+        )
+
         try:
             parsed = json.loads(cleaned)
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as outer_exc:
             json_match = re.search(r"\[[\s\S]*\]", cleaned)
-            if not json_match:
-                if "[" in cleaned and "]" not in cleaned:
+            if json_match:
+                try:
+                    parsed = json.loads(json_match.group())
+                except json.JSONDecodeError as inner_exc:
+                    if GeminiClassifier._is_truncation_error(inner_exc, json_match.group()):
+                        raise truncation_error from inner_exc
                     raise ValueError(
-                        "Gemini returned a truncated JSON array. "
+                        "Gemini returned malformed JSON. "
                         "Reduce batch size or response length."
-                    ) from None
-                raise ValueError(f"Could not parse LLM response as JSON: {response}")
-
-            try:
-                parsed = json.loads(json_match.group())
-            except json.JSONDecodeError as exc:
-                raise ValueError(
-                    "Gemini returned malformed or truncated JSON. "
-                    "Reduce batch size or response length."
-                ) from exc
+                    ) from inner_exc
+            elif GeminiClassifier._is_truncation_error(outer_exc, cleaned):
+                raise truncation_error from outer_exc
+            else:
+                raise ValueError(f"Could not parse LLM response as JSON: {response}") from outer_exc
 
         if not isinstance(parsed, list):
             raise ValueError(f"Expected a JSON array from Gemini, got: {type(parsed).__name__}")
 
         return parsed
+
+    @staticmethod
+    def _is_truncation_error(exc: json.JSONDecodeError, source: str) -> bool:
+        """Distinguish end-of-input truncation from a syntactic error mid-document.
+
+        ``json`` reports the failure offset in ``exc.pos``; if it lands at (or
+        adjacent to) the end of the input, or the message names an unterminated
+        token, the response was almost certainly cut off rather than malformed.
+        """
+        if "Unterminated" in exc.msg:
+            return True
+        return exc.pos >= len(source.rstrip()) - 1
