@@ -97,6 +97,9 @@ def extract_title_from_reference(raw_reference: str) -> str | None:
         title = after_year[: first_period.start()] if first_period else after_year
 
     title = title.strip().rstrip(".,")
+    # Fix PDF hyphenation artifacts (e.g., "lan- guage" -> "language")
+    title = re.sub(r'([a-zA-Z])-\s+([a-zA-Z])', r'\1\2', title)
+    
     return title if len(title) > 5 else None
 
 
@@ -205,7 +208,10 @@ class ReferenceResolver:
         tokens from the reference (case-insensitive ``ILIKE``). The resulting
         candidate set is small, so per-pair ``difflib`` matching is cheap.
         """
-        tokens = _fuzzy_candidate_tokens(raw_reference)
+        extracted_title = extract_title_from_reference(raw_reference)
+        text_for_tokens = extracted_title if extracted_title else raw_reference
+        
+        tokens = _fuzzy_candidate_tokens(text_for_tokens)
         if not tokens:
             return None
 
@@ -296,15 +302,20 @@ class ReferenceResolver:
             # Compare returned title against the extracted title, not the full
             # raw reference (a short title vs. a long reference string always
             # scores artificially low).
+            norm_best = normalize_title(best_title) if best_title else ""
+            norm_ext = normalize_title(extracted_title)
             confidence = (
                 difflib.SequenceMatcher(
                     None,
-                    normalize_title(best_title),
-                    normalize_title(extracted_title),
+                    norm_best,
+                    norm_ext,
                 ).ratio()
                 if best_title
                 else 0.0
             )
+            
+            if norm_ext and norm_ext in norm_best:
+                confidence = max(confidence, 0.95)
 
             if confidence < self._OPENALEX_MIN_CONFIDENCE:
                 logger.debug(
@@ -321,6 +332,7 @@ class ReferenceResolver:
                 return ResolvedReference(
                     raw_reference=raw_reference,
                     resolved_paper_id=local_id,
+                    openalex_id=openalex_id,
                     title=best_title,
                     doi=doi,
                     method="openalex",
@@ -330,6 +342,7 @@ class ReferenceResolver:
             return ResolvedReference(
                 raw_reference=raw_reference,
                 resolved_paper_id=None,
+                openalex_id=openalex_id,
                 title=best_title or None,
                 doi=doi,
                 method="openalex_external",

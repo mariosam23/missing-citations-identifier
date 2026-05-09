@@ -9,9 +9,10 @@ class ResolvedReference:
 
     raw_reference: str
     resolved_paper_id: str | None = None
+    openalex_id: str | None = None
     title: str | None = None
     doi: str | None = None
-    method: str | None = None  # "exact_doi", "fuzzy_title", "openalex", "unresolved"
+    method: str | None = None  # "exact_doi", "fuzzy_title", "openalex", "openalex_external", "unresolved"
     confidence: float = 0.0
     unresolved_reason: str | None = None
 
