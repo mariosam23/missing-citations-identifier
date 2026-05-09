@@ -34,7 +34,7 @@ from utils.regex_patterns import (
 # Pre-compile a single regex for known dehyphenation fixes.  The pattern
 # matches any of the fused tokens (case-insensitive, word-boundary).
 if KNOWN_DEHYPHENATION_FIXES:
-    _DEHYPHENATION_RE = re.compile(
+    _DEHYPHENATION_RE: re.Pattern[str] | None = re.compile(
         r"\b(" + "|".join(re.escape(k) for k in KNOWN_DEHYPHENATION_FIXES) + r")\b",
         re.IGNORECASE,
     )
@@ -274,7 +274,6 @@ def extract_sentences(parsed_paper: ParsedPaper) -> list[SentenceRecord]:
 
             has_grobid_marker = bool(grobid_bibkeys)
             has_natural_cite = bool(CITATION_PATTERN.search(sent_text))
-            has_author_year_resolved = bool(author_year_bibkeys)
             has_cite = has_grobid_marker or has_natural_cite
 
             retrieval_text = _strip_citation_artifacts(sent_text)
