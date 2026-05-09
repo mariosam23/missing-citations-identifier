@@ -1,7 +1,7 @@
 """Hybrid Qdrant retrieval over the indexed paper collection."""
 
-from collections.abc import Sequence
-from typing import TYPE_CHECKING
+from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING, Any, Protocol
 
 from qdrant_client.http.models import (
     Fusion,
@@ -19,6 +19,42 @@ from utils import logger
 
 if TYPE_CHECKING:
     from qdrant_client import QdrantClient
+    from qdrant_client.http.models import ScoredPoint
+
+
+# ndarray, list[float], list[int] — anything `_as_list` can normalize.
+ArrayLike = Any
+
+
+class DenseEncoder(Protocol):
+    """SentenceTransformer-compatible dense encoder.
+
+    Must expose ``.encode(texts, normalize_embeddings=...)`` returning an
+    iterable of vectors (ndarray rows or plain sequences).
+    """
+
+    def encode(
+        self,
+        sentences: Sequence[str],
+        normalize_embeddings: bool = ...,
+    ) -> Iterable[ArrayLike]: ...
+
+
+class SparseEmbedding(Protocol):
+    """One SPLADE-style sparse vector with parallel index/value arrays."""
+
+    indices: ArrayLike
+    values: ArrayLike
+
+
+class SparseEncoder(Protocol):
+    """fastembed ``SparseTextEmbedding``-compatible sparse encoder.
+
+    Must expose ``.embed(texts)`` yielding objects with ``.indices`` and
+    ``.values`` attributes.
+    """
+
+    def embed(self, texts: list[str]) -> Iterable[SparseEmbedding]: ...
 
 
 _QUERY_PREFIX = (
@@ -34,8 +70,8 @@ class HybridRetriever:
     def __init__(
         self,
         qdrant_client: "QdrantClient",
-        dense_model,
-        sparse_model,
+        dense_model: DenseEncoder,
+        sparse_model: SparseEncoder,
         collection: str = "papers",
         prefetch_limit: int = 50,
     ) -> None:
@@ -182,14 +218,14 @@ class HybridRetriever:
         ]
 
     @staticmethod
-    def _as_list(values) -> list:
+    def _as_list(values: ArrayLike) -> list:
         """Convert ndarray-like outputs to a plain Python list."""
         if hasattr(values, "tolist"):
             return values.tolist()
         return list(values)
 
     @staticmethod
-    def _point_to_result(point) -> RetrievalResult:
+    def _point_to_result(point: "ScoredPoint") -> RetrievalResult:
         """Map a Qdrant scored point to the project retrieval contract."""
         payload: dict = point.payload or {}
         return RetrievalResult(
