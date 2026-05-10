@@ -3,8 +3,8 @@ import math
 import random
 from dataclasses import dataclass
 
-from src.entities.sentence_record import SentenceRecord
-from src.utils.regex_patterns import (
+from entities.sentence_record import SentenceRecord
+from utils.regex_patterns import (
     CITATION_PATTERN,
     GROBID_CITE_MARKER_PATTERN,
     EMPTY_PAREN_PATTERN,
