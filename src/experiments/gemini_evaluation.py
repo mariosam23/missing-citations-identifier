@@ -1,4 +1,4 @@
-"""Evaluate GeminiClassifier against labeled citation datasets (SciCite, ACL-ARC)."""
+"""Evaluate CitationClassifier against labeled citation datasets (SciCite, ACL-ARC)."""
 
 import sys
 from collections import defaultdict
@@ -11,7 +11,7 @@ from evaluation import (
     ClassifierEvalExample,
 )
 from entities import SentenceRecord, ParsedPaper, CitationIntent
-from experiments.gemini_classifier import GeminiClassifier
+from pipeline.classifier import CitationClassifier
 
 
 @dataclass
@@ -192,7 +192,7 @@ def example_to_sentence_record(example: ClassifierEvalExample) -> SentenceRecord
 
 def evaluate_classifier(
     examples: list[ClassifierEvalExample],
-    classifier: GeminiClassifier,
+    classifier: CitationClassifier,
     dummy_paper: ParsedPaper | None = None,
 ) -> tuple[ClassifierMetrics, dict[str, float]]:
     """
@@ -200,7 +200,7 @@ def evaluate_classifier(
     
     Args:
         examples: List of ClassifierEvalExample with ground-truth labels
-        classifier: GeminiClassifier instance
+        classifier: CitationClassifier instance
         dummy_paper: A ParsedPaper to use for context (if None, creates minimal dummy)
     
     Returns:
@@ -317,7 +317,7 @@ def evaluate_on_scicite(
         filtered_examples = filtered_examples[:max_examples]
         print(f"Evaluating first {len(filtered_examples)} examples")
 
-    classifier = GeminiClassifier(
+    classifier = CitationClassifier(
         model="gemma-4-31b-it",
         batch_size=batch_size,
         delay_between_calls_seconds=delay_between_calls_seconds,
@@ -354,7 +354,7 @@ def evaluate_on_acl_arc(
         filtered_examples = filtered_examples[:max_examples]
         print(f"Evaluating first {len(filtered_examples)} examples")
 
-    classifier = GeminiClassifier(
+    classifier = CitationClassifier(
         batch_size=batch_size,
         delay_between_calls_seconds=delay_between_calls_seconds,
     )
@@ -368,7 +368,7 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="Evaluate GeminiClassifier on labeled citation datasets"
+        description="Evaluate CitationClassifier on labeled citation datasets"
     )
     parser.add_argument(
         "--dataset",

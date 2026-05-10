@@ -4,7 +4,7 @@ from google.genai import types
 from utils import logger, config
 
 
-class LLMClient:
+class GeminiClient:
     def __init__(self, model: str, temperature: float = 1.0, max_tokens: int = 4096):
         self.model = model
         self.temperature = temperature
@@ -40,5 +40,4 @@ class LLMClient:
 
     @property
     def model_name(self) -> str:
-        """Return the name of the model this client is configured to use."""
         return self.model

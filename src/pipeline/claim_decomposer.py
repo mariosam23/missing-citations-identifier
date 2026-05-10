@@ -32,9 +32,9 @@ class ClaimDecomposer:
     ) -> None:
         model = model or config.DECOMPOSER_MODEL
         if client is None:
-            from llm.genai_client import LLMClient
+            from llm.gemini_client import GeminiClient
 
-            client = LLMClient(model=model, temperature=0.1, max_tokens=2048)
+            client = GeminiClient(model=model, temperature=0.1, max_tokens=4000)
         self.client = client
 
     def decompose(self, claim: str) -> Decomposition:

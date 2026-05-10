@@ -5,7 +5,7 @@ from dataclasses import replace
 
 from utils import logger
 
-from llm.genai_client import LLMClient
+from llm.gemini_client import GeminiClient
 from prompts import CLASSIFIER_SYSTEM_PROMPT, CLASSIFIER_USER_PROMPT_TEMPLATE
 from entities import SentenceRecord, CitationIntent
 from utils.config import config
@@ -18,7 +18,7 @@ INTENT_MAP = {
     "OTHER": CitationIntent.OTHER,
 }
 
-class GeminiClassifier:
+class CitationClassifier:
     def __init__(
         self,
         model: str | None = None,
@@ -27,7 +27,7 @@ class GeminiClassifier:
         system_prompt: str | None = None,
     ):
         model = model or config.CLASSIFIER_MODEL
-        self.client = LLMClient(model=model, temperature=0.1, max_tokens=8000)
+        self.client = GeminiClient(model=model, temperature=0.1, max_tokens=8000)
         self.batch_size = batch_size
         self.delay_between_calls_seconds = delay_between_calls_seconds
         self.system_prompt = system_prompt or CLASSIFIER_SYSTEM_PROMPT
@@ -178,13 +178,13 @@ class GeminiClassifier:
                 try:
                     parsed = json.loads(json_match.group())
                 except json.JSONDecodeError as inner_exc:
-                    if GeminiClassifier._is_truncation_error(inner_exc, json_match.group()):
+                    if CitationClassifier._is_truncation_error(inner_exc, json_match.group()):
                         raise truncation_error from inner_exc
                     raise ValueError(
                         "Gemini returned malformed JSON. "
                         "Reduce batch size or response length."
                     ) from inner_exc
-            elif GeminiClassifier._is_truncation_error(outer_exc, cleaned):
+            elif CitationClassifier._is_truncation_error(outer_exc, cleaned):
                 raise truncation_error from outer_exc
             else:
                 raise ValueError(f"Could not parse LLM response as JSON: {response}") from outer_exc
