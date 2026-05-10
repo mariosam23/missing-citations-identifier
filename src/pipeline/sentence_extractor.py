@@ -274,7 +274,7 @@ def extract_sentences(parsed_paper: ParsedPaper) -> list[SentenceRecord]:
 
             has_grobid_marker = bool(grobid_bibkeys)
             has_natural_cite = bool(CITATION_PATTERN.search(sent_text))
-            has_cite = has_grobid_marker or has_natural_cite
+            has_cite = has_grobid_marker or has_natural_cite or bool(author_year_bibkeys)
 
             retrieval_text = _strip_citation_artifacts(sent_text)
 
