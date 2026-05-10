@@ -45,6 +45,8 @@ class TestReferenceResolver(unittest.TestCase):
     def test_resolver_openalex_fallback(self, mock_requests_get, mock_get_session):
         mock_session = MagicMock()
         mock_get_session.return_value.__enter__.return_value = mock_session
+        mock_session.get.return_value = None
+        mock_session.query.return_value.filter.return_value.filter.return_value.limit.return_value.all.return_value = []
         # Mock DB returns the paper for the OpenAlex DOI lookup
         mock_session.query.return_value.filter.return_value.first.return_value = MagicMock(paperId="local_123", title="OpenAlex Best Match")
         
@@ -67,7 +69,7 @@ class TestReferenceResolver(unittest.TestCase):
             mock_config.OPEN_ALEX_API_KEY = None
             
             resolver = ReferenceResolver()
-            result = resolver.resolve("Some raw reference without DOI")
+            result = resolver.resolve("Smith, Jane. 2020. OpenAlex Best Match. Journal.")
             
             self.assertTrue(result.is_resolved)
             self.assertEqual(result.method, "openalex")
@@ -121,10 +123,36 @@ class TestReferenceResolver(unittest.TestCase):
 
     @patch("pipeline.reference_resolver.get_session")
     @patch("pipeline.reference_resolver.requests.get")
+    def test_resolver_local_title_exact_precedes_openalex(self, mock_requests_get, mock_get_session):
+        """Exact local title match should resolve without remote OpenAlex search."""
+        mock_session = MagicMock()
+        mock_get_session.return_value.__enter__.return_value = mock_session
+        candidate = MagicMock(
+            paperId="W2170973209",
+            title="Semi-supervised Sequence Learning",
+            doi="10.48550/arxiv.1511.01432",
+        )
+        mock_session.query.return_value.filter.return_value.filter.return_value.limit.return_value.all.return_value = [candidate]
+
+        resolver = ReferenceResolver()
+        result = resolver.resolve(
+            "Andrew M Dai and Quoc V Le. 2015. Semi-supervised sequence learning. "
+            "In Advances in neural information processing systems."
+        )
+
+        self.assertTrue(result.is_resolved)
+        self.assertEqual(result.method, "fuzzy_title")
+        self.assertEqual(result.resolved_paper_id, "W2170973209")
+        self.assertEqual(result.confidence, 1.0)
+        mock_requests_get.assert_not_called()
+
+    @patch("pipeline.reference_resolver.get_session")
+    @patch("pipeline.reference_resolver.requests.get")
     def test_resolver_openalex_external(self, mock_requests_get, mock_get_session):
         """OpenAlex returns a paper not in local corpus -> still surface metadata."""
         mock_session = MagicMock()
         mock_get_session.return_value.__enter__.return_value = mock_session
+        mock_session.get.return_value = None
         # No local DOI hit, no fuzzy candidates, no DOI rematch on OpenAlex DOI.
         mock_session.query.return_value.filter.return_value.first.return_value = None
         mock_session.query.return_value.filter.return_value.filter.return_value.limit.return_value.all.return_value = []
@@ -148,7 +176,7 @@ class TestReferenceResolver(unittest.TestCase):
             mock_config.OPENALEX_BASE_URL = "https://api.openalex.org"
 
             resolver = ReferenceResolver()
-            result = resolver.resolve("Reference to a paper not in our corpus")
+            result = resolver.resolve("Smith, Jane. 2020. External Paper. Journal.")
 
             # Not in local corpus, so unresolved-locally — but we still surface
             # the OpenAlex metadata instead of throwing it away.

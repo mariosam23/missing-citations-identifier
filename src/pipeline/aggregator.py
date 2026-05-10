@@ -96,6 +96,7 @@ class DecomposedRetriever:
         self,
         decomposition: Decomposition,
         top_k: int = 10,
+        max_year: int | None = None,
     ) -> list[RankedPaper]:
         if decomposition.aggregation != AggregationStrategy.WEIGHTED:
             raise ValueError(f"Unsupported aggregation strategy: {decomposition.aggregation}")
@@ -109,6 +110,7 @@ class DecomposedRetriever:
             hits = self.retriever.retrieve(
                 subclaim.text,
                 top_k=self.candidates_per_subclaim,
+                max_year=max_year,
             )
             if self.reranker is not None:
                 hits = self.reranker.rerank(
@@ -133,9 +135,14 @@ class DecomposedRetriever:
         self,
         decomposition: Decomposition,
         top_k: int = 10,
+        max_year: int | None = None,
     ) -> list[RetrievalResult]:
         """Return aggregated results using the existing RetrievalResult contract."""
         return [
             paper.to_retrieval_result()
-            for paper in self.retrieve_ranked(decomposition, top_k=top_k)
+            for paper in self.retrieve_ranked(
+                decomposition,
+                top_k=top_k,
+                max_year=max_year,
+            )
         ]

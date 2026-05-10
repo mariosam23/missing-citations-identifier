@@ -157,8 +157,8 @@ def _strip_citation_artifacts(text: str) -> str:
 def _build_author_year_index(bibliography: dict[str, str]) -> dict[tuple[str, str], list[str]]:
     """Build a (surname_lower, year) → [bibkey, …] lookup from the bibliography.
 
-    Multiple entries may share the same first-author + year (e.g. Peters 2018a
-    vs Peters 2018b); we keep them all so we can at least attribute a superset.
+    Year suffixes are preserved so ``2018a`` and ``2018b`` can be resolved
+    independently when the in-text citation includes the suffix.
 
     To handle both ``"Surname, First. 2020."`` and ``"First Surname, … 2020."``
     formats we grab *every* capitalised word before the first comma/period and
@@ -169,7 +169,7 @@ def _build_author_year_index(bibliography: dict[str, str]) -> dict[tuple[str, st
         year_m = BIBLIOGRAPHY_YEAR_PATTERN.search(raw_text)
         if not year_m:
             continue
-        year = year_m.group(1)
+        year = year_m.group(1).lower()
 
         # All capitalised tokens before the first comma or period.
         for surname_m in BIBLIOGRAPHY_SURNAME_PATTERN.finditer(raw_text):
@@ -198,12 +198,20 @@ def _resolve_author_year_citations(
     resolved: list[str] = []
     for m in INTEXT_AUTHOR_YEAR_PATTERN.finditer(text):
         surname = m.group("surname").lower()
-        year = m.group("year")
-        # Strip trailing letter (e.g. "2018a" → "2018") for index lookup
-        year_base = year[:4]
-        for key in [(surname, year_base)]:
-            if key in author_year_index:
-                resolved.extend(author_year_index[key])
+        year = m.group("year").lower()
+        # Suffixes are exact; unsuffixed years fall back to same-year variants.
+        if len(year) > 4:
+            resolved.extend(author_year_index.get((surname, year.lower()), []))
+            continue
+
+        resolved.extend(author_year_index.get((surname, year), []))
+        for (candidate_surname, candidate_year), bibkeys in author_year_index.items():
+            if (
+                candidate_surname == surname
+                and candidate_year.startswith(year)
+                and candidate_year != year
+            ):
+                resolved.extend(bibkeys)
     return resolved
 
 

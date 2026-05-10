@@ -19,7 +19,7 @@ import difflib
 import re
 
 import requests
-from sqlalchemy import or_
+from sqlalchemy import and_, or_
 from utils.logger import logger
 
 from entities.resolved_reference import ResolvedReference
@@ -158,6 +158,12 @@ class ReferenceResolver:
                 return result
 
         # 2. Fuzzy title match against a small Postgres candidate set
+        result = self._resolve_by_local_title(raw_reference)
+        if result:
+            self.stats["fuzzy_title"] += 1
+            self._cache[raw_reference] = result
+            return result
+
         result = self._resolve_by_fuzzy_title(raw_reference)
         if result:
             self.stats["fuzzy_title"] += 1
@@ -200,38 +206,58 @@ class ReferenceResolver:
             logger.warning("DB lookup failed for DOI %s: %s", doi, e)
         return None
 
+    def _resolve_by_local_title(self, raw_reference: str) -> ResolvedReference | None:
+        """Resolve by exact normalized title against local Postgres.
+
+        This is stricter than the fuzzy path and intentionally runs before
+        OpenAlex. If the cited title is already in the local corpus, we should
+        not rely on a remote search result to rediscover its Work ID.
+        """
+        extracted_title = extract_title_from_reference(raw_reference)
+        if not extracted_title:
+            return None
+
+        norm_ext = normalize_title(extracted_title)
+        if not norm_ext:
+            return None
+
+        rows = self._query_title_candidates(extracted_title, require_all_tokens=True)
+        for row in rows:
+            paper_id, title, doi = self._row_values(row)
+            if title and normalize_title(str(title)) == norm_ext:
+                return ResolvedReference(
+                    raw_reference=raw_reference,
+                    resolved_paper_id=paper_id,
+                    title=str(title),
+                    doi=str(doi) if doi is not None else None,
+                    method="fuzzy_title",
+                    confidence=1.0,
+                )
+
+        return None
+
     def _resolve_by_fuzzy_title(self, raw_reference: str) -> ResolvedReference | None:
         """Fuzzy-match the reference against a small set of Postgres candidates.
 
-        We avoid scanning the whole DB by first filtering with a few content
-        tokens from the reference (case-insensitive ``ILIKE``). The resulting
-        candidate set is small, so per-pair ``difflib`` matching is cheap.
+        We avoid scanning the whole DB by first requiring all selected title
+        tokens in the candidate query. If that is too strict (for example due
+        to a title punctuation/hyphenation mismatch), we fall back to a wider
+        OR query and rank the returned candidates in Python.
         """
         extracted_title = extract_title_from_reference(raw_reference)
         text_for_tokens = extracted_title if extracted_title else raw_reference
-        
-        tokens = _fuzzy_candidate_tokens(text_for_tokens)
-        if not tokens:
-            return None
 
-        try:
-            with get_session() as session:
-                conditions = [Paper.title.ilike(f"%{token}%") for token in tokens]
-                rows = (
-                    session.query(Paper.paperId, Paper.title, Paper.doi)
-                    .filter(Paper.title.is_not(None))
-                    .filter(or_(*conditions))
-                    .limit(self.fuzzy_candidate_limit)
-                    .all()
-                )
-        except Exception as e:
-            logger.warning("Fuzzy title candidate query failed: %s", e)
-            return None
+        rows = self._query_title_candidates(text_for_tokens, require_all_tokens=True)
+        if not rows:
+            rows = self._query_title_candidates(text_for_tokens, require_all_tokens=False)
 
         if not rows:
             return None
 
-        candidates = {str(row.paperId): (row.title or "", row.doi) for row in rows}
+        candidates = {}
+        for row in self._rank_title_candidate_rows(text_for_tokens, rows):
+            paper_id, title, doi = self._row_values(row)
+            candidates[paper_id] = (title or "", doi)
         match = self._fuzzy_match_title(
             raw_reference, {pid: title for pid, (title, _) in candidates.items()}
         )
@@ -248,6 +274,65 @@ class ReferenceResolver:
             method="fuzzy_title",
             confidence=score,
         )
+
+    def _query_title_candidates(
+        self,
+        text_for_tokens: str,
+        *,
+        require_all_tokens: bool,
+    ) -> list:
+        tokens = _fuzzy_candidate_tokens(text_for_tokens)
+        if not tokens:
+            return []
+
+        conditions = [Paper.title.ilike(f"%{token}%") for token in tokens]
+        condition = and_(*conditions) if require_all_tokens else or_(*conditions)
+        limit = self.fuzzy_candidate_limit
+        if not require_all_tokens:
+            limit = max(self.fuzzy_candidate_limit * 4, self.fuzzy_candidate_limit)
+
+        try:
+            with get_session() as session:
+                return (
+                    session.query(Paper.paperId, Paper.title, Paper.doi)
+                    .filter(Paper.title.is_not(None))
+                    .filter(condition)
+                    .limit(limit)
+                    .all()
+                )
+        except Exception as e:
+            logger.warning("Title candidate query failed: %s", e)
+            return []
+
+    @staticmethod
+    def _row_values(row) -> tuple[str, str, str | None]:
+        """Return ``(paper_id, title, doi)`` for SQLAlchemy rows or test doubles."""
+        paper_id = getattr(row, "paperId", None)
+        title = getattr(row, "title", None)
+        doi = getattr(row, "doi", None)
+        if paper_id is None and isinstance(row, tuple):
+            paper_id = row[0]
+            title = row[1] if len(row) > 1 else None
+            doi = row[2] if len(row) > 2 else None
+        return (
+            str(paper_id),
+            str(title) if title is not None else "",
+            str(doi) if doi is not None else None,
+        )
+
+    def _rank_title_candidate_rows(self, query: str, rows: list) -> list:
+        """Prefer candidates covering more query tokens before fuzzy scoring."""
+        tokens = _fuzzy_candidate_tokens(query, top_n=6)
+        if not tokens:
+            return rows
+
+        def score(row) -> tuple[int, int]:
+            _paper_id, title, _doi = self._row_values(row)
+            title_lower = title.lower()
+            covered = sum(1 for token in tokens if token in title_lower)
+            return covered, len(title)
+
+        return sorted(rows, key=score, reverse=True)
 
     _OPENALEX_MIN_CONFIDENCE = 0.7
 

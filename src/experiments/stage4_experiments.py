@@ -357,6 +357,11 @@ def _paper_ids(results: Sequence[Any]) -> list[str]:
     return [str(result.paper_id) for result in results]
 
 
+def _example_query_year(example: BenchmarkExample) -> int | None:
+    query_year = example.metadata.get("query_year")
+    return int(query_year) if query_year is not None else None
+
+
 def _apply_filters(
     candidates: list[Any],
     example: BenchmarkExample,
@@ -389,7 +394,11 @@ def make_cached_hybrid_predictor(
 ) -> Callable[[BenchmarkExample], list[str]]:
     def predict(example: BenchmarkExample) -> list[str]:
         if example.example_id not in cache:
-            cache[example.example_id] = retriever.retrieve(example.query_text, top_k=candidate_k)
+            cache[example.example_id] = retriever.retrieve(
+                example.query_text,
+                top_k=candidate_k,
+                max_year=_example_query_year(example),
+            )
         candidates = cache[example.example_id]
         if filter_pipeline:
             candidates = _apply_filters(candidates, example, filter_pipeline)
@@ -413,6 +422,7 @@ def make_rerank_predictor(
             candidate_cache[example.example_id] = retriever.retrieve(
                 example.query_text,
                 top_k=candidate_k,
+                max_year=_example_query_year(example),
             )
         if example.example_id not in rerank_cache:
             rerank_cache[example.example_id] = reranker.rerank(
@@ -455,6 +465,7 @@ def make_decomposed_predictor(
             fused = decomposed_retriever.retrieve_and_aggregate(
                 decomposition_cache[example.example_id],
                 top_k=final_rerank_k,
+                max_year=_example_query_year(example),
             )
             if final_reranker is not None and fused:
                 fused = final_reranker.rerank(

@@ -37,10 +37,12 @@ class FakeClient:
 class FakeRetriever:
     def __init__(self, results_by_query: dict[str, list[RetrievalResult]]) -> None:
         self.results_by_query = results_by_query
+        self.calls: list[tuple[str, int, int | None]] = []
 
     def retrieve(
         self, query: str, top_k: int = 10, max_year: int | None = None
     ) -> list[RetrievalResult]:
+        self.calls.append((query, top_k, max_year))
         return self.results_by_query.get(query, [])[:top_k]
 
 
@@ -76,6 +78,20 @@ class Stage5AggregationTests(unittest.TestCase):
         decomposed = DecomposedRetriever(retriever)
 
         self.assertEqual(decomposed.retrieve_and_aggregate(decomposition, top_k=0), [])
+        self.assertEqual(retriever.calls, [])
+
+    def test_decomposed_retriever_forwards_max_year(self) -> None:
+        decomposition = Decomposition(
+            original_text="claim",
+            subclaims=(Subclaim("claim"),),
+        )
+        retriever = FakeRetriever({"claim": [result("p1", 1.0)]})
+        decomposed = DecomposedRetriever(retriever, candidates_per_subclaim=7)
+
+        ranked = decomposed.retrieve_ranked(decomposition, top_k=1, max_year=2018)
+
+        self.assertEqual([paper.paper_id for paper in ranked], ["p1"])
+        self.assertEqual(retriever.calls, [("claim", 7, 2018)])
 
 
 class Stage5DecomposerTests(unittest.TestCase):

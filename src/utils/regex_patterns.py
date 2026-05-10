@@ -141,7 +141,7 @@ OPENALEX_ID_PATTERN = re.compile(r"(?:openalex\.org/)?(W\d{6,})", re.IGNORECASE)
 # use "First Last, …" we grab the *last capitalised word before the first
 # comma* and pair it with the first 4-digit year.
 BIBLIOGRAPHY_SURNAME_PATTERN = re.compile(r"([A-Z][A-Za-z'`-]+)(?=[,.]|\s+and\b)")
-BIBLIOGRAPHY_YEAR_PATTERN = re.compile(r"\b(\d{4})[a-z]?\b")
+BIBLIOGRAPHY_YEAR_PATTERN = re.compile(r"\b(\d{4}[a-z]?)\b")
 
 # Matches an in-text author-year citation — *with capture groups* so we can
 # resolve each one against the bibliography index. Handles:
@@ -152,7 +152,7 @@ INTEXT_AUTHOR_YEAR_PATTERN = re.compile(
     r"(?P<surname>[A-Z][A-Za-z'`-]+)"
     r"(?:\s+(?:et\s+al\.?|and|&)\s+[A-Z][A-Za-z'`-]+|\s+et\s+al\.?)?"
     r"[,\s]*"
-    r"\(?(?P<year>\d{4})[a-z]?\)?"
+    r"\(?(?P<year>\d{4}[a-z]?)\)?"
 )
 
 # ==========================================
