@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     # Remote APIs / DB
     DB_URL: str = ""
     OPEN_ALEX_API_KEY: str = ""
+    S2_API_Key: str = ""
     OPEN_ALEX_EMAIL: str = ""
     OPEN_ROUTER_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
