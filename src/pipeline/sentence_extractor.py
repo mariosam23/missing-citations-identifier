@@ -245,13 +245,23 @@ def extract_sentences(parsed_paper: ParsedPaper) -> list[SentenceRecord]:
         # Clean and filter (noise filter runs on the citation-stripped form so
         # short sentences like "BERT [CITE:b3]." still register their
         # underlying length).
+        # orphan_bibkeys[i] collects citations from noise-filtered fragments
+        # that immediately follow valid_sents[i] — e.g. when spaCy splits a
+        # sentence at a line-break artefact and the trailing "(Author, Year)."
+        # lands in a separate fragment that is then noise-filtered away.
         valid_sents: list[str] = []
+        orphan_bibkeys: list[list[str]] = []
         for s in raw_sents:
             cleaned = clean_text(BULLET_MARKER_PATTERN.sub("", s))
             stripped = _strip_citation_artifacts(cleaned)
             if not stripped or is_noise(stripped):
+                if valid_sents:
+                    g = GROBID_CITE_MARKER_PATTERN.findall(cleaned)
+                    a = _resolve_author_year_citations(cleaned, author_year_index)
+                    orphan_bibkeys[-1].extend(g + a)
                 continue
             valid_sents.append(cleaned)
+            orphan_bibkeys.append([])
 
         total_sents = len(valid_sents)
         if total_sents == 0:
@@ -267,14 +277,22 @@ def extract_sentences(parsed_paper: ParsedPaper) -> list[SentenceRecord]:
                 sent_text, author_year_index
             )
 
+            # 3. Citations recovered from noise-filtered trailing fragments.
+            trailing_bibkeys = orphan_bibkeys[i]
+
             # Merge and deduplicate, preserving order.
             all_bibkeys = list(
-                dict.fromkeys(grobid_bibkeys + author_year_bibkeys)
+                dict.fromkeys(grobid_bibkeys + author_year_bibkeys + trailing_bibkeys)
             )
 
             has_grobid_marker = bool(grobid_bibkeys)
             has_natural_cite = bool(CITATION_PATTERN.search(sent_text))
-            has_cite = has_grobid_marker or has_natural_cite or bool(author_year_bibkeys)
+            has_cite = (
+                has_grobid_marker
+                or has_natural_cite
+                or bool(author_year_bibkeys)
+                or bool(trailing_bibkeys)
+            )
 
             retrieval_text = _strip_citation_artifacts(sent_text)
 

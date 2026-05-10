@@ -24,11 +24,13 @@ class GeminiClassifier:
         model: str | None = None,
         batch_size: int = 10,
         delay_between_calls_seconds: float = 30.0,
+        system_prompt: str | None = None,
     ):
         model = model or config.CLASSIFIER_MODEL
         self.client = LLMClient(model=model, temperature=0.1, max_tokens=8000)
         self.batch_size = batch_size
         self.delay_between_calls_seconds = delay_between_calls_seconds
+        self.system_prompt = system_prompt or CLASSIFIER_SYSTEM_PROMPT
 
     def classify_sentences(self, sentences: list[SentenceRecord], paper_title: str, paper_abstract: str) -> list[SentenceRecord]:
         """Classify a list of sentences for citation worthiness and intent.
@@ -90,7 +92,7 @@ class GeminiClassifier:
         )
 
         response = self.client.complete(
-            CLASSIFIER_SYSTEM_PROMPT,
+            self.system_prompt,
             user_prompt,
             response_mime_type="application/json",
         )
