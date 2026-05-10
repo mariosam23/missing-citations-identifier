@@ -41,3 +41,16 @@ class Decomposition:
             raise ValueError("Decomposition must contain at least one subclaim")
         if not isinstance(self.subclaims, tuple):
             object.__setattr__(self, "subclaims", tuple(self.subclaims))
+    
+    def __str__(self) -> str:
+        subclaims_str = "\n".join(
+            f"- {subclaim.text} (importance: {subclaim.importance})"
+            for subclaim in self.subclaims
+        )
+        return (
+            f"Decomposition(\n"
+            f"  original_text='{self.original_text}',\n"
+            f"  aggregation='{self.aggregation}',\n"
+            f"  subclaims=[\n{subclaims_str}\n  ]\n"
+            f")"
+        )
