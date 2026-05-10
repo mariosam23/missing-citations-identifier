@@ -1,5 +1,6 @@
 """Tests for the urgency scorer's batched probe and small-N normalization."""
 
+from entities import CitationWorthiness
 import unittest
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -38,7 +39,7 @@ def _candidate(text: str, intent: CitationIntent = CitationIntent.METHOD) -> Sen
         citation_intent=intent,
         retrieval_text=text,
         citation_state=CitationState.MISSING_CITATION,
-        worthiness_score=0.9,
+        worthiness_score=CitationWorthiness.HIGH,
     )
 
 

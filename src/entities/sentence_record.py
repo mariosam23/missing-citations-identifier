@@ -9,6 +9,12 @@ class CitationIntent(Enum):
     OTHER = "OTHER"
 
 
+class CitationWorthiness(Enum):
+    HIGH = "HIGH"      # core claim — essential to support with a citation
+    MEDIUM = "MEDIUM"  # notable claim — should be cited
+    LOW = "LOW"        # minor or borderline claim
+
+
 class CitationState(Enum):
     MISSING_CITATION = "MISSING_CITATION"
     COVERED_BY_BLOCK = "COVERED_BY_BLOCK"
@@ -35,7 +41,7 @@ class SentenceRecord:
 
     # --- Filled by Phase 2 (classification) ---
     citation_state: CitationState | None = None
-    worthiness_score: float | None = None  # claim severity/urgency [0,1]
+    worthiness_score: CitationWorthiness | None = None
 
     # --- Filled by Phase 3 (urgency scoring) ---
     urgency_score: float | None = None
@@ -61,7 +67,7 @@ class SentenceRecord:
             "cited_bibkeys": list(self.cited_bibkeys),
             "citation_intent": self.citation_intent.name if self.citation_intent else None,
             "citation_state": self.citation_state.name if self.citation_state else None,
-            "worthiness_score": self.worthiness_score,
+            "worthiness_score": self.worthiness_score.value if self.worthiness_score else None,
             "urgency_score": self.urgency_score,
         }
 
@@ -72,6 +78,6 @@ class SentenceRecord:
             f"pos={self.position_in_section:.2f}, has_cite={self.has_citation}, "
             f"citation_intent={self.citation_intent.name if self.citation_intent else None}, "
             f"citation_state={self.citation_state.name if self.citation_state else None}, "
-            f"worthiness_score={self.worthiness_score}, "
+            f"worthiness_score={self.worthiness_score.name if self.worthiness_score else None}, "
             f"urgency_score={self.urgency_score})"
         )

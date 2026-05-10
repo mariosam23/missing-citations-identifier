@@ -16,12 +16,19 @@ if TYPE_CHECKING:
     from pipeline.retriever import HybridRetriever
 
 from entities import CitationIntent, SentenceRecord
-from entities.sentence_record import CitationState
+from entities.sentence_record import CitationState, CitationWorthiness
 
 from utils import logger
 
 
 _MIN_CANDIDATES_FOR_NORMALIZATION = 3
+
+_WORTHINESS_ORDER: dict[CitationWorthiness | None, int] = {
+    CitationWorthiness.HIGH: 2,
+    CitationWorthiness.MEDIUM: 1,
+    CitationWorthiness.LOW: 0,
+    None: -1,
+}
 
 
 @dataclass(frozen=True)
@@ -190,7 +197,7 @@ class UrgencyScorer:
         ranked.sort(
             key=lambda sentence: (
                 sentence.urgency_score,
-                sentence.worthiness_score if sentence.worthiness_score is not None else -1.0,
+                _WORTHINESS_ORDER.get(sentence.worthiness_score, -1),
             ),
             reverse=True,
         )

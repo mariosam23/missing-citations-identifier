@@ -7,7 +7,7 @@ from utils import logger
 
 from llm.gemini_client import GeminiClient
 from prompts import CLASSIFIER_SYSTEM_PROMPT, CLASSIFIER_USER_PROMPT_TEMPLATE
-from entities import SentenceRecord, CitationIntent
+from entities import SentenceRecord, CitationIntent, CitationWorthiness
 from utils.config import config
 
 
@@ -17,6 +17,14 @@ INTENT_MAP = {
     "RESULT": CitationIntent.RESULT,
     "OTHER": CitationIntent.OTHER,
 }
+
+WORTHINESS_MAP = {
+    "HIGH": CitationWorthiness.HIGH,
+    "MEDIUM": CitationWorthiness.MEDIUM,
+    "LOW": CitationWorthiness.LOW,
+}
+
+_ACTIONABLE_STATES = {"MISSING_CITATION", "COVERED_BY_BLOCK"}
 
 class CitationClassifier:
     def __init__(
@@ -120,11 +128,18 @@ class CitationClassifier:
             idx = cls["sentence_index"]
             state_str = cls.get("citation_state", "NOT_CITATION_WORTHY")
             intent_str = cls.get("citation_intent", "OTHER")
-            urgency = float(cls.get("urgency_of_citation", 0.5))
+
+            worthiness = None
+            if state_str in _ACTIONABLE_STATES:
+                worthiness = WORTHINESS_MAP.get(
+                    cls.get("citation_worthiness", "MEDIUM"),
+                    CitationWorthiness.MEDIUM,
+                )
+
             updates[idx] = {
                 "citation_state": STATE_MAP.get(state_str, CitationState.NOT_CITATION_WORTHY),
                 "citation_intent": INTENT_MAP.get(intent_str),
-                "worthiness_score": urgency,
+                "worthiness_score": worthiness,
             }
 
         return [replace(sentence, **updates[i]) for i, sentence in enumerate(batch)]
