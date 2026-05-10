@@ -7,11 +7,14 @@ importing components from another stage.
 
 __all__ = [
     "ClaimDecomposer",
+    "ContributionProfileExtractor",
     "DecomposedRetriever",
     "GrobidPDFParser",
     "CrossEncoderReranker",
     "HybridRetriever",
     "UrgencyScorer",
+    "build_classifier_system_prompt",
+    "format_profile_block",
     "weighted_rrf_aggregate",
     "extract_sentences",
 ]
@@ -22,10 +25,22 @@ def __getattr__(name: str):
         from .claim_decomposer import ClaimDecomposer
 
         return ClaimDecomposer
+    if name == "ContributionProfileExtractor":
+        from .contribution_profile import ContributionProfileExtractor
+
+        return ContributionProfileExtractor
     if name == "DecomposedRetriever":
         from .aggregator import DecomposedRetriever
 
         return DecomposedRetriever
+    if name == "build_classifier_system_prompt":
+        from .contribution_profile import build_classifier_system_prompt
+
+        return build_classifier_system_prompt
+    if name == "format_profile_block":
+        from .contribution_profile import format_profile_block
+
+        return format_profile_block
     if name == "GrobidPDFParser":
         from .pdf_parser import GrobidPDFParser
 

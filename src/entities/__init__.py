@@ -1,3 +1,4 @@
+from .contribution_profile import ContributionProfile
 from .parsed_paper import ParsedPaper
 from .decomposition import AggregationStrategy, Decomposition, Subclaim
 from .ranked_paper import RankedPaper
@@ -8,6 +9,7 @@ __all__ = [
     "AggregationStrategy",
     "CitationIntent",
     "CitationWorthiness",
+    "ContributionProfile",
     "Decomposition",
     "ParsedPaper",
     "RankedPaper",

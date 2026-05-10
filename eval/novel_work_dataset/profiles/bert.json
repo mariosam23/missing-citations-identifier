@@ -1,0 +1,29 @@
+{
+  "system_names": [
+    "BERT"
+  ],
+  "novel_contributions": [
+    "Introduction of deep bidirectional pre-training using a Masked Language Model (MLM) objective",
+    "Next Sentence Prediction (NSP) task for learning text-pair relationships",
+    "Demonstration that bidirectional pre-training outperforms unidirectional approaches on both sentence-level and token-level tasks",
+    "Unified fine-tuning architecture that eliminates the need for task-specific modifications"
+  ],
+  "uses": [
+    "Transformer",
+    "WordPiece embeddings",
+    "GELU activation",
+    "Cloze task",
+    "Adam optimizer",
+    "OpenAI GPT"
+  ],
+  "proposes": [
+    "BERT",
+    "Masked Language Model",
+    "Next Sentence Prediction",
+    "bidirectional Transformer pre-training"
+  ],
+  "source_sections": [
+    "Introduction",
+    "Conclusion"
+  ]
+}
