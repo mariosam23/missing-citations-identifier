@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -10,9 +12,11 @@ from api.deps import db_session
 
 router = APIRouter(tags=["health"])
 
+DbSession = Annotated[Session, Depends(db_session)]
+
 
 @router.get("/healthz")
-def healthz(session: Session = Depends(db_session)) -> dict[str, str]:
+def healthz(session: DbSession) -> dict[str, str]:
     try:
         session.execute(text("SELECT 1")).scalar_one()
     except Exception as exc:  # noqa: BLE001 — surface real error to caller

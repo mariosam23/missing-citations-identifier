@@ -22,11 +22,11 @@ def db_session() -> Iterator[Session]:
         session.close()
 
 
-_embedder: "SentenceTransformer | None" = None
+_embedder: SentenceTransformer | None = None
 _embedder_lock = Lock()
 
 
-def get_embedder() -> "SentenceTransformer":
+def get_embedder() -> SentenceTransformer:
     """Return the process-wide SentenceTransformer, loading it on first call.
 
     Lazy so that import of this module (and therefore the FastAPI app) does not

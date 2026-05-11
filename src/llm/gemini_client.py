@@ -1,7 +1,7 @@
 from google import genai
 from google.genai import types
 
-from utils import logger, config
+from utils import config, logger
 
 
 class GeminiClient:

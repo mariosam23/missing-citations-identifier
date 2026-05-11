@@ -6,6 +6,7 @@ __pycache__/
 AGENTS.md
 .cursorrules
 
+data/
 # C extensions
 *.so
 

@@ -1,4 +1,4 @@
-from .logger import logger
 from .config import config
+from .logger import logger
 
 __all__ = ["logger", "config"]
