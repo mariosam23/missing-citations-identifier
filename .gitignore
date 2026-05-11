@@ -3,6 +3,8 @@ __pycache__/
 *.py[codz]
 *$py.class
 .claude
+AGENTS.md
+.cursorrules
 
 # C extensions
 *.so
@@ -10,6 +12,7 @@ __pycache__/
 pdfs/
 
 .vscode/
+CLAUDE.md
 plan.md
 *.sql
 
