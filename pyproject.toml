@@ -1,0 +1,49 @@
+[project]
+name = "missing-citations-identifier"
+version = "0.1.0"
+description = "Citation context database + dense retrieval recommender."
+requires-python = ">=3.13,<3.14"
+
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
+    "pgvector>=0.3.6",
+    "alembic>=1.13",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.4",
+    "httpx>=0.27",
+    "lxml>=5.3",
+    "grobid-client-python>=0.0.9",
+    "pysbd>=0.3.4",
+    "rapidfuzz>=3.10",
+    "sentence-transformers>=3.2",
+    "torch>=2.4",
+    "typer>=0.12",
+    "tenacity>=9.0",
+    "tqdm>=4.66",
+    "google-genai>=0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+    "mypy>=1.13",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+extend-select = ["I", "UP", "B"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+asyncio_mode = "auto"

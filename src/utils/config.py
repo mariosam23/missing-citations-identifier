@@ -17,11 +17,15 @@ class Settings(BaseSettings):
     OPEN_ALEX_EMAIL: str = ""
     OPEN_ROUTER_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    QDRANT_URL: str = ""
 
     # External services
     GROBID_URL: str = "http://localhost:8070"
     OPENALEX_BASE_URL: str = "https://api.openalex.org"
+
+    # Embedder
+    EMBEDDER_MODEL_NAME: str = "BAAI/bge-base-en-v1.5"
+    EMBEDDER_BATCH_SIZE: int = 64
+    EMBEDDER_DIM: int = 768
 
     model_config = {
         "env_file": str(_ENV_FILE),
