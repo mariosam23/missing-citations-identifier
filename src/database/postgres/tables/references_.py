@@ -36,4 +36,5 @@ class Reference(Base):
     doi: Mapped[str | None] = mapped_column(Text, nullable=True)
     arxiv_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     resolution_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    resolution_method: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
