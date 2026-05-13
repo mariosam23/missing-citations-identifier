@@ -1,0 +1,78 @@
+(.venv) PS C:\Users\sampe\OneDrive\Desktop\facultate\licenta\missing-citations-identifier> $queries = @(
+>>   "We use a Transformer encoder with multi-head self-attention to process the input sequence.",
+>>   "We learn distributed word representations using the skip-gram model with negative sampling.",
+>>   "Our model is built on a ResNet-50 backbone pretrained on ImageNet.",
+>>   "The network is trained with the Adam optimizer and a cosine learning rate schedule.",
+>>   "We generate synthetic images with a generative adversarial network trained on CelebA."
+>> )
+>> 
+>> foreach ($q in $queries) {
+>>   Write-Host "`n=== $q ===" -ForegroundColor Cyan
+>>   $body = @{ text = $q; top_k = 5 } | ConvertTo-Json
+>>   $r = Invoke-RestMethod -Uri http://localhost:8000/recommend -Method Post `
+>>        -ContentType "application/json" -Body $body
+>>   $r.candidates |
+>>     Select-Object @{n="rank";e={[array]::IndexOf($r.candidates,$_)+1}},
+>>                   citation_key, year,
+>>                   @{n="title";e={$_.title.Substring(0,[Math]::Min(70,$_.title.Length))}},
+>>                   @{n="score";e={[math]::Round($_.score,3)}} |
+>>     Format-Table -AutoSize
+>> }
+
+=== We use a Transformer encoder with multi-head self-attention to process the input sequence. ===
+
+rank citation_key               year title                                          
+---- ------------               ---- -----                                          
+   1 ashishvaswani2017attention 2017 Attention is All you Need                      
+   2 zihangdai2021coatnet       2021 CoAtNet: Marrying Convolution and Attention ...
+   3 samuelhumeau2019real       2019 Real-time Inference in Multi-sentence Tasks ...
+   4 arzookatiyar2017going      2017 Going out on a limb: Joint Extraction of Ent...
+   5 liyuan2021volo             2021 VOLO: Vision Outlooker for Visual Recognition  
+
+
+
+=== We learn distributed word representations using the skip-gram model with negative sampling. ===
+
+rank citation_key                      year title                                   
+---- ------------                      ---- -----                                   
+   1 matteopagliardini2018unsupervised 2018 Unsupervised Learning of Sentence Emb...
+   2 daviderumelhart1988david          1988 (1986) David E. Rumelhart, Geoffrey E...
+   3 denizyuret2010noisy               2010 The Noisy Channel Model for Unsupervi...
+   4 mohitiyyer2014political           2014 Political Ideology Detection Using Re...
+   5 ryankiros2015skip                 2015 Skip-Thought Vectors                    
+
+
+
+=== Our model is built on a ResNet-50 backbone pretrained on ImageNet. ===
+
+rank citation_key            year title                                             
+---- ------------            ---- -----                                             
+   1 ybar2015deep            2015 Deep learning with non-medical training used fo...
+   2 xiaohuazhai2019s4l      2019 S4L: Self-Supervised Semi-Supervised Learning     
+   3 kaiminghe2016deep       2016 Deep Residual Learning for Image Recognition      
+   4 hangzhang2022resnest    2022 ResNeSt: Split-Attention Networks                 
+   5 ranjaykrishna2017visual 2017 Visual Genome: Connecting Language and Vision U...
+
+
+
+=== The network is trained with the Adam optimizer and a cosine learning rate schedule. ===
+
+rank citation_key                     year title                                    
+---- ------------                     ---- -----                                    
+   1 diederikpkingma2014adam          2014 Adam: A Method for Stochastic Optimiza...
+   2 anon2014preprint                 2014 Preprint repository arXiv achieves mil...
+   3 gabrielvillarrubia2017artificial 2017 Artificial neural networks used in opt...
+   4 rbyrd1995limited                 1995 A Limited Memory Algorithm for Bound C...
+   5 lbottou1991stochastic            1991 Stochastic Gradient Learning in Neural...
+
+
+
+=== We generate synthetic images with a generative adversarial network trained on CelebA. ===
+
+rank citation_key                year title                                         
+---- ------------                ---- -----                                         
+   1 zhitinghu2017controlled     2017 Toward Controlled Generation of Text          
+   2 jinlongwu2019enforcing      2019 Enforcing statistical constraints in genera...
+   3 jamiehayes2018logan         2018 LOGAN: Membership Inference Attacks Against...
+   4 iangoodfellow2014generative 2014 Generative Adversarial Nets                   
+   5 haowu2018deep               2018 Deep Generative Markov State Models           

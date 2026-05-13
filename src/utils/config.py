@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     EMBEDDER_MODEL_NAME: str = "BAAI/bge-base-en-v1.5"
     EMBEDDER_BATCH_SIZE: int = 64
     EMBEDDER_DIM: int = 768
+    # Empty string = auto-detect (cuda → mps → cpu). Override with
+    # "cuda", "cuda:0", "cpu", "mps", etc.
+    EMBEDDER_DEVICE: str = ""
 
     model_config = {
         "env_file": str(_ENV_FILE),

@@ -78,6 +78,19 @@ class OpenAlexClient:
             return result
         return None
 
+    def fetch_by_openalex_id(self, work_id: str) -> dict[str, Any] | None:
+        """Return a raw OpenAlex Work dict by its Work ID (e.g. ``W2963341956``).
+
+        Accepts either a bare ID or a full ``https://openalex.org/W…`` URL.
+        """
+        match = re.search(r"(W\d+)", work_id)
+        if not match:
+            return None
+        result = self._get(f"/works/{match.group(1)}")
+        if result and "id" in result:
+            return result
+        return None
+
     def fetch_by_arxiv_id(self, normalized_arxiv_id: str) -> dict[str, Any] | None:
         """Return a raw OpenAlex Work dict, or ``None`` if not found.
 
@@ -102,7 +115,10 @@ class OpenAlexClient:
         All identifier fields are normalized before being returned so the
         caller can store them consistently and perform exact-match lookups.
         """
-        title: str = work.get("title") or ""
+        # OpenAlex's canonical title field is ``display_name``. The ``title``
+        # alias is sometimes absent on Works returned from ``/works/doi:...``,
+        # which previously caused us to fall through to the URL fallback below.
+        title: str = (work.get("display_name") or work.get("title") or "").strip()
 
         authorships: list[dict[str, Any]] = work.get("authorships") or []
         authors: list[str] = []
@@ -140,7 +156,10 @@ class OpenAlexClient:
                 abstract = _reconstruct_abstract(inverted)
 
         return {
-            "canonical_title": title or openalex_url or "",
+            # Do NOT fall back to the URL here — historically this wrote rows
+            # like ``canonical_title='https://openalex.org/W…'`` which the
+            # citation-key builder then mangled into ``…https`` keys.
+            "canonical_title": title,
             "normalized_title": _quick_normalize(title),
             "authors": {"list": authors} if authors else None,
             "first_author": first_author,

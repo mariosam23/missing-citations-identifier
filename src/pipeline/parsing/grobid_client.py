@@ -47,14 +47,13 @@ def process_fulltext(
     *,
     consolidate_citations: int = 1,
     timeout_s: float = DEFAULT_TIMEOUT_S,
-    base_url: str | None = None,
 ) -> str:
     """Send ``pdf_path`` to GROBID and return the TEI XML as text.
 
     Raises ``GrobidTimeoutError`` on timeout, ``GrobidError`` on any other
     non-2xx response.
     """
-    url = (base_url or config.GROBID_URL).rstrip("/") + ENDPOINT
+    url = config.GROBID_URL.rstrip("/") + ENDPOINT
     if not pdf_path.exists():
         raise FileNotFoundError(pdf_path)
 
