@@ -7,7 +7,7 @@ Pipeline:
         → compute features (mean_top_3_similarity, distinct_citing_papers, ...)
         → score = mean_top_3_similarity
                 + 0.3 * log1p(distinct_citing_papers)
-                - 0.15 * log1p(global_context_count_for_paper)
+                - 0.15 * log1p(global_context_count / max(distinct, 1))
         → sort desc, keep top-K
         → hydrate paper metadata + top-3 evidence contexts
 
@@ -16,9 +16,17 @@ Why this score? At a 1k-paper corpus, summing raw similarity surfaces
 trap). ``mean_top_3_similarity`` measures *how well* the strongest evidence
 matches; ``distinct_citing_papers`` measures *how broadly* it is cited (an
 encyclopedia citation count is not the same signal as four different teams
-independently citing for the same reason); the popularity penalty on
-``global_context_count_for_paper`` knocks down the always-cited Transformer
-paper from #1 on every query without removing it from the ranking.
+independently citing for the same reason); the popularity penalty knocks
+down universally-cited papers from #1 on every query without removing them
+from the ranking.
+
+The penalty acts on ``global_count / distinct_in_top_n`` rather than raw
+``global_count``. The ratio is "for every paper that cites X in a context
+similar to the query, how many cite X globally?" — high when a paper is
+cited *everywhere but for this reason* (the Transformer trap), low when a
+paper is cited a lot *for this reason* (BERT on a BERT query). Using the
+raw global count over-fired: BERT lost a "we use BERT to encode sentences"
+query by 0.002 because the penalty ate its entire distinct-citers bonus.
 
 The constants 0.3 and 0.15 are placeholders for the eventually-fitted
 weights in §14.1; they were picked to be small enough that
@@ -118,10 +126,11 @@ def compute_features(
 
         agg.global_context_count = global_counts.get(paper_id, len(agg.contexts))
 
+        popularity_ratio = agg.global_context_count / max(agg.distinct_citing_papers, 1)
         agg.score = (
             agg.mean_top_3_similarity
             + DISTINCT_CITERS_WEIGHT * math.log1p(agg.distinct_citing_papers)
-            - POPULARITY_PENALTY_WEIGHT * math.log1p(agg.global_context_count)
+            - POPULARITY_PENALTY_WEIGHT * math.log1p(popularity_ratio)
         )
 
 

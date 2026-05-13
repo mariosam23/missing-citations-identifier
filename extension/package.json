@@ -1,0 +1,71 @@
+{
+  "name": "missing-citations-identifier",
+  "displayName": "Missing Citations Identifier",
+  "description": "Recommend citations for a highlighted sentence and insert the chosen reference inline.",
+  "version": "0.1.0",
+  "publisher": "sampetru",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.84.0",
+    "node": ">=18"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onCommand:missingCitations.recommend"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "missingCitations.recommend",
+        "title": "Recommend Citations for Selection",
+        "category": "Missing Citations"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "missingCitations.recommend",
+          "when": "editorHasSelection",
+          "group": "1_modification@99"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Missing Citations Identifier",
+      "properties": {
+        "missingCitations.backendUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Base URL of the citation-recommender FastAPI backend."
+        },
+        "missingCitations.topK": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 50,
+          "description": "Number of candidate papers to request from the backend."
+        },
+        "missingCitations.requestTimeoutMs": {
+          "type": "integer",
+          "default": 15000,
+          "minimum": 1000,
+          "description": "Client-side timeout (ms) for the /recommend request."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/vscode": "^1.84.0",
+    "typescript": "^5.4.5"
+  }
+}
