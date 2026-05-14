@@ -9,13 +9,13 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import health, recommend
+from api.routes import health, paper, recommend
 
 
 def create_app() -> FastAPI:
     app = FastAPI(
         title="Citation Recommender",
-        version="0.1.0",
+        version="0.2.0",
     )
 
     app.add_middleware(
@@ -28,6 +28,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(recommend.router)
+    app.include_router(paper.router)
 
     return app
 

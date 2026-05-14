@@ -1,8 +1,12 @@
+import * as vscode from "vscode";
+
 export interface PaperLike {
   citation_key: string;
   authors: string[];
   year: number | null;
 }
+
+const CONFIG_SECTION = "missingCitations";
 
 const LATEX_LANGUAGES = new Set(["latex", "tex", "bibtex"]);
 const MARKDOWN_LANGUAGES = new Set([
@@ -17,12 +21,9 @@ const MARKDOWN_LANGUAGES = new Set([
 /**
  * Render a citation marker appropriate to the host document.
  *
- * - LaTeX/TeX → `\cite{key}`
+ * - LaTeX/TeX → `\cite{key}` (or `\citep`/`\citet` per user setting)
  * - Markdown / Quarto / R Markdown → `[@key]` (Pandoc-style)
  * - Anything else → `(Surname et al., Year)` plain-text fallback
- *
- * `selection` is reserved for callers that want to wrap rather than replace
- * the highlight; the MVP simply replaces it.
  */
 export function formatCitation(
   paper: PaperLike,
@@ -31,7 +32,9 @@ export function formatCitation(
   const lang = (languageId ?? "").toLowerCase();
 
   if (LATEX_LANGUAGES.has(lang)) {
-    return `\\cite{${paper.citation_key}}`;
+    const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+    const citeCommand = config.get<string>("citeCommand") ?? "\\cite";
+    return `${citeCommand}{${paper.citation_key}}`;
   }
   if (MARKDOWN_LANGUAGES.has(lang)) {
     return `[@${paper.citation_key}]`;

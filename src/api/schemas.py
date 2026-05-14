@@ -35,6 +35,7 @@ class Candidate(BaseModel):
     citation_key: str
     score: float
     evidence: list[Evidence]
+    bibtex: str
 
 
 class RecommendResponse(BaseModel):

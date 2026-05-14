@@ -1,9 +1,12 @@
 import * as vscode from "vscode";
 
 import { formatCitation, PaperLike } from "./citationFormatter";
+import { BibTeXManager, AppendResult } from "./bibtexManager";
 
 const CONFIG_SECTION = "missingCitations";
 const RECOMMEND_PATH = "/recommend";
+
+const LATEX_LANGUAGE_IDS = new Set(["latex", "tex"]);
 
 interface Evidence {
   sentence: string;
@@ -20,6 +23,7 @@ interface Candidate {
   citation_key: string;
   score: number;
   evidence: Evidence[];
+  bibtex: string;
 }
 
 interface RecommendResponse {
@@ -29,6 +33,9 @@ interface RecommendResponse {
 interface CandidatePickItem extends vscode.QuickPickItem {
   candidate: Candidate;
 }
+
+/** Shared BibTeX manager instance — serialises .bib writes. */
+const bibManager = new BibTeXManager();
 
 export async function recommendCitationsForSelection(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
@@ -103,8 +110,113 @@ export async function recommendCitationsForSelection(): Promise<void> {
     return;
   }
 
-  await insertCitation(editor, pick.candidate, languageId);
+  const insertedKey = await insertCitation(editor, pick.candidate, languageId);
+  if (insertedKey === null) {
+    return; // insertion failed — warning already shown
+  }
+
+  // ── BibTeX auto-append (LaTeX only) ──────────────────────────────
+  await maybeAppendBibtex(editor, pick.candidate, insertedKey);
 }
+
+// ── BibTeX auto-append logic ───────────────────────────────────────
+
+async function maybeAppendBibtex(
+  editor: vscode.TextEditor,
+  candidate: Candidate,
+  insertedKey: string,
+): Promise<void> {
+  const languageId = editor.document.languageId;
+  if (!LATEX_LANGUAGE_IDS.has(languageId)) {
+    return;
+  }
+
+  const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+  const autoAppend = config.get<boolean>("autoAppendBibTeX") ?? true;
+  if (!autoAppend) {
+    return;
+  }
+
+  try {
+    const bibUri = await bibManager.findOrCreate(editor.document);
+    if (!bibUri) {
+      vscode.window.showWarningMessage(
+        "Missing Citations: no .bib file found and auto-creation is disabled.",
+      );
+      return;
+    }
+
+    const result: AppendResult = await bibManager.appendEntry(
+      bibUri,
+      candidate.bibtex,
+      candidate.citation_key,
+    );
+
+    const relativeBib = vscode.workspace.asRelativePath(bibUri);
+
+    if (result.skipped) {
+      // Entry already present — nothing to do.
+      return;
+    }
+
+    // If the key was renamed due to collision, update the \cite{...} we
+    // just inserted in the document.
+    if (result.wroteKey !== insertedKey) {
+      await rewriteInsertedKey(editor, insertedKey, result.wroteKey);
+      vscode.window.showInformationMessage(
+        `Missing Citations: key renamed to ${result.wroteKey} (collision) — appended to ${relativeBib}`,
+      );
+    } else {
+      const authorLabel = candidate.authors[0] ?? "Unknown";
+      const yearStr = candidate.year !== null ? String(candidate.year) : "n.d.";
+      vscode.window.showInformationMessage(
+        `Missing Citations: appended ${authorLabel} (${yearStr}) to ${relativeBib}`,
+      );
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    vscode.window.showWarningMessage(
+      `Missing Citations: could not append BibTeX — ${msg}. ` +
+      `The \\cite{} was inserted; copy the BibTeX entry manually.`,
+    );
+  }
+}
+
+/**
+ * Find the `\cite{oldKey}` (or \citep / \citet) that was just inserted
+ * and rewrite it to `\cite{newKey}`.
+ */
+async function rewriteInsertedKey(
+  editor: vscode.TextEditor,
+  oldKey: string,
+  newKey: string,
+): Promise<void> {
+  const doc = editor.document;
+  const fullText = doc.getText();
+  // Search from the end (most recently inserted) for the old key.
+  const pattern = new RegExp(
+    `(\\\\cite[pt]?)\\{${escapeRegex(oldKey)}\\}`,
+    "g",
+  );
+  let lastMatch: RegExpExecArray | null = null;
+  let m: RegExpExecArray | null;
+  while ((m = pattern.exec(fullText)) !== null) {
+    lastMatch = m;
+  }
+  if (!lastMatch) {
+    return;
+  }
+  const start = doc.positionAt(lastMatch.index);
+  const end = doc.positionAt(lastMatch.index + lastMatch[0].length);
+  await editor.edit((builder) => {
+    builder.replace(
+      new vscode.Range(start, end),
+      `${lastMatch![1]}{${newKey}}`,
+    );
+  });
+}
+
+// ── Fetch / insert helpers (unchanged from Phase 4) ────────────────
 
 interface FetchArgs {
   backendUrl: string;
@@ -174,11 +286,15 @@ function toQuickPickItem(candidate: Candidate): CandidatePickItem {
   };
 }
 
+/**
+ * Insert the citation marker into the editor.
+ * Returns the citation key that was inserted, or `null` if insertion failed.
+ */
 async function insertCitation(
   editor: vscode.TextEditor,
   candidate: Candidate,
   languageId: string,
-): Promise<void> {
+): Promise<string | null> {
   const formatted = formatCitation(candidate satisfies PaperLike, languageId);
   const { position, insertion } = computeInsertion(editor, formatted);
 
@@ -189,7 +305,7 @@ async function insertCitation(
     vscode.window.showWarningMessage(
       "Missing Citations: could not modify the document (read-only?).",
     );
-    return;
+    return null;
   }
 
   // Move the cursor to just after the inserted marker.
@@ -197,6 +313,8 @@ async function insertCitation(
     editor.document.offsetAt(position) + insertion.length;
   const newCursor = editor.document.positionAt(insertedEndOffset);
   editor.selection = new vscode.Selection(newCursor, newCursor);
+
+  return candidate.citation_key;
 }
 
 const TERMINAL_PUNCTUATION = /[.!?:;,]$/;
@@ -273,4 +391,8 @@ function truncate(value: string, max: number): string {
     return value;
   }
   return `${value.slice(0, max - 1).trimEnd()}…`;
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

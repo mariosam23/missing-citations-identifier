@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 from api.deps import db_session
 from api.schemas import Candidate, Evidence, RecommendRequest, RecommendResponse
 from database.postgres.tables.papers import Paper
+from pipeline.bibtex.formatter import paper_to_bibtex
 from pipeline.embedding.embedder import encode_query
 from pipeline.retrieval.aggregate import (
     DEFAULT_EVIDENCE_COUNT,
@@ -117,6 +118,7 @@ def recommend(
             )
             for e in agg.top_evidence(DEFAULT_EVIDENCE_COUNT)
         ]
+        bibtex = paper_to_bibtex(paper, key)
         candidates.append(
             Candidate(
                 paper_id=paper.paper_id,
@@ -127,6 +129,7 @@ def recommend(
                 citation_key=key,
                 score=round(agg.score, 6),
                 evidence=evidence,
+                bibtex=bibtex,
             )
         )
 

@@ -2,7 +2,7 @@
   "name": "missing-citations-identifier",
   "displayName": "Missing Citations Identifier",
   "description": "Recommend citations for a highlighted sentence and insert the chosen reference inline.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "sampetru",
   "private": true,
   "license": "MIT",
@@ -54,6 +54,31 @@
           "default": 15000,
           "minimum": 1000,
           "description": "Client-side timeout (ms) for the /recommend request."
+        },
+        "missingCitations.citeCommand": {
+          "type": "string",
+          "default": "\\cite",
+          "enum": [
+            "\\cite",
+            "\\citep",
+            "\\citet"
+          ],
+          "description": "LaTeX citation command to insert (e.g. \\cite, \\citep, \\citet)."
+        },
+        "missingCitations.autoAppendBibTeX": {
+          "type": "boolean",
+          "default": true,
+          "description": "After inserting a citation in LaTeX, automatically append the BibTeX entry to the .bib file."
+        },
+        "missingCitations.bibFile": {
+          "type": "string",
+          "default": "",
+          "description": "Explicit workspace-relative path to the .bib file. Leave empty to auto-discover."
+        },
+        "missingCitations.createBibFileIfMissing": {
+          "type": "boolean",
+          "default": true,
+          "description": "If no .bib file is found, create references.bib in the active document's directory."
         }
       }
     }
@@ -69,3 +94,4 @@
     "typescript": "^5.4.5"
   }
 }
+

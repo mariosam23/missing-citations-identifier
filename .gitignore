@@ -17,6 +17,9 @@ CLAUDE.md
 plan.md
 *.sql
 
+# only for testing
+papers_for_extension/ 
+
 # Distribution / packaging
 .Python
 build/
@@ -228,7 +231,6 @@ __marimo__/
 
 docs/
 models/
-scripts/
 
 # Ignore embedded scicite dataset repository
 eval/scicite/

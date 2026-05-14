@@ -24,6 +24,7 @@ dependencies = [
     "tenacity>=9.0",
     "tqdm>=4.66",
     "google-genai>=0.3",
+    "pylatexenc>=2.10",
 ]
 
 [project.optional-dependencies]
