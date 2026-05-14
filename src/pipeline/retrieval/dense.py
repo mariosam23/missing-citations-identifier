@@ -18,6 +18,7 @@ recall is noticeably worse.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 
 import numpy as np
 from sqlalchemy import text
@@ -26,9 +27,29 @@ from sqlalchemy.orm import Session
 DEFAULT_TOP_N = 1000
 
 
+class ContextSource(StrEnum):
+    """Which retrieval branch surfaced a context (Phase 6 hybrid retrieval).
+
+    Dense and sparse retrieval tag their own results; ``BOTH`` is assigned by
+    the fusion layer when a ``context_id`` appears in both rankings.
+    """
+
+    DENSE = "dense"
+    SPARSE = "sparse"
+    BOTH = "both"
+
+
 @dataclass(slots=True, frozen=True)
 class RetrievedContext:
-    """One row from the dense-retrieval top-N."""
+    """One row from a retrieval branch (dense, sparse, or post-fusion).
+
+    ``similarity`` is dense cosine similarity for dense-branch rows and the
+    ``ts_rank_cd`` score for sparse-branch rows — the two are *not* comparable.
+    Fusion works on ranks, not scores, so the mixed scale is intentional; after
+    fusion, ``similarity`` carries the dense cosine value (or ``0.0`` for a
+    sparse-only context) because the aggregator's ``mean_top_3_similarity`` is
+    only meaningful in cosine space.
+    """
 
     context_id: int
     cited_paper_id: int
@@ -37,6 +58,7 @@ class RetrievedContext:
     sentence: str
     similarity: float
     rank: int
+    source: ContextSource = ContextSource.DENSE
 
 
 _DENSE_SQL = text(
@@ -93,6 +115,7 @@ def retrieve_dense(
                 sentence=row[4] or "",
                 similarity=float(row[5]),
                 rank=rank,
+                source=ContextSource.DENSE,
             )
         )
     return results

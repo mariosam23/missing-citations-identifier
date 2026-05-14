@@ -2,7 +2,17 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Float, ForeignKey, Index, Integer, Text, func
+from sqlalchemy import (
+    BigInteger,
+    Computed,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    Text,
+    func,
+)
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..base import Base
@@ -52,6 +62,32 @@ class CitationContext(Base):
     citation_role_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     extraction_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    # Sparse-retrieval index columns (Phase 6 — hybrid retrieval). Both are
+    # ``GENERATED ALWAYS AS ... STORED`` from ``sentence_without_markers`` and
+    # read-only on the Python side. ``english`` applies Snowball stemming
+    # ("embeddings" → "embed"); ``simple`` preserves raw tokens so acronyms
+    # ("LoRA") survive. The sparse query ORs across both. ``immutable_unaccent``
+    # is the IMMUTABLE wrapper created in Alembic 0004 — a STORED generated
+    # column cannot use the merely-STABLE ``unaccent(text)``.
+    sentence_tsv_english: Mapped[str | None] = mapped_column(
+        TSVECTOR,
+        Computed(
+            "to_tsvector('english', "
+            "coalesce(immutable_unaccent(sentence_without_markers), ''))",
+            persisted=True,
+        ),
+        nullable=True,
+    )
+    sentence_tsv_simple: Mapped[str | None] = mapped_column(
+        TSVECTOR,
+        Computed(
+            "to_tsvector('simple', "
+            "coalesce(immutable_unaccent(sentence_without_markers), ''))",
+            persisted=True,
+        ),
+        nullable=True,
+    )
+
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     __table_args__ = (
@@ -59,4 +95,14 @@ class CitationContext(Base):
         Index("idx_contexts_citing_paper", "citing_paper_id"),
         Index("idx_contexts_years", "citing_year", "cited_year"),
         Index("idx_contexts_section_type", "section_type"),
+        Index(
+            "idx_contexts_sentence_tsv_english",
+            "sentence_tsv_english",
+            postgresql_using="gin",
+        ),
+        Index(
+            "idx_contexts_sentence_tsv_simple",
+            "sentence_tsv_simple",
+            postgresql_using="gin",
+        ),
     )

@@ -1,15 +1,20 @@
 """Inspect the /recommend pipeline for a single query.
 
-Runs the full Phase 3 path (encode → dense retrieve → group → score) and
-prints a table of the top-K candidates with the *components* of their score
-exposed, plus the top-3 evidence sentences. Optionally pins a target paper
-(by ID or title substring) so its rank is reported even when it falls
-outside the top-K.
+Runs the full hybrid path (encode → dense + sparse retrieve → RRF fusion →
+group → score) and prints a table of the top-K candidates with the
+*components* of their score exposed, plus the top-3 evidence sentences.
+Optionally pins a target paper (by ID or title substring) so its rank is
+reported even when it falls outside the top-K.
+
+The ``src(d/s/b)`` column and the ``[d|s|b]`` tag on each evidence line make
+the Phase 6 fusion observable: how many of a paper's contexts came from the
+dense branch, the sparse branch, or both. The header line also reports the
+dense/sparse/fused counts and the dense∩sparse overlap.
 
 The output is the diagnostic for the §31.2 famous-paper-everywhere question:
 "why isn't BERT ranked #1 for *We use BERT to encode sentences*?" — the
 breakdown tells you whether the answer is low ``mean_top_3``, the popularity
-penalty, missing dense retrieval, or something else.
+penalty, missing retrieval, or something else.
 
 Usage::
 
@@ -46,9 +51,15 @@ from pipeline.retrieval.aggregate import (
     PaperAggregate,
     compute_features,
     group_by_paper,
-    rank_papers,
 )
-from pipeline.retrieval.dense import DEFAULT_TOP_N, retrieve_dense
+from pipeline.retrieval.dense import (
+    DEFAULT_TOP_N,
+    ContextSource,
+    RetrievedContext,
+    retrieve_dense,
+)
+from pipeline.retrieval.fusion import reciprocal_rank_fusion
+from pipeline.retrieval.sparse import retrieve_sparse
 from utils.logger import logger
 
 app = typer.Typer(add_completion=False)
@@ -70,6 +81,10 @@ class _Row:
     score: float
     distinct_bonus: float
     popularity_penalty: float
+    # Phase 6: how many of this paper's fused contexts came from each branch.
+    n_dense: int
+    n_sparse: int
+    n_both: int
 
 
 @app.command()
@@ -98,18 +113,37 @@ def main(
 
     with get_session() as session:
         query_embedding = encode_query(query)
-        retrieved = retrieve_dense(
+        dense_ctxs = retrieve_dense(
             session,
             query_embedding,
             top_n=top_n,
             target_year=target_year,
         )
-        typer.echo(f"\nDense retrieval returned {len(retrieved)} contexts.")
-        if not retrieved:
+        sparse_ctxs = retrieve_sparse(
+            session,
+            query,
+            top_n=top_n,
+            target_year=target_year,
+        )
+        fused = reciprocal_rank_fusion([dense_ctxs, sparse_ctxs], top_n=top_n)
+        overlap = len(
+            {c.context_id for c in dense_ctxs}
+            & {c.context_id for c in sparse_ctxs}
+        )
+        typer.echo(
+            f"\nRetrieval — dense={len(dense_ctxs)} sparse={len(sparse_ctxs)} "
+            f"fused={len(fused)} overlap={overlap}"
+        )
+        if not sparse_ctxs:
+            typer.echo(
+                "  (sparse branch empty — query produced no lexemes, or no "
+                "context matched any of them; fusion degraded to dense-only)"
+            )
+        if not fused:
             typer.echo("Empty result; nothing to score.")
             raise typer.Exit(code=0)
 
-        aggregates = group_by_paper(retrieved)
+        aggregates = group_by_paper(fused)
         compute_features(session, aggregates)
         ranked = sorted(
             aggregates.values(), key=lambda a: a.score, reverse=True
@@ -138,6 +172,14 @@ def main(
         _print_summary(ranked, top_k)
 
 
+def _source_counts(contexts: list[RetrievedContext]) -> tuple[int, int, int]:
+    """Return ``(dense_only, sparse_only, both)`` counts over fused contexts."""
+    n_dense = sum(1 for c in contexts if c.source is ContextSource.DENSE)
+    n_sparse = sum(1 for c in contexts if c.source is ContextSource.SPARSE)
+    n_both = sum(1 for c in contexts if c.source is ContextSource.BOTH)
+    return n_dense, n_sparse, n_both
+
+
 def _to_row(
     rank: int, agg: PaperAggregate, paper_by_id: dict[int, Paper]
 ) -> _Row:
@@ -148,6 +190,7 @@ def _to_row(
     distinct_bonus = DISTINCT_CITERS_WEIGHT * math.log1p(agg.distinct_citing_papers)
     popularity_ratio = agg.global_context_count / max(agg.distinct_citing_papers, 1)
     popularity_penalty = POPULARITY_PENALTY_WEIGHT * math.log1p(popularity_ratio)
+    n_dense, n_sparse, n_both = _source_counts(agg.contexts)
     return _Row(
         rank=rank,
         paper_id=agg.cited_paper_id,
@@ -160,6 +203,9 @@ def _to_row(
         score=agg.score,
         distinct_bonus=distinct_bonus,
         popularity_penalty=popularity_penalty,
+        n_dense=n_dense,
+        n_sparse=n_sparse,
+        n_both=n_both,
     )
 
 
@@ -175,7 +221,7 @@ def _hydrate_papers(session: Session, paper_ids: list[int]) -> dict[int, Paper]:
 def _print_table(rows: list[_Row]) -> None:
     header = (
         f"{'#':>3}  {'paper_id':>8}  {'mean3':>6}  {'distinct':>8}  {'global':>6}  "
-        f"{'+bonus':>6}  {'-penal':>6}  {'score':>7}  who"
+        f"{'+bonus':>6}  {'-penal':>6}  {'src(d/s/b)':>11}  {'score':>7}  who"
     )
     typer.echo("\n" + header)
     typer.echo("-" * len(header))
@@ -183,11 +229,12 @@ def _print_table(rows: list[_Row]) -> None:
         who = _truncate(
             f"{r.first_author} ({r.year or 'n.d.'}) — {r.title}", 80
         )
+        src_mix = f"{r.n_dense}/{r.n_sparse}/{r.n_both}"
         typer.echo(
             f"{r.rank:>3}  {r.paper_id:>8}  {r.mean_top_3:>6.3f}  "
             f"{r.distinct_citers:>8}  {r.global_count:>6}  "
             f"{r.distinct_bonus:>+6.3f}  {-r.popularity_penalty:>+6.3f}  "
-            f"{r.score:>+7.3f}  {who}"
+            f"{src_mix:>11}  {r.score:>+7.3f}  {who}"
         )
 
 
@@ -201,7 +248,7 @@ def _print_evidence(
         typer.echo(f"\n  #{rank} [{agg.cited_paper_id}] {_truncate(title, 100)}")
         for ev in agg.top_evidence(3):
             typer.echo(
-                f"    sim={ev.similarity:.3f} | "
+                f"    [{ev.source.value:>6}] sim={ev.similarity:.3f} | "
                 f"{_truncate(ev.sentence, SENTENCE_PREVIEW_CHARS)}"
             )
 
