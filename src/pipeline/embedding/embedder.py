@@ -8,9 +8,12 @@ stella_en_1.5B_v5 has a matryoshka head that emits embeddings at any of
 ``{512, 768, 1024, 2048, 4096, 8192}`` dims natively; we cut to 1024
 (``truncate_dim=config.EMBEDDER_DIM``) which is plenty for sentence-level
 citation-context retrieval and fits well inside pgvector's HNSW dim limit.
-The model is symmetric for retrieval — no ``query: ``/``passage: ``
-instruction prefix is needed, so the same encoder serves both
-``embed_contexts`` and ``encode_query``. Embeddings are L2-normalized
+Stella is **asymmetric**: queries must be wrapped in an instruction
+prefix (``s2s_query``/``s2p_query``) while passages are encoded raw.
+``encode_texts(..., is_query=True)`` and ``encode_query`` apply the
+prompt configured by ``config.EMBEDDER_QUERY_PROMPT_NAME``; the corpus
+embedding path leaves ``is_query=False`` so passages stay prompt-free.
+Embeddings are L2-normalized
 (``normalize_embeddings=True``) so cosine similarity equals the dot
 product and pgvector's ``vector_cosine_ops`` index matches the SQL we
 run against it.
@@ -97,24 +100,29 @@ def encode_texts(
     *,
     batch_size: int | None = None,
     show_progress_bar: bool = False,
+    is_query: bool = False,
 ) -> np.ndarray:
     """Encode a batch of texts, returning an ``(n, dim)`` float32 array.
 
     Always L2-normalizes — required for ``vector_cosine_ops`` to behave as
-    a dot-product index.
+    a dot-product index. Set ``is_query=True`` to wrap inputs with the
+    Stella query instruction prefix (``config.EMBEDDER_QUERY_PROMPT_NAME``).
     """
     model = get_embedder()
     bs = batch_size or config.EMBEDDER_BATCH_SIZE
-    vectors = model.encode(
-        texts,
-        batch_size=bs,
-        normalize_embeddings=True,
-        show_progress_bar=show_progress_bar,
-        convert_to_numpy=True,
-    )
+    encode_kwargs: dict[str, object] = {
+        "batch_size": bs,
+        "normalize_embeddings": True,
+        "show_progress_bar": show_progress_bar,
+        "convert_to_numpy": True,
+    }
+    prompt_name = config.EMBEDDER_QUERY_PROMPT_NAME if is_query else ""
+    if prompt_name:
+        encode_kwargs["prompt_name"] = prompt_name
+    vectors = model.encode(texts, **encode_kwargs)
     return np.asarray(vectors, dtype=np.float32)
 
 
 def encode_query(text: str) -> np.ndarray:
     """Encode a single query string. Returns a 1-D ``(dim,)`` float32 array."""
-    return encode_texts([text])[0]
+    return encode_texts([text], is_query=True)[0]

@@ -156,7 +156,7 @@ class EvalRunner:
         texts = [q.sentence for q in queries]
         logger.info("batch-encoding %d queries on GPU...", len(texts))
         t0 = time.perf_counter()
-        matrix = encode_texts(texts, show_progress_bar=True)
+        matrix = encode_texts(texts, show_progress_bar=True, is_query=True)
         elapsed = time.perf_counter() - t0
         logger.info(
             "batch-encoding done in %.1fs (%.0f queries/s)",
