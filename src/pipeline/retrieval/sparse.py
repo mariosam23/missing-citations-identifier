@@ -67,6 +67,9 @@ _SPARSE_SQL = text(
       AND (CAST(:target_year AS INTEGER) IS NULL
            OR cc.citing_year IS NULL
            OR cc.citing_year <= CAST(:target_year AS INTEGER))
+      AND (CAST(:exclude_citing_paper_id AS BIGINT) IS NULL
+           OR cc.citing_paper_id IS DISTINCT FROM
+              CAST(:exclude_citing_paper_id AS BIGINT))
     ORDER BY rank_score DESC
     LIMIT :top_n
     """
@@ -79,12 +82,17 @@ def retrieve_sparse(
     *,
     top_n: int = DEFAULT_TOP_N,
     target_year: int | None = None,
+    exclude_citing_paper_id: int | None = None,
 ) -> list[RetrievedContext]:
     """Return the top-N contexts ranked by ``ts_rank_cd`` over both tsvectors.
 
     ``query`` is the raw user query string; tokenisation, stemming and
     stop-word removal happen inside Postgres via ``plainto_tsquery``. Returns
     an empty list when the query produces zero lexemes.
+
+    ``exclude_citing_paper_id``, when set, filters out all contexts whose
+    ``citing_paper_id`` matches — used by the eval harness to prevent
+    leakage from a test paper's own citations.
     """
     rows = session.execute(
         _SPARSE_SQL,
@@ -92,6 +100,7 @@ def retrieve_sparse(
             "query": query,
             "top_n": top_n,
             "target_year": target_year,
+            "exclude_citing_paper_id": exclude_citing_paper_id,
         },
     ).all()
 

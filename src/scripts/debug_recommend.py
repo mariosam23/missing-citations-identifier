@@ -32,13 +32,6 @@ import sys
 from dataclasses import dataclass
 
 import typer
-
-# Windows cp1252 stdout can't encode Greek letters / em-dashes that appear in
-# sentences and titles. Force UTF-8 so this diagnostic doesn't crash mid-table.
-for _stream in (sys.stdout, sys.stderr):
-    reconfigure = getattr(_stream, "reconfigure", None)
-    if callable(reconfigure):
-        reconfigure(encoding="utf-8", errors="replace")
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -61,6 +54,13 @@ from pipeline.retrieval.dense import (
 from pipeline.retrieval.fusion import reciprocal_rank_fusion
 from pipeline.retrieval.sparse import retrieve_sparse
 from utils.logger import logger
+
+# Windows cp1252 stdout can't encode Greek letters / em-dashes that appear in
+# sentences and titles. Force UTF-8 so this diagnostic doesn't crash mid-table.
+for _stream in (sys.stdout, sys.stderr):
+    reconfigure = getattr(_stream, "reconfigure", None)
+    if callable(reconfigure):
+        reconfigure(encoding="utf-8", errors="replace")
 
 app = typer.Typer(add_completion=False)
 

@@ -102,3 +102,32 @@ def reciprocal_rank_fusion(
             )
         )
     return fused
+
+
+def fuse_paper_rankings(
+    rankings: Sequence[Sequence[int]],
+    *,
+    k: int = DEFAULT_K,
+    top_k: int,
+) -> list[int]:
+    """Fuse multiple paper-id rankings via RRF; return the top-K paper ids.
+
+    Operates one level up from :func:`reciprocal_rank_fusion`: instead of
+    fusing context rankings (where sparse-only contexts contaminate the
+    aggregator's cosine-space score), each branch first reduces its own
+    contexts to a *paper* ranking using its native score scale, and we fuse
+    those rankings. Tie-break is by paper-id ascending — stable and
+    deterministic.
+
+    Raises ``ValueError`` if ``k`` is not positive.
+    """
+    if k <= 0:
+        raise ValueError(f"k must be a positive integer, got {k}")
+
+    rrf_score: dict[int, float] = {}
+    for ranking in rankings:
+        for rank, paper_id in enumerate(ranking, start=1):
+            rrf_score[paper_id] = rrf_score.get(paper_id, 0.0) + 1.0 / (k + rank)
+
+    ordered = sorted(rrf_score.items(), key=lambda kv: (-kv[1], kv[0]))
+    return [pid for pid, _ in ordered[:top_k]]

@@ -139,3 +139,21 @@ def rank_papers(
 ) -> list[PaperAggregate]:
     """Return aggregates sorted by ``score`` desc, capped at ``top_k``."""
     return sorted(aggregates.values(), key=lambda a: a.score, reverse=True)[:top_k]
+
+
+def rank_papers_by_max_similarity(
+    contexts: Iterable[RetrievedContext], top_k: int
+) -> list[int]:
+    """Rank ``cited_paper_id``s by their best context's ``similarity``, capped at ``top_k``.
+
+    Branch-agnostic: works for dense (cosine) or sparse (ts_rank_cd) contexts
+    because the ranking is intra-branch — the absolute scale never crosses
+    branches. Used by the paper-level RRF fusion path where each branch
+    produces its own paper ranking before fusion.
+    """
+    best: dict[int, float] = {}
+    for ctx in contexts:
+        prev = best.get(ctx.cited_paper_id)
+        if prev is None or ctx.similarity > prev:
+            best[ctx.cited_paper_id] = ctx.similarity
+    return [pid for pid, _ in sorted(best.items(), key=lambda kv: -kv[1])[:top_k]]

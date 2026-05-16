@@ -45,6 +45,10 @@ target-version = "py313"
 [tool.ruff.lint]
 extend-select = ["I", "UP", "B"]
 
+[tool.ruff.lint.flake8-bugbear]
+# typer relies on calls (typer.Option/typer.Argument) as parameter defaults.
+extend-immutable-calls = ["typer.Option", "typer.Argument"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 asyncio_mode = "auto"

@@ -9,7 +9,11 @@ from __future__ import annotations
 import pytest
 
 from pipeline.retrieval.dense import ContextSource, RetrievedContext
-from pipeline.retrieval.fusion import DEFAULT_K, reciprocal_rank_fusion
+from pipeline.retrieval.fusion import (
+    DEFAULT_K,
+    fuse_paper_rankings,
+    reciprocal_rank_fusion,
+)
 
 
 def _ctx(
@@ -122,3 +126,38 @@ class TestReciprocalRankFusion:
     def test_non_positive_k_raises(self) -> None:
         with pytest.raises(ValueError, match="k must be a positive integer"):
             reciprocal_rank_fusion([[]], k=0)
+
+
+class TestFusePaperRankings:
+    def test_rrf_math_and_ordering(self) -> None:
+        """Paper-level RRF matches hand-computed 1/(k+rank) sums."""
+        k = DEFAULT_K  # 60
+        dense = [100, 200, 300]   # paper 100 @ rank 1, 200 @ 2, 300 @ 3
+        sparse = [200, 400, 100]  # paper 200 @ rank 1, 400 @ 2, 100 @ 3
+
+        # p200: 1/62 + 1/61 | p100: 1/61 + 1/63 | p400: 1/62 | p300: 1/63
+        fused = fuse_paper_rankings([dense, sparse], k=k, top_k=10)
+
+        assert fused == [200, 100, 400, 300]
+
+    def test_top_k_caps_output(self) -> None:
+        fused = fuse_paper_rankings([[1, 2, 3, 4, 5]], top_k=3)
+        assert fused == [1, 2, 3]
+
+    def test_empty_branch_degrades(self) -> None:
+        """A branch that returned no papers contributes nothing; the other wins."""
+        fused = fuse_paper_rankings([[10, 20], []], top_k=5)
+        assert fused == [10, 20]
+
+    def test_all_empty_returns_empty(self) -> None:
+        assert fuse_paper_rankings([[], []], top_k=5) == []
+
+    def test_tie_broken_deterministically_by_paper_id(self) -> None:
+        """Equal RRF scores: lower paper_id wins. Keeps eval runs reproducible."""
+        # Each paper appears once at rank 1 → identical RRF score 1/(k+1).
+        fused = fuse_paper_rankings([[42], [7]], top_k=5)
+        assert fused == [7, 42]
+
+    def test_non_positive_k_raises(self) -> None:
+        with pytest.raises(ValueError, match="k must be a positive integer"):
+            fuse_paper_rankings([[1]], k=0, top_k=5)

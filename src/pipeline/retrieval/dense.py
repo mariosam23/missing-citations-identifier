@@ -76,6 +76,9 @@ _DENSE_SQL = text(
       AND (CAST(:target_year AS INTEGER) IS NULL
            OR cc.citing_year IS NULL
            OR cc.citing_year <= CAST(:target_year AS INTEGER))
+      AND (CAST(:exclude_citing_paper_id AS BIGINT) IS NULL
+           OR cc.citing_paper_id IS DISTINCT FROM
+              CAST(:exclude_citing_paper_id AS BIGINT))
     ORDER BY cce.embedding <=> CAST(:query_embedding AS vector)
     LIMIT :top_n
     """
@@ -88,12 +91,17 @@ def retrieve_dense(
     *,
     top_n: int = DEFAULT_TOP_N,
     target_year: int | None = None,
+    exclude_citing_paper_id: int | None = None,
 ) -> list[RetrievedContext]:
     """Return the top-N contexts ranked by cosine similarity.
 
     ``query_embedding`` must be a 1-D ``(EMBEDDER_DIM,)`` float32 array; the
     pgvector psycopg adapter is registered on the engine and accepts numpy
     arrays directly as ``vector`` bind values.
+
+    ``exclude_citing_paper_id``, when set, filters out all contexts whose
+    ``citing_paper_id`` matches — used by the eval harness to prevent
+    leakage from a test paper's own citations.
     """
     rows = session.execute(
         _DENSE_SQL,
@@ -101,6 +109,7 @@ def retrieve_dense(
             "query_embedding": query_embedding,
             "top_n": top_n,
             "target_year": target_year,
+            "exclude_citing_paper_id": exclude_citing_paper_id,
         },
     ).all()
 
