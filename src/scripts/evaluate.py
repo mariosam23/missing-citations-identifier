@@ -20,6 +20,7 @@ from database.postgres.engine import get_session
 from evaluation.dataset import DEFAULT_SEED, DEFAULT_SPLIT_DIR, load_split
 from evaluation.report import Report, save_report
 from evaluation.runner import EvalRunner
+from utils.logger import logger
 
 # Windows cp1252 stdout fix (same as debug_recommend.py).
 for _stream in (sys.stdout, sys.stderr):
@@ -106,15 +107,20 @@ def main(
 
     variant_cls = _load_variant_class(variant)
 
-    with get_session() as session:
+    # The main session sits idle for the duration of the retrieval phase
+    # (workers use their own sessions via variant_factory). Over a long
+    # tunnel like ngrok TCP, that idle connection often gets dropped
+    # mid-flight — and the ROLLBACK on __exit__ then crashes the script
+    # right after the report is computed. We close defensively so a dead
+    # main connection cannot trash an already-finished evaluation.
+    session = get_session()
+    try:
         split = load_split(
             split_path, strict=strict, session=session
         )
 
-        # The "main" variant instance (used for sequential mode and name).
         variant_instance = variant_cls(session, top_n=top_n)
 
-        # Factory for parallel mode: each thread gets its own Session.
         def variant_factory(sess):  # type: ignore[no-untyped-def]
             return variant_cls(sess, top_n=top_n)
 
@@ -132,13 +138,16 @@ def main(
 
         report = runner.run()
 
-    # Print summary table.
-    _print_report(report)
+        _print_report(report)
 
-    # Save to disk.
-    out_path = Path(output) if output else None
-    saved = save_report(report, path=out_path)
-    typer.echo(f"\nReport saved to {saved}")
+        out_path = Path(output) if output else None
+        saved = save_report(report, path=out_path)
+        typer.echo(f"\nReport saved to {saved}")
+    finally:
+        try:
+            session.close()
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("ignoring session close error: %s", exc)
 
 
 def _print_report(report: Report) -> None:

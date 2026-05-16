@@ -1,19 +1,28 @@
 """Process-wide SentenceTransformer singleton.
 
-The model (BAAI/bge-base-en-v1.5, ~440 MB on disk) is loaded lazily on first
-access so that importing this module — or the FastAPI app that depends on it —
-does not pull in torch and the model weights at startup.
+The model (``dunzhang/stella_en_1.5B_v5``, ~3 GB at fp16) is loaded lazily
+on first access so that importing this module — or the FastAPI app that
+depends on it — does not pull in torch and the model weights at startup.
 
-bge-base-en-v1.5 does **not** require a query/passage instruction prefix
-(unlike the original BGE-v1), so the same encoder is used for both the bulk
-embedding script and runtime query encoding. Embeddings are L2-normalized
-(``normalize_embeddings=True``) so cosine similarity equals the dot product
-and pgvector's ``vector_cosine_ops`` index matches the SQL we run against it.
+stella_en_1.5B_v5 has a matryoshka head that emits embeddings at any of
+``{512, 768, 1024, 2048, 4096, 8192}`` dims natively; we cut to 1024
+(``truncate_dim=config.EMBEDDER_DIM``) which is plenty for sentence-level
+citation-context retrieval and fits well inside pgvector's HNSW dim limit.
+The model is symmetric for retrieval — no ``query: ``/``passage: ``
+instruction prefix is needed, so the same encoder serves both
+``embed_contexts`` and ``encode_query``. Embeddings are L2-normalized
+(``normalize_embeddings=True``) so cosine similarity equals the dot
+product and pgvector's ``vector_cosine_ops`` index matches the SQL we
+run against it.
+
+The model ships custom modeling code, so it must be loaded with
+``trust_remote_code=True``. We load it in fp16 (``torch_dtype="float16"``)
+so it fits comfortably on a T4-class GPU at batch 16–64; on CPU torch
+will silently upcast to fp32.
 
 Device selection: if a CUDA GPU is available, the model is loaded on
-``cuda:0`` automatically (a 3060-class card cuts bulk embed time from
-~30 min to ~2 min on this corpus). Override with the ``EMBEDDER_DEVICE``
-env var (e.g. ``cpu``, ``cuda:1``, ``mps``).
+``cuda:0`` automatically. Override with the ``EMBEDDER_DEVICE`` env var
+(e.g. ``cpu``, ``cuda:1``, ``mps``).
 """
 
 from __future__ import annotations
@@ -70,8 +79,15 @@ def get_embedder() -> SentenceTransformer:
                 config.EMBEDDER_DIM,
                 device,
             )
+            model_kwargs: dict[str, str] = {}
+            if device.startswith("cuda"):
+                model_kwargs["torch_dtype"] = "float16"
             _model = SentenceTransformer(
-                config.EMBEDDER_MODEL_NAME, device=device
+                config.EMBEDDER_MODEL_NAME,
+                device=device,
+                trust_remote_code=True,
+                truncate_dim=config.EMBEDDER_DIM,
+                model_kwargs=model_kwargs,
             )
     return _model
 

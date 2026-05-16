@@ -23,9 +23,9 @@ class Settings(BaseSettings):
     OPENALEX_BASE_URL: str = "https://api.openalex.org"
 
     # Embedder
-    EMBEDDER_MODEL_NAME: str = "BAAI/bge-base-en-v1.5"
-    EMBEDDER_BATCH_SIZE: int = 64
-    EMBEDDER_DIM: int = 768
+    EMBEDDER_MODEL_NAME: str = "dunzhang/stella_en_1.5B_v5"
+    EMBEDDER_BATCH_SIZE: int = 16
+    EMBEDDER_DIM: int = 1024
     # Empty string = auto-detect (cuda → mps → cpu). Override with
     # "cuda", "cuda:0", "cpu", "mps", etc.
     EMBEDDER_DEVICE: str = ""
