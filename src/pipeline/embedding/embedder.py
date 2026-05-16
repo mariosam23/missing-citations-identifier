@@ -82,9 +82,10 @@ def get_embedder() -> SentenceTransformer:
                 config.EMBEDDER_DIM,
                 device,
             )
-            model_kwargs: dict[str, str] = {}
-            if device.startswith("cuda"):
-                model_kwargs["torch_dtype"] = "float16"
+            # Stella's Qwen2 attention is fp16-unstable: long inputs
+            # (e.g. with the s2s_query instruction prefix) reliably emit
+            # NaN embeddings on Turing-class GPUs. Always load in fp32.
+            model_kwargs: dict[str, str] = {"torch_dtype": "float32"}
             _model = SentenceTransformer(
                 config.EMBEDDER_MODEL_NAME,
                 device=device,
