@@ -82,14 +82,20 @@ def get_embedder() -> SentenceTransformer:
                 config.EMBEDDER_DIM,
                 device,
             )
-            # Stella's Qwen2 attention is fp16-unstable: long inputs
-            # (e.g. with the s2s_query instruction prefix) reliably emit
-            # NaN embeddings on Turing-class GPUs. Always load in fp32.
-            model_kwargs: dict[str, str] = {"torch_dtype": "float32"}
+            # Use float16 or bfloat16 for speed and memory efficiency on CUDA.
+            # Bypassing trust_remote_code=True avoids transformers v5 Qwen2Config compatibility bugs.
+            model_kwargs = {}
+            if "cuda" in device:
+                import torch
+                if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
+                    model_kwargs = {"torch_dtype": torch.bfloat16}
+                else:
+                    model_kwargs = {"torch_dtype": torch.float16}
+
             _model = SentenceTransformer(
                 config.EMBEDDER_MODEL_NAME,
                 device=device,
-                trust_remote_code=True,
+                trust_remote_code=False,
                 truncate_dim=config.EMBEDDER_DIM,
                 model_kwargs=model_kwargs,
             )

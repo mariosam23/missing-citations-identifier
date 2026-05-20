@@ -29,11 +29,10 @@ class Settings(BaseSettings):
     # Empty string = auto-detect (cuda → mps → cpu). Override with
     # "cuda", "cuda:0", "cpu", "mps", etc.
     EMBEDDER_DEVICE: str = ""
-    # Stella was trained as an asymmetric retriever: queries are wrapped in
-    # an instruction prefix, passages are encoded raw. "s2s_query" matches
-    # the sentence↔sentence retrieval setup; "s2p_query" for passage-level.
-    # Empty string disables prompt wrapping (e.g. for symmetric encoders).
-    EMBEDDER_QUERY_PROMPT_NAME: str = "s2s_query"
+    # Stella performs best on this symmetric sentence-retrieval task when
+    # queries and database contexts are both embedded raw (without prompts).
+    # Empty string disables prompt wrapping.
+    EMBEDDER_QUERY_PROMPT_NAME: str = ""
 
     model_config = {
         "env_file": str(_ENV_FILE),
