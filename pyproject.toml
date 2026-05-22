@@ -41,6 +41,10 @@ where = ["src"]
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+exclude = [
+    "*.ipynb",
+    "notebooks/*.ipynb",
+]
 
 [tool.ruff.lint]
 extend-select = ["I", "UP", "B"]
