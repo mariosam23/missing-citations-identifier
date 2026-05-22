@@ -23,16 +23,16 @@ class Settings(BaseSettings):
     OPENALEX_BASE_URL: str = "https://api.openalex.org"
 
     # Embedder
-    EMBEDDER_MODEL_NAME: str = "BAAI/bge-m3"
+    EMBEDDER_MODEL_NAME: str = "BAAI/bge-large-en-v1.5"
     EMBEDDER_BATCH_SIZE: int = 16
     EMBEDDER_DIM: int = 1024
     # Empty string = auto-detect (cuda → mps → cpu). Override with
     # "cuda", "cuda:0", "cpu", "mps", etc.
     EMBEDDER_DEVICE: str = ""
-    # BGE-M3 performs best on this symmetric sentence-retrieval task when
-    # queries and database contexts are both embedded raw (without prompts).
-    # Empty string disables prompt wrapping.
-    EMBEDDER_QUERY_PROMPT_NAME: str = ""
+    # BGE-large performs best on this asymmetric sentence-retrieval task when
+    # queries are wrapped in the query instruction prefix, and database contexts
+    # are embedded raw.
+    EMBEDDER_QUERY_PROMPT_NAME: str = "query"
 
     model_config = {
         "env_file": str(_ENV_FILE),

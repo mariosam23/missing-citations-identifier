@@ -1,14 +1,15 @@
 """Process-wide SentenceTransformer singleton.
 
-The model (``BAAI/bge-m3``, ~2.2 GB at fp16) is loaded lazily
+The model (``BAAI/bge-large-en-v1.5``, ~1.34 GB at fp16) is loaded lazily
 on first access so that importing this module — or the FastAPI app that
 depends on it — does not pull in torch and the model weights at startup.
 
-bge-m3 has a native dimension of 1024 (``truncate_dim=config.EMBEDDER_DIM``),
+bge-large-en-v1.5 has a native dimension of 1024 (``truncate_dim=config.EMBEDDER_DIM``),
 which is plenty for sentence-level citation-context retrieval and fits well
 inside pgvector's HNSW dim limit.
-BGE-M3 performs best on this symmetric sentence-retrieval task when
-queries and database contexts are both embedded raw (without prompts).
+BGE-large performs best on this asymmetric sentence-retrieval task when
+queries are wrapped in the query instruction prefix, and database contexts
+are embedded raw.
 ``encode_texts(..., is_query=True)`` and ``encode_query`` apply the
 prompt configured by ``config.EMBEDDER_QUERY_PROMPT_NAME``; the corpus
 embedding path leaves ``is_query=False`` so passages stay prompt-free.
@@ -94,6 +95,10 @@ def get_embedder() -> SentenceTransformer:
                 truncate_dim=config.EMBEDDER_DIM,
                 model_kwargs=model_kwargs,
             )
+            # If the model uses query prompts but they are empty/missing, set them.
+            if "bge-large" in config.EMBEDDER_MODEL_NAME or "bge-small" in config.EMBEDDER_MODEL_NAME:
+                if "query" not in _model.prompts or not _model.prompts["query"]:
+                    _model.prompts["query"] = "Represent this sentence for searching relevant passages: "
     return _model
 
 
@@ -108,7 +113,7 @@ def encode_texts(
 
     Always L2-normalizes — required for ``vector_cosine_ops`` to behave as
     a dot-product index. Set ``is_query=True`` to wrap inputs with the
-    BGE-M3 query instruction prefix (``config.EMBEDDER_QUERY_PROMPT_NAME``).
+    BGE-large query instruction prefix (``config.EMBEDDER_QUERY_PROMPT_NAME``).
     """
     model = get_embedder()
     bs = batch_size or config.EMBEDDER_BATCH_SIZE

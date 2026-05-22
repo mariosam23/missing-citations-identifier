@@ -144,6 +144,7 @@ def main(
             typer.echo("Nothing to embed.")
             return
 
+        last_break_time = time.monotonic()
         with tqdm(total=remaining, unit="ctx") as bar:
             while True:
                 fetch_n = page_size
@@ -172,6 +173,12 @@ def main(
 
                 total += len(page)
                 bar.update(len(page))
+
+                # Heat mitigation: pause for 5 seconds every 30 seconds of processing
+                if time.monotonic() - last_break_time > 30.0:
+                    logger.info("Pausing for 5 seconds to prevent overheating...")
+                    time.sleep(5.0)
+                    last_break_time = time.monotonic()
 
         elapsed = time.monotonic() - started
         rate = total / elapsed if elapsed > 0 else 0.0

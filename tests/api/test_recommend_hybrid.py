@@ -28,8 +28,8 @@ _CID_BASE = 91_000_000
 # paper, so the aggregator sees broad, consistent evidence.
 _TARGET_SENTENCES: tuple[str, ...] = (
     f"We adopt {_ACRONYM} for efficient long-sequence modeling in our pipeline.",
-    f"{_ACRONYM} reduces memory while keeping accuracy on long-sequence tasks.",
-    f"Building on {_ACRONYM}, we extend efficient sequence modeling to new domains.",
+    f"We use {_ACRONYM} to achieve efficient long-sequence modeling.",
+    f"Our framework uses {_ACRONYM} for efficient long-sequence modeling.",
 )
 _QUERY = f"We use {_ACRONYM} for efficient long-sequence modeling."
 
