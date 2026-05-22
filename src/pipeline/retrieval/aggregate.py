@@ -7,30 +7,28 @@ Pipeline:
         → compute features (mean_top_3_similarity, distinct_citing_papers, ...)
         → score = mean_top_3_similarity
                 + 0.3 * log1p(distinct_citing_papers)
-                - 0.15 * log1p(global_context_count / max(distinct, 1))
         → sort desc, keep top-K
         → hydrate paper metadata + top-3 evidence contexts
 
-Why this score? At a 1k-paper corpus, summing raw similarity surfaces
-"Attention Is All You Need" and BERT for every query (the §31.2 famous-paper
-trap). ``mean_top_3_similarity`` measures *how well* the strongest evidence
-matches; ``distinct_citing_papers`` measures *how broadly* it is cited (an
-encyclopedia citation count is not the same signal as four different teams
-independently citing for the same reason); the popularity penalty knocks
-down universally-cited papers from #1 on every query without removing them
-from the ranking.
+Why this score? ``mean_top_3_similarity`` measures *how well* the strongest
+evidence matches; ``distinct_citing_papers`` measures *how broadly* it is
+cited — an answer corroborated by several independent citers, each phrasing
+the citation similarly to the query, is more trustworthy than a single match.
 
-The penalty acts on ``global_count / distinct_in_top_n`` rather than raw
-``global_count``. The ratio is "for every paper that cites X in a context
-similar to the query, how many cite X globally?" — high when a paper is
-cited *everywhere but for this reason* (the Transformer trap), low when a
-paper is cited a lot *for this reason* (BERT on a BERT query). Using the
-raw global count over-fired: BERT lost a "we use BERT to encode sentences"
-query by 0.002 because the penalty ate its entire distinct-citers bonus.
+History — the popularity penalty (removed): the score used to subtract
+``0.15 * log1p(global_context_count / max(distinct, 1))`` to fight the
+"famous-paper trap" (BERT/Transformer ranking #1 on every query). On the
+full val split (1,202 queries, bge-large) that penalty *halved* recall —
+recall@20 0.397 → 0.188 — because it demoted the genuinely-correct papers far
+more than it suppressed noise. Removing it ~doubled recall@10/@20 with no
+re-embedding, so it is gone. If the famous-paper trap resurfaces, prefer a
+much smaller weight (the sweep showed even 0.05 cost ~9 recall@20 points) or a
+different mechanism entirely. ``global_context_count`` is still computed as a
+diagnostic feature (surfaced by ``scripts.debug_recommend``).
 
-The constants 0.3 and 0.15 are placeholders for the eventually-fitted
-weights in §14.1; they were picked to be small enough that
-``mean_top_3_similarity`` still dominates ordering.
+The constant 0.3 is a placeholder for the eventually-fitted weight in §14.1;
+it is small enough that ``mean_top_3_similarity`` still dominates ordering
+(the sweep showed 0.3 ≈ 0.5 for recall).
 """
 
 from __future__ import annotations
@@ -45,7 +43,10 @@ from sqlalchemy.orm import Session
 from pipeline.retrieval.dense import RetrievedContext
 
 DISTINCT_CITERS_WEIGHT = 0.3
-POPULARITY_PENALTY_WEIGHT = 0.15
+# Popularity penalty disabled: on the val split it ~halved recall by demoting
+# correct papers. Kept at 0.0 (rather than deleting the term) so the lever is
+# discoverable and re-tunable. See module docstring.
+POPULARITY_PENALTY_WEIGHT = 0.0
 TOP_M_FOR_MEAN = 3
 DEFAULT_EVIDENCE_COUNT = 3
 

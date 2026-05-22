@@ -13,10 +13,11 @@ Flow:
 6. Hydrate paper metadata; build BibTeX-style citation keys; attach top-3
    evidence contexts.
 
-The score blends three signals (see ``pipeline.retrieval.aggregate``):
-``mean_top_3_similarity + 0.3*log1p(distinct_citing_papers) -
-0.15*log1p(global_context_count)``. This avoids the §31.2 failure mode
-where summing similarity surfaces Transformer/BERT for every query.
+The score blends two signals (see ``pipeline.retrieval.aggregate``):
+``mean_top_3_similarity + 0.3*log1p(distinct_citing_papers)``. The former
+measures how well the strongest evidence matches; the latter rewards papers
+corroborated by several independent citers. (A popularity penalty was tried
+and removed — it halved recall on the val split; see the aggregate docstring.)
 
 Hybrid retrieval (§10.5) adds the sparse branch so lexically-exact tokens —
 acronyms ("LoRA"), named datasets ("GLUE") — are not lost to sub-word
