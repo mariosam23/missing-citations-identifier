@@ -1,27 +1,23 @@
 """Process-wide SentenceTransformer singleton.
 
-The model (``dunzhang/stella_en_1.5B_v5``, ~3 GB at fp16) is loaded lazily
+The model (``BAAI/bge-m3``, ~2.2 GB at fp16) is loaded lazily
 on first access so that importing this module — or the FastAPI app that
 depends on it — does not pull in torch and the model weights at startup.
 
-stella_en_1.5B_v5 has a matryoshka head that emits embeddings at any of
-``{512, 768, 1024, 2048, 4096, 8192}`` dims natively; we cut to 1024
-(``truncate_dim=config.EMBEDDER_DIM``) which is plenty for sentence-level
-citation-context retrieval and fits well inside pgvector's HNSW dim limit.
-Stella is **asymmetric**: queries must be wrapped in an instruction
-prefix (``s2s_query``/``s2p_query``) while passages are encoded raw.
+bge-m3 has a native dimension of 1024 (``truncate_dim=config.EMBEDDER_DIM``),
+which is plenty for sentence-level citation-context retrieval and fits well
+inside pgvector's HNSW dim limit.
+BGE-M3 performs best on this symmetric sentence-retrieval task when
+queries and database contexts are both embedded raw (without prompts).
 ``encode_texts(..., is_query=True)`` and ``encode_query`` apply the
 prompt configured by ``config.EMBEDDER_QUERY_PROMPT_NAME``; the corpus
 embedding path leaves ``is_query=False`` so passages stay prompt-free.
-Embeddings are L2-normalized
-(``normalize_embeddings=True``) so cosine similarity equals the dot
-product and pgvector's ``vector_cosine_ops`` index matches the SQL we
-run against it.
+Embeddings are L2-normalized (``normalize_embeddings=True``) so cosine
+similarity equals the dot product and pgvector's ``vector_cosine_ops``
+index matches the SQL we run against it.
 
-The model ships custom modeling code, so it must be loaded with
-``trust_remote_code=True``. We load it in fp16 (``torch_dtype="float16"``)
-so it fits comfortably on a T4-class GPU at batch 16–64; on CPU torch
-will silently upcast to fp32.
+We load it in fp16 (``torch_dtype="float16"``) or bfloat16 for speed and
+memory efficiency on CUDA; on CPU torch will silently upcast to fp32.
 
 Device selection: if a CUDA GPU is available, the model is loaded on
 ``cuda:0`` automatically. Override with the ``EMBEDDER_DEVICE`` env var
@@ -83,7 +79,6 @@ def get_embedder() -> SentenceTransformer:
                 device,
             )
             # Use float16 or bfloat16 for speed and memory efficiency on CUDA.
-            # Bypassing trust_remote_code=True avoids transformers v5 Qwen2Config compatibility bugs.
             model_kwargs = {}
             if "cuda" in device:
                 import torch
@@ -113,20 +108,19 @@ def encode_texts(
 
     Always L2-normalizes — required for ``vector_cosine_ops`` to behave as
     a dot-product index. Set ``is_query=True`` to wrap inputs with the
-    Stella query instruction prefix (``config.EMBEDDER_QUERY_PROMPT_NAME``).
+    BGE-M3 query instruction prefix (``config.EMBEDDER_QUERY_PROMPT_NAME``).
     """
     model = get_embedder()
     bs = batch_size or config.EMBEDDER_BATCH_SIZE
-    encode_kwargs: dict[str, object] = {
-        "batch_size": bs,
-        "normalize_embeddings": True,
-        "show_progress_bar": show_progress_bar,
-        "convert_to_numpy": True,
-    }
     prompt_name = config.EMBEDDER_QUERY_PROMPT_NAME if is_query else ""
-    if prompt_name:
-        encode_kwargs["prompt_name"] = prompt_name
-    vectors = model.encode(texts, **encode_kwargs)
+    vectors = model.encode(
+        texts,
+        batch_size=bs,
+        normalize_embeddings=True,
+        show_progress_bar=show_progress_bar,
+        convert_to_numpy=True,
+        prompt_name=prompt_name or None,
+    )
     return np.asarray(vectors, dtype=np.float32)
 
 

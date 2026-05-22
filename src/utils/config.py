@@ -23,13 +23,13 @@ class Settings(BaseSettings):
     OPENALEX_BASE_URL: str = "https://api.openalex.org"
 
     # Embedder
-    EMBEDDER_MODEL_NAME: str = "dunzhang/stella_en_1.5B_v5"
+    EMBEDDER_MODEL_NAME: str = "BAAI/bge-m3"
     EMBEDDER_BATCH_SIZE: int = 16
     EMBEDDER_DIM: int = 1024
     # Empty string = auto-detect (cuda → mps → cpu). Override with
     # "cuda", "cuda:0", "cpu", "mps", etc.
     EMBEDDER_DEVICE: str = ""
-    # Stella performs best on this symmetric sentence-retrieval task when
+    # BGE-M3 performs best on this symmetric sentence-retrieval task when
     # queries and database contexts are both embedded raw (without prompts).
     # Empty string disables prompt wrapping.
     EMBEDDER_QUERY_PROMPT_NAME: str = ""
