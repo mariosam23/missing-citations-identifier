@@ -92,6 +92,34 @@ class SemanticScholarClient:
         finally:
             time.sleep(_POLITE_DELAY_S)
 
+    def get_open_access_pdf(
+        self,
+        *,
+        doi: str | None = None,
+        arxiv_id: str | None = None,
+    ) -> str | None:
+        """Return an open-access PDF URL for a paper identified by DOI/arXiv.
+
+        Uses the single-paper lookup ``GET /paper/{id}`` with an ``externalId``
+        prefix (``DOI:`` or ``ARXIV:``). Returns ``None`` when S2 has no record
+        or no open-access PDF on file. The first available identifier wins;
+        DOI is tried before arXiv.
+        """
+        paper_key: str | None = None
+        if doi:
+            paper_key = f"DOI:{doi.strip()}"
+        elif arxiv_id:
+            paper_key = f"ARXIV:{arxiv_id.strip()}"
+        if not paper_key:
+            return None
+
+        result = self._get(f"/paper/{paper_key}", fields="openAccessPdf")
+        if not result:
+            return None
+        oa = result.get("openAccessPdf") or {}
+        url = oa.get("url")
+        return url.strip() if isinstance(url, str) and url.strip() else None
+
     def match_by_title(self, title: str) -> dict[str, Any] | None:
         """Return the best-matching S2 paper for the given title, or ``None``.
 

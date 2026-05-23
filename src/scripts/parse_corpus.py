@@ -30,6 +30,8 @@ from __future__ import annotations
 
 import re
 import tempfile
+import threading
+import time
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
@@ -37,7 +39,7 @@ from typing import Any
 
 import httpx
 import typer
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from tenacity import (
     retry,
@@ -58,6 +60,7 @@ from pipeline.parsing.grobid_client import (
     process_fulltext,
 )
 from pipeline.parsing.tei_parser import parse_tei
+from pipeline.resolution.semantic_scholar_client import SemanticScholarClient
 from utils.config import config
 from utils.logger import logger
 from utils.regex_patterns import OPENALEX_ID_PATTERN
@@ -82,32 +85,178 @@ def _extract_openalex_id(work: dict[str, Any]) -> str | None:
     return m.group(1) if m else None
 
 
+_ARXIV_RE = re.compile(
+    r"arxiv\.org/(?:abs|pdf)/([0-9]{4}\.[0-9]{4,5}|[a-z\-]+/\d{7})",
+    re.IGNORECASE,
+)
+_DOI_RE = re.compile(r"(10\.\d{4,9}/[^\s\"']+)")
+_PMC_RE = re.compile(r"(PMC\d+)")
+
+
+def _iter_locations(work: dict[str, Any]) -> list[dict[str, Any]]:
+    """Best/primary first, then every entry in ``locations[]`` (dedup-able)."""
+    out: list[dict[str, Any]] = []
+    for key in ("best_oa_location", "primary_location"):
+        loc = work.get(key)
+        if isinstance(loc, dict):
+            out.append(loc)
+    for loc in work.get("locations") or []:
+        if isinstance(loc, dict):
+            out.append(loc)
+    return out
+
+
+def _work_arxiv_id(work: dict[str, Any]) -> str | None:
+    """Extract an arXiv id from any location's landing-page / pdf URL."""
+    for loc in _iter_locations(work):
+        for key in ("pdf_url", "landing_page_url"):
+            val = loc.get(key)
+            if isinstance(val, str):
+                m = _ARXIV_RE.search(val)
+                if m:
+                    return m.group(1)
+    return None
+
+
+def _work_doi(work: dict[str, Any]) -> str | None:
+    """Return the bare DOI (``10.xxxx/...``) from the OpenAlex record."""
+    raw = (work.get("ids") or {}).get("doi") or work.get("doi")
+    if not isinstance(raw, str):
+        return None
+    m = _DOI_RE.search(raw)
+    return m.group(1) if m else None
+
+
+def _pmc_pdf_url(work: dict[str, Any]) -> str | None:
+    pmcid_raw = (work.get("ids") or {}).get("pmcid")
+    if isinstance(pmcid_raw, str):
+        m = _PMC_RE.search(pmcid_raw)
+        if m:
+            return f"https://www.ncbi.nlm.nih.gov/pmc/articles/{m.group(1)}/pdf/"
+    return None
+
+
 def _pdf_url_candidates(work: dict[str, Any]) -> list[str]:
+    """Ordered, de-duplicated PDF URLs drawn from the OpenAlex record alone.
+
+    Priority: arXiv direct (most reliable) → every ``locations[].pdf_url``
+    (best/primary first) → PMC direct → ``open_access.oa_url`` (often a landing
+    page, so last). The previous version only tried best/primary + oa_url, which
+    are exactly the publisher gateway links that 403 or return HTML.
+    """
     urls: list[str] = []
-    for loc_key in ("best_oa_location", "primary_location"):
-        loc = work.get(loc_key) or {}
-        if loc.get("pdf_url"):
-            urls.append(loc["pdf_url"])
-    oa = work.get("open_access") or {}
-    if oa.get("oa_url"):
-        urls.append(oa["oa_url"])
+
+    def _add(url: str | None) -> None:
+        if isinstance(url, str) and url and url not in urls:
+            urls.append(url)
+
+    arxiv_id = _work_arxiv_id(work)
+    if arxiv_id:
+        _add(f"https://arxiv.org/pdf/{arxiv_id}")
+    for loc in _iter_locations(work):
+        _add(loc.get("pdf_url"))
+    _add(_pmc_pdf_url(work))
+    _add((work.get("open_access") or {}).get("oa_url"))
     return urls
+
+
+# Semantic Scholar is rate-limited to 1 RPS for the whole account; serialise
+# every S2 call across the download threadpool through this lock + timestamp.
+_S2_LOCK = threading.Lock()
+_S2_MIN_INTERVAL_S = 1.1
+_s2_next_allowed = 0.0
+
+
+def _s2_pdf_url(
+    s2_client: SemanticScholarClient, work: dict[str, Any]
+) -> str | None:
+    """Throttled (≤1 RPS) S2 ``openAccessPdf`` lookup by DOI then arXiv."""
+    doi = _work_doi(work)
+    arxiv_id = _work_arxiv_id(work)
+    if not (doi or arxiv_id):
+        return None
+
+    global _s2_next_allowed
+    with _S2_LOCK:
+        wait = _s2_next_allowed - time.monotonic()
+        if wait > 0:
+            time.sleep(wait)
+        try:
+            return s2_client.get_open_access_pdf(doi=doi, arxiv_id=arxiv_id)
+        except httpx.HTTPError as exc:
+            logger.warning("s2 openAccessPdf lookup failed: %s", exc)
+            return None
+        finally:
+            _s2_next_allowed = time.monotonic() + _S2_MIN_INTERVAL_S
+
+
+def _unpaywall_pdf_url(
+    http_client: httpx.Client, doi: str | None, email: str | None
+) -> str | None:
+    """Resolve a working OA PDF URL for a DOI via Unpaywall.
+
+    Unpaywall aggregates OA copies across repositories and is the most
+    reliable single source for "give me a PDF for this DOI". No per-second
+    rate limit (≤100k/day with the ``email`` param), so it is safe to call
+    from the download threadpool.
+    """
+    if not (doi and email):
+        return None
+    try:
+        r = http_client.get(
+            f"https://api.unpaywall.org/v2/{doi}",
+            params={"email": email},
+            timeout=30.0,
+        )
+        if r.status_code != 200:
+            return None
+        loc = (r.json() or {}).get("best_oa_location") or {}
+        url = loc.get("url_for_pdf") or loc.get("url")
+        return url if isinstance(url, str) and url else None
+    except (httpx.HTTPError, ValueError) as exc:
+        logger.debug("unpaywall lookup failed for doi=%s: %s", doi, exc)
+        return None
 
 
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=1, max=10),
-    retry=retry_if_exception_type((httpx.HTTPError,)),
+    # Only retry transient transport problems (timeouts, connection resets).
+    # 4xx/5xx come back via raise_for_status as HTTPStatusError and must NOT be
+    # retried: a 403/404 publisher link never recovers, and retrying it 3× with
+    # backoff made bulk recovery ~10× slower for no benefit.
+    retry=retry_if_exception_type((httpx.TransportError,)),
     reraise=True,
 )
 def _http_get(client: httpx.Client, url: str) -> tuple[bytes, str]:
-    r = client.get(url, follow_redirects=True, timeout=60.0)
+    r = client.get(url, follow_redirects=True, timeout=30.0)
     r.raise_for_status()
     return r.content, r.headers.get("content-type", "")
 
 
 def _looks_like_pdf(content: bytes, ctype: str) -> bool:
     return content.startswith(PDF_MAGIC) or "application/pdf" in ctype.lower()
+
+
+def _download_pdf(
+    http_client: httpx.Client, urls: list[str]
+) -> tuple[bytes | None, str | None]:
+    """Try each URL in order; return (pdf_bytes, None) or (None, last_error)."""
+    last_error: str | None = None
+    for url in urls:
+        try:
+            content, ctype = _http_get(http_client, url)
+        except httpx.HTTPError as exc:
+            last_error = f"http:{exc}"
+            continue
+        if len(content) > MAX_PDF_BYTES:
+            last_error = f"oversize:{len(content)}"
+            continue
+        if not _looks_like_pdf(content, ctype):
+            last_error = f"not_pdf:{ctype[:64]}"
+            continue
+        return content, None
+    return None, last_error
 
 
 # ---------------------------------------------------------------------------
@@ -127,6 +276,8 @@ def _ingest_one(
     work: dict[str, Any],
     tei_dir: Path,
     http_client: httpx.Client,
+    s2_client: SemanticScholarClient | None = None,
+    unpaywall_email: str | None = None,
 ) -> WorkResult:
     """Download → GROBID → delete → parse TEI. Runs in a thread pool worker."""
     openalex_id = _extract_openalex_id(work) or ""
@@ -145,30 +296,35 @@ def _ingest_one(
         except Exception as exc:  # noqa: BLE001
             return WorkResult(openalex_id, None, tei_path, "tei_parse_error", str(exc))
 
-    # Try each PDF URL candidate.
-    urls = _pdf_url_candidates(work)
-    if not urls:
-        return WorkResult(openalex_id, None, None, "no_pdf", "no url candidates")
+    # Try the OpenAlex-derived candidates first (free, no extra API calls).
+    pdf_content, last_error = _download_pdf(http_client, _pdf_url_candidates(work))
 
-    pdf_content: bytes | None = None
-    last_error: str | None = None
-    for url in urls:
-        try:
-            content, ctype = _http_get(http_client, url)
-        except httpx.HTTPError as exc:
-            last_error = f"http:{exc}"
-            continue
-        if len(content) > MAX_PDF_BYTES:
-            last_error = f"oversize:{len(content)}"
-            continue
-        if not _looks_like_pdf(content, ctype):
-            last_error = f"not_pdf:{ctype[:64]}"
-            continue
-        pdf_content = content
-        break
+    # Fallback 1: Unpaywall (free, DOI-keyed, no per-second limit). Most of the
+    # failures are publisher-gateway 403s; Unpaywall often has a repository copy.
+    if pdf_content is None and unpaywall_email:
+        up_url = _unpaywall_pdf_url(http_client, _work_doi(work), unpaywall_email)
+        if up_url:
+            content, up_error = _download_pdf(http_client, [up_url])
+            if content is not None:
+                pdf_content = content
+            else:
+                last_error = f"unpaywall:{up_error}"
+
+    # Fallback 2: Semantic Scholar openAccessPdf (throttled to 1 RPS; off by
+    # default because the shared pool 429s readily — enable with --use-s2).
+    if pdf_content is None and s2_client is not None:
+        s2_url = _s2_pdf_url(s2_client, work)
+        if s2_url:
+            content, s2_error = _download_pdf(http_client, [s2_url])
+            if content is not None:
+                pdf_content = content
+            else:
+                last_error = f"s2:{s2_error}"
 
     if pdf_content is None:
-        return WorkResult(openalex_id, None, None, "no_pdf", last_error)
+        return WorkResult(
+            openalex_id, None, None, "no_pdf", last_error or "no url candidates"
+        )
 
     # Write to a temp file so GROBID can POST it, then delete immediately.
     try:
@@ -364,6 +520,32 @@ def main(
     tei_dir: Path = typer.Option(DEFAULT_TEI_DIR, "--tei-dir"),
     workers: int = typer.Option(DEFAULT_WORKERS, "--workers"),
     limit: int | None = typer.Option(None, "--limit"),
+    retry_failed: bool = typer.Option(
+        False,
+        "--retry-failed",
+        help=(
+            "Delete prior non-'ok' source_documents (pure status rows,"
+            " paper_id NULL) before the run so failed works are re-attempted"
+            " cleanly without accumulating duplicate failure rows."
+        ),
+    ),
+    use_unpaywall: bool = typer.Option(
+        True,
+        "--use-unpaywall/--no-unpaywall",
+        help=(
+            "Fall back to Unpaywall (by DOI) when OpenAlex PDF links fail."
+            " Free, needs OPEN_ALEX_EMAIL; the most reliable OA-PDF resolver."
+        ),
+    ),
+    use_s2: bool = typer.Option(
+        False,
+        "--use-s2/--no-s2",
+        help=(
+            "Also fall back to Semantic Scholar openAccessPdf (throttled to"
+            " 1 RPS). Off by default: the shared pool 429s readily and is slow"
+            " for bulk recovery; Unpaywall covers the same DOIs more reliably."
+        ),
+    ),
 ) -> None:
     """Download + parse + ingest OpenAlex Works into the citation context DB."""
     import json
@@ -373,7 +555,20 @@ def main(
     tei_dir.mkdir(parents=True, exist_ok=True)
 
     session = get_session()
+    s2_client = SemanticScholarClient() if use_s2 else None
     try:
+        if retry_failed:
+            deleted = session.execute(
+                text(
+                    "DELETE FROM source_documents WHERE parse_status <> 'ok'"
+                )
+            ).rowcount
+            session.commit()
+            logger.info(
+                "retry-failed: cleared %d prior non-ok source_documents.",
+                deleted,
+            )
+
         done_ids = _load_done_ids(session)
         logger.info("Skipping %d works already at parse_status=ok.", len(done_ids))
 
@@ -392,15 +587,17 @@ def main(
 
         logger.info("Ingesting %d works with %d workers.", len(works), workers)
 
+        # Browser-like UA: several publishers 403 a bot UA but serve the same
+        # OA PDF to a browser. mailto stays in a custom header for politeness.
         http_headers = {
             "User-Agent": (
-                f"missing-citations-identifier"
-                f" (mailto:{config.OPEN_ALEX_EMAIL})"
-                if config.OPEN_ALEX_EMAIL
-                else "missing-citations-identifier"
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
             ),
-            "Accept": "application/pdf,*/*;q=0.5",
+            "Accept": "application/pdf,text/html;q=0.9,*/*;q=0.5",
+            "From": config.OPEN_ALEX_EMAIL or "",
         }
+        unpaywall_email = config.OPEN_ALEX_EMAIL if use_unpaywall else None
 
         ok_count = failed_count = 0
         ok_batch: list[WorkResult] = []
@@ -410,9 +607,14 @@ def main(
             ThreadPoolExecutor(max_workers=workers) as pool,
         ):
             future_to_id: dict[Future[WorkResult], str] = {
-                pool.submit(_ingest_one, work, tei_dir, http_client): (
-                    _extract_openalex_id(work) or ""
-                )
+                pool.submit(
+                    _ingest_one,
+                    work,
+                    tei_dir,
+                    http_client,
+                    s2_client,
+                    unpaywall_email,
+                ): (_extract_openalex_id(work) or "")
                 for work in works
             }
 
@@ -451,6 +653,8 @@ def main(
         )
     finally:
         session.close()
+        if s2_client is not None:
+            s2_client.close()
 
 
 if __name__ == "__main__":

@@ -91,6 +91,37 @@ class OpenAlexClient:
             return result
         return None
 
+    def fetch_many_by_openalex_ids(
+        self, work_ids: list[str], *, chunk_size: int = 50
+    ) -> dict[str, dict[str, Any]]:
+        """Batch-fetch Works by OpenAlex ID. Returns ``{bare_id: work}``.
+
+        Used by the ``referenced_works`` resolver to pull a citing paper's
+        cited-works metadata in bulk. IDs are de-duplicated and requested in
+        chunks of ``chunk_size`` via the ``openalex:`` OR-filter; the 10 req/s
+        polite ceiling is enforced per chunk by ``_get``.
+        """
+        bare: list[str] = []
+        for wid in work_ids:
+            m = re.search(r"(W\d+)", wid or "")
+            if m:
+                bare.append(m.group(1))
+        bare = list(dict.fromkeys(bare))
+
+        out: dict[str, dict[str, Any]] = {}
+        for start in range(0, len(bare), chunk_size):
+            chunk = bare[start : start + chunk_size]
+            result = self._get(
+                "/works",
+                filter="openalex:" + "|".join(chunk),
+                per_page=chunk_size,
+            )
+            for work in (result or {}).get("results") or []:
+                m = re.search(r"(W\d+)", work.get("id") or "")
+                if m:
+                    out[m.group(1)] = work
+        return out
+
     def fetch_by_arxiv_id(self, normalized_arxiv_id: str) -> dict[str, Any] | None:
         """Return a raw OpenAlex Work dict, or ``None`` if not found.
 
