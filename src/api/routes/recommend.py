@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -38,6 +39,10 @@ from sqlalchemy.orm import Session
 
 from api.deps import db_session
 from api.schemas import Candidate, Evidence, RecommendRequest, RecommendResponse
+from api.services.recommendation_logger import (
+    RecommendationLogger,
+    ResultToLog,
+)
 from database.postgres.tables.papers import Paper
 from pipeline.bibtex.formatter import paper_to_bibtex
 from pipeline.embedding.embedder import encode_query
@@ -55,6 +60,9 @@ from utils.logger import logger
 router = APIRouter(tags=["recommend"])
 
 DbSession = Annotated[Session, Depends(db_session)]
+
+# Best-effort, dedicated-session logger (see recommendation_logger docstring).
+_recommendation_logger = RecommendationLogger()
 
 
 # Words too generic to anchor a citation key. Lowercase, ASCII-only.
@@ -89,12 +97,14 @@ def recommend(
         top_n=DEFAULT_TOP_N,
         target_year=request.target_year,
     )
+
     sparse_ctxs = retrieve_sparse(
         session,
         query,
         top_n=DEFAULT_TOP_N,
         target_year=request.target_year,
     )
+
     if not sparse_ctxs:
         # Stop-word-only query, or simply no lexical hits — fusion degrades to
         # dense-only. Not an error; just worth a breadcrumb.
@@ -139,6 +149,7 @@ def recommend(
     final_keys = _disambiguate_keys(raw_keys)
 
     candidates: list[Candidate] = []
+    results_to_log: list[ResultToLog] = []
     for agg, key in zip(ranked, final_keys, strict=True):
         paper = paper_by_id.get(agg.cited_paper_id)
         if paper is None:
@@ -156,6 +167,7 @@ def recommend(
             )
             for e in agg.top_evidence(DEFAULT_EVIDENCE_COUNT)
         ]
+
         bibtex = paper_to_bibtex(paper, key)
         candidates.append(
             Candidate(
@@ -170,8 +182,43 @@ def recommend(
                 bibtex=bibtex,
             )
         )
+        # rank is 1-based and aligned with the displayed order; full-precision
+        # score (not the rounded display value) is stored for analysis.
+        results_to_log.append(
+            ResultToLog(
+                paper_id=paper.paper_id,
+                rank=len(candidates),
+                score=agg.score,
+                citation_key=key,
+            )
+        )
 
-    return RecommendResponse(candidates=candidates)
+    event_id = _log_recommendation(request, query, candidates, results_to_log)
+    return RecommendResponse(candidates=candidates, event_id=event_id)
+
+
+def _log_recommendation(
+    request: RecommendRequest,
+    query: str,
+    candidates: list[Candidate],
+    results_to_log: list[ResultToLog],
+) -> uuid.UUID | None:
+    """Persist the run and stamp each candidate with its ``result_id``.
+
+    Best-effort: returns ``None`` and leaves ``result_id`` unset on every
+    candidate if logging failed, so a logging outage never affects the response.
+    """
+    logged = _recommendation_logger.log(
+        query_text=query,
+        document_path=request.document_path,
+        target_year=request.target_year,
+        results=results_to_log,
+    )
+    if logged is None:
+        return None
+    for candidate, result_id in zip(candidates, logged.result_ids, strict=True):
+        candidate.result_id = result_id
+    return logged.event_id
 
 
 # ---------------------------------------------------------------------------

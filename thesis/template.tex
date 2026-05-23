@@ -1,10 +1,10 @@
 \documentclass[12pt,a4paper]{report}
 
-\usepackage[utf8]{inputenc} % pentru suport diacritice
-\usepackage[romanian]{babel} % setări pentru limba română 
+\usepackage[utf8]{inputenc} % for diacritics support
+\usepackage[english]{babel} % settings for the English language
 \renewcommand\familydefault{\sfdefault} % sans serif
 
-\usepackage[margin=2.54cm]{geometry}	% dimensiuni pagină și margini
+\usepackage[margin=2.54cm]{geometry}	% page dimensions and margins
 \usepackage{graphicx} % support the \includegraphics command and options
 
 % formatting sections and subsections
@@ -43,13 +43,6 @@
 
 
 \newcommand{\HeaderLineSpace}{-0.25cm}
-\newcommand{\UniTextRO}{UNIVERSITATEA POLITEHNICA DIN BUCUREȘTI \\[\HeaderLineSpace] 
-FACULTATEA DE AUTOMATICĂ ȘI CALCULATOARE \\[\HeaderLineSpace]
-DEPARTAMENTUL DE CALCULATOARE\\}
-\newcommand{\DiplomaRO}{PROIECT DE DIPLOMĂ}
-\newcommand{\AdvisorRO}{Coordonator științific:}
-\newcommand{\BucRO}{BUCUREȘTI}
-
 \newcommand{\UniTextEN}{UNIVERSITY POLITEHNICA OF BUCHAREST \\[\HeaderLineSpace]
 FACULTY OF AUTOMATIC CONTROL AND COMPUTERS \\[\HeaderLineSpace]
 COMPUTER SCIENCE AND ENGINEERING DEPARTMENT\\}
@@ -89,7 +82,6 @@ COMPUTER SCIENCE AND ENGINEERING DEPARTMENT\\}
 \end{titlepage}
 }
 
-\newcommand{\frontPageRO}{\frontPage{\UniTextRO}{\DiplomaRO}{\ProjectTitleRO}{\ProjectSubtitleRO}{\AdvisorRO}{\BucRO}}
 \newcommand{\frontPageEN}{\frontPage{\UniTextEN}{\DiplomaEN}{\ProjectTitleEN}{\ProjectSubtitleEN}{\AdvisorEN}{\BucEN}}
 
 \linespread{1.15}
@@ -99,8 +91,6 @@ COMPUTER SCIENCE AND ENGINEERING DEPARTMENT\\}
 %% Abstract macro
 \newcommand{\AbstractPage}{
 \begin{titlepage}
-\textbf{\large SINOPSIS}\par
-\AbstractRO\par\vfill
 \textbf{\large ABSTRACT}\par
 \AbstractEN \vfill
 \end{titlepage}
@@ -109,61 +99,55 @@ COMPUTER SCIENCE AND ENGINEERING DEPARTMENT\\}
 %% Thank you macro
 \newcommand{\ThanksPage}{
 \begin{titlepage}
-{\noindent \large\textbf{MULȚUMIRI}}\\
+{\noindent \large\textbf{ACKNOWLEDGEMENTS}}\\
 \Thanks
 \end{titlepage}
 }
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %%          End of template definitions
-%%   
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%%% Puteți elimina aceste linii din lucrare, servesc numai pentru template.
+%%% You can remove these lines from your thesis; they are used only by the template.
 \newcommand{\worktype}[1]{[\textit{#1}] }
-\newcommand{\dezvoltare}{\worktype{Dezvoltare de produs}}
-\newcommand{\cercetare}{\worktype{Cercetare}}
-\newcommand{\ambele}{\worktype{Ambele}}
+\newcommand{\dezvoltare}{\worktype{Product development}}
+\newcommand{\cercetare}{\worktype{Research}}
+\newcommand{\ambele}{\worktype{Both}}
 %%%
 
 
 %%
-%%   Campurile de mai jos trebuie modificate de autor. Modificati doar continutul, nu si numele fiecarei definitii
+%%   The fields below must be modified by the author. Change only the content, not the name of each definition.
 %%
-\newcommand{\ProjectTitleRO}{Titlul proiectului de diplomă (ex: Șablon proiect de diplomă)}
-\newcommand{\ProjectSubtitleRO}{Subtitlu (ex: versiunea 2018)}
 \newcommand{\ProjectTitleEN}{Diploma Project Title  (eg: Diploma project template)}
 \newcommand{\ProjectSubtitleEN}{Subtitle (eg: 2018 version)}
 \newcommand{\Name}{Ioana Popescu}
 \newcommand{\Advisor}{Prof. dr. ing. Andrei Ionescu}
 \newcommand{\Year}{2018}
 
-% Setări document
-\title{Proiect de diplomă}
+% Document settings
+\title{Diploma Project}
 \author{\Name}
 \date{\Year}
 
 %%
-%%   Campurile aferente rezumatului
+%%   Abstract fields
 %%
-\newcommand{\AbstractRO}{Sinopsisul proiectului are rol de introducere, conținând atât o descriere pe scurt a problemei abordate cât și o enumerare sumară a rezultatelor și a concluziilor. Se recomandă ca sinopsisul să fie redactat într-un limbaj accesibil unei persoane nefamiliarizate cu domeniul, dar în același timp destul de specific pentru a oferi rapid o vedere de ansamblu asupra proiectului prezentat.
-Sinopsisul proiectului va fi redactat atât în română cât și în engleză. Ca dimensiunea recomandată aceasta secțiune va avea maxim 200 de cuvinte pentru fiecare variantă. Împreună, ambele variante se vor încadra într-o singură pagină.}
-
 \newcommand{\AbstractEN}{The abstract has an introductory role and should engulf both a brief description of the issue at hand, as well as an overview of the obtained results and conclusions. The abstract should be formulated such that even somebody that is unfamiliar with the projects’ domain can grasp the objectives of the thesis while, at the same time, retaining a specificity level offering a bird’s eye view of the project.
-The projects’ abstract will be elaborated in both Romanian and English. The recommended size for this section is limited to 200 words for each version. Together, both versions will fit in one page.}
+The recommended size for this section is limited to 200 words.}
 
 %%
-%%   Campurile aferente paginii de multumiri
+%%   Acknowledgements page fields
 %%
-\newcommand{\Thanks}{(opțional) Aici puteți introduce o secțiunea specială de mulțumiri / acknowledgments. }
+\newcommand{\Thanks}{(optional) Here you can add a special acknowledgements section. }
 
 \begin{document}
 
-\frontPageRO
 \frontPageEN
 
 \begingroup
@@ -173,120 +157,120 @@ The projects’ abstract will be elaborated in both Romanian and English. The re
 
 \AbstractPage
 
-% poate fi comentata sau stearsa
+% can be commented out or deleted
 \ThanksPage
 
 
-% Textul licentei incepe de aici 
+% The thesis text begins here
 
 
 
-\chapter{Introducere}\pagestyle{fancy}
+\chapter{Introduction}\pagestyle{fancy}
 % * <marios.choudary@gmail.com> 2018-02-28T11:38:18.106Z:
-% 
-% > INTRODUCERE
-% Am scos de aici referintele la font pentru a nu mai fi dependenti de Calibri. Personal, nici nu sunt sigur ca ajuta prea mult aceasta recomandare si mi se pare bun font-ul default din Latex (Computer Modern). Daca sunteti de-acord, va rog sa stergeti liniile comentate de mai jos, precum si cele referitoare la fontul Calibri din restul documentului.
-% 
+%
+% > INTRODUCTION
+% I removed the font references here so that we are no longer dependent on Calibri. Personally, I am not even sure this recommendation helps much, and the default LaTeX font (Computer Modern) seems fine to me. If you agree, please delete the commented-out lines below, as well as the ones referring to the Calibri font in the rest of the document.
+%
 % ^.
-Parametrii de formatare recomandați pentru lucrare: 
+Recommended formatting parameters for the thesis:
 \begin{itemize}
- %\item Font recomandat: Calibri; Dimensiune font: 12; 
- \item Dimensiune font: 12; 
- \item Spațiere între linii: 1,5; Spațiere după paragraf: 8pt;
- \item Stil: Justified;
- \item Dimensiune pagină: A4; Margini: 2,54cm/ 2,54cm/ 2,54cm/ 2,54cm;
+ %\item Recommended font: Calibri; Font size: 12;
+ \item Font size: 12;
+ \item Line spacing: 1.5; Spacing after paragraph: 8pt;
+ \item Style: Justified;
+ \item Page size: A4; Margins: 2.54cm/ 2.54cm/ 2.54cm/ 2.54cm;
  %\item Heading1: Calibri, 14, bold, all caps;
  %\item Heading2: Calibri, 14, bold;
- %\item Heading3: Calibri, 12. 
- %\item Font pentru formule: Cambria Math, 12.
+ %\item Heading3: Calibri, 12.
+ %\item Font for formulas: Cambria Math, 12.
  \item Heading1: 14, bold, all caps;
  \item Heading2: 14, bold;
- \item Heading3: 12. 
- \item Font size pentru formule: 12.
+ \item Heading3: 12.
+ \item Font size for formulas: 12.
 \end{itemize}
-În cadrul introducerii, este necesară abordarea următoarelor puncte care reprezintă de fapt familiarizarea cititorului (comisia, alți colegi sau experți în domeniu) cu tema proiectului, soluția propusa și cuprinsul/structura lucrării. Deși introducerea poate conține și unele elemente mai generale, se recomandă păstrarea unui limbaj tehnic, specific audienței care va citi lucrarea.
+In the introduction, it is necessary to address the following points, which essentially familiarize the reader (the committee, fellow students, or domain experts) with the topic of the project, the proposed solution, and the contents/structure of the thesis. Although the introduction may also contain some more general elements, it is recommended to maintain a technical language, specific to the audience that will read the thesis.
 
-În cadrul capitolelor următoare, veți regăsi o serie notații de forma \dezvoltare, \cercetare. Acest tip de formatare este utilizat exclusiv în acest template pentru a marca sfaturi și cerințe specifice pentru lucrări de diploma cu specific diferit. În pregătirea documentului vostru, nu veți utiliza aceste marcaje. 
-Elementele pe care trebuie să le abordați în introducere sunt descrise în cadrul subcapitolelor de mai jos. 
+In the following chapters, you will find a series of notations of the form \dezvoltare, \cercetare. This type of formatting is used exclusively in this template to mark advice and requirements specific to diploma theses of different kinds. When preparing your own document, you will not use these markers.
+The elements you must address in the introduction are described in the subsections below.
 \section{Context}
-O scurtă introducere a proiectului, motivație, explicație de ce este relevant domeniul proiectului.
-\section{Problema} 
-Care este problema pe care proiectul o va rezolva.
-\section{Obiective}
-Care sunt obiectivele proiectului/soluției/abordării/ideii; Ce creșteri sau evoluții determină rezolvarea proiectului.
-\section{Soluția propusă} 
-Descrierea pe scurt a soluției implementate; ce abordare este propusă (nu detalierea utilitarelor și a tehnologiilor, ci abordarea și ideea propusă de către autor).
-\section{Rezultatele obținute}
-Descriere pe scurt a rezultatelor obținute, eventual de ce acestea sunt importante față de alte soluții sau studii.
-\section{Structura lucrării}
-Un paragraf în care fiecare dintre secțiunile următoare este prezentată în 1-2 fraze, punând accentul pe elementele cele mai semnificative din fiecare secțiune.
+A short introduction to the project, the motivation, and an explanation of why the project's domain is relevant.
+\section{Problem}
+What is the problem that the project will solve.
+\section{Objectives}
+What are the objectives of the project/solution/approach/idea; what improvements or developments result from solving the project.
+\section{Proposed Solution}
+A brief description of the implemented solution; what approach is proposed (not the details of tools and technologies, but the approach and idea proposed by the author).
+\section{Obtained Results}
+A brief description of the obtained results, and possibly why they are important compared to other solutions or studies.
+\section{Thesis Structure}
+A paragraph in which each of the following sections is presented in 1-2 sentences, emphasizing the most significant elements of each section.
 
 
 
-\chapter{Analiza Cerințelor / Motivație}
-\dezvoltare Acest capitol va analiza cerințele produsului din prisma potențialilor clienți și a scenariilor de utilizare preconizate, urmând a fi generată o lista de funcționalități. 
+\chapter{Requirements Analysis / Motivation}
+\dezvoltare This chapter will analyze the product requirements from the perspective of potential customers and the anticipated usage scenarios, resulting in a list of features.
 
-\cercetare Acest capitol va introduce motivația realizării proiectului propus.
+\cercetare This chapter will introduce the motivation for carrying out the proposed project.
 
-Dacă proiectul de licență face parte dintr-un proiect mai amplu (de exemplu un proiect complex, la care lucrează 2 studenți (ex: 1 student la front-end-ul aplicației, 1 student la back-end-ul aplicației), în acest capitol va fi explicat pe scurt ansamblul proiectului și ce parte din proiect este adresată de lucrarea propusă. 
+If the bachelor's project is part of a larger project (for example, a complex project worked on by 2 students (e.g.: 1 student on the application's front-end, 1 student on the application's back-end)), this chapter will briefly explain the overall project and which part of the project is addressed by the proposed thesis.
 
-Criterii pentru calificativul \textit{Ne\textit{Satisfăcător}}: 
+Criteria for the \textit{Un\textit{satisfactory}} grade:
 \begin{itemize}
-	\item \dezvoltare Cerințele sunt imaginate de student pe baza unei analize a pieței;
-	\item \cercetare Nu se oferă o motivație valida.
+	\item \dezvoltare The requirements are imagined by the student based on a market analysis;
+	\item \cercetare No valid motivation is provided.
 \end{itemize}
 
-Criterii pentru calificativul \textit{Satisfăcător}: 
+Criteria for the \textit{Satisfactory} grade:
 \begin{itemize}
-	\item \dezvoltare Există un interviu, un client, analiza cerințelor este elaborată pe baza interviului;
-	\item \cercetare Motivația este doar personala.
-\end{itemize}
-
-
-Criterii pentru calificativul \textit{Bine}: 
-\begin{itemize}
-	\item	 \dezvoltare Proces iterativ pe baza unor interviuri cu mai mulți clienți, dezvoltare MVP, reevaluare cerințe;
-	\item	 \cercetare Motivația este legata de o necesitate științifica / tehnica explicită.
+	\item \dezvoltare There is an interview, a client, and the requirements analysis is developed based on the interview;
+	\item \cercetare The motivation is only personal.
 \end{itemize}
 
 
-\chapter{Studiu de Piață / Metode Existente}
-\dezvoltare Ce soluții similare există pe piață? Care sunt limitările lor / pentru ce cazuri de utilizare sau pentru ce tip de clienți produsele existente pe piață nu răspund cerințelor? Care sunt indicatorii pe baza cărora sunt evaluate aceste produse, de către potențiali clienți, și unde sunt lipsurile/ care este oportunitatea generată de lipsurile acestea?
-
-\cercetare Metode existente (sau ``State of the Art'') se referă, de regulă, la nivelul curent de dezvoltare: care este starea curentă a domeniului, unde ne găsim, care este contextul. Care sunt soluțiile actuale prezente în literatura de specialitate și care sunt limitările lor? Ce direcții de explorare sunt recomandate în literatura de specialitate? Literatura de specialitate se refera la articole științifice recente, publicate în reviste cu factor de impact mare, sau în volumele unor conferințe de top, sau în cărți.
-
-\ambele În încheierea acestui capitol se dorește descrierea tehnologiilor folosite în lucrare, cu alternative și cu argumente convingătoare calitative și cantitative.  
-
-Criterii pentru calificativul \textit{Ne\textit{Satisfăcător}}: 
+Criteria for the \textit{Good} grade:
 \begin{itemize}
-	\item \dezvoltare Sunt analizate superficial câteva produse de pe piață; 
-	\item \cercetare analiza literaturii limitata la grupuri de cercetare din România;
-	\item \ambele Sunt descrise tehnologiile folosite în lucrare. 
+	\item	 \dezvoltare An iterative process based on interviews with several clients, MVP development, re-evaluation of requirements;
+	\item	 \cercetare The motivation is linked to an explicit scientific / technical need.
 \end{itemize}
 
-Criterii pentru calificativul \textit{Satisfăcător}:
+
+\chapter{Market Study / Existing Methods}
+\dezvoltare What similar solutions exist on the market? What are their limitations / for which use cases or for which type of customers do the products available on the market fail to meet the requirements? What are the indicators by which these products are evaluated by potential customers, and where are the gaps / what is the opportunity created by these gaps?
+
+\cercetare Existing methods (or ``State of the Art'') usually refer to the current level of development: what is the current state of the field, where we stand, what the context is. What are the current solutions present in the specialized literature and what are their limitations? What exploration directions are recommended in the specialized literature? The specialized literature refers to recent scientific articles, published in journals with a high impact factor, or in the proceedings of top conferences, or in books.
+
+\ambele At the end of this chapter, the aim is to describe the technologies used in the thesis, together with alternatives and convincing qualitative and quantitative arguments.
+
+Criteria for the \textit{Un\textit{satisfactory}} grade:
 \begin{itemize}
-	\item \dezvoltare Există un interviu, un client, analiza cerințelor este elaborată pe baza interviului.
-	\item \cercetare analiza literaturii de specialitate din lume, fără poziționarea precisă a lucrării în peisajului domeniului studiat;
-	\item \ambele Sunt descrise câteva tehnologii alternative pentru fiecare din tehnologiile folosite în lucrare. Există o argumentare referitoare la alegere.
+	\item \dezvoltare A few products on the market are analyzed superficially;
+	\item \cercetare the literature review is limited to research groups from Romania;
+	\item \ambele The technologies used in the thesis are described.
 \end{itemize}
 
-Criterii pentru calificativul \textit{Bine}:
+Criteria for the \textit{Satisfactory} grade:
 \begin{itemize}
-	\item \dezvoltare Proces iterativ pe baza unor interviuri cu mai mulți clienți, dezvoltare MVP, reevaluare cerințe;
-	\item \cercetare analiza literaturii de specialitate din lume, cu poziționarea precisă a lucrării în peisajul actual al domeniului studiat; 
-	\item \ambele Sunt descrise tehnologii alternative. Sunt analizate cantitativ și calitativ, folosite benchmarkuri și teste efectuate de student. Analiza este rezumată prin tabele și grafice.
+	\item \dezvoltare There is an interview, a client, and the requirements analysis is developed based on the interview.
+	\item \cercetare a review of the international specialized literature, without precisely positioning the thesis within the landscape of the studied field;
+	\item \ambele A few alternative technologies are described for each of the technologies used in the thesis. There is a justification regarding the choice.
 \end{itemize}
 
-\section{Indicații formatare figuri}
+Criteria for the \textit{Good} grade:
+\begin{itemize}
+	\item \dezvoltare An iterative process based on interviews with several clients, MVP development, re-evaluation of requirements;
+	\item \cercetare a review of the international specialized literature, precisely positioning the thesis within the current landscape of the studied field;
+	\item \ambele Alternative technologies are described. They are analyzed quantitatively and qualitatively, using benchmarks and tests performed by the student. The analysis is summarized through tables and graphs.
+\end{itemize}
 
-Figurile utilizate în document vor fi centrate și numerotate (de exemplu Figura~\ref{fig:pic1}). 
-Orice figură ce nu este realizată de către autorul lucrării va fi în mod obligatoriu citată fie la final (de exemplu Figura ~\ref{fig:pic2} este preluată din documentul \cite{}), fie cel puțin într-o notă de subsol (a se vedea Figura~\ref{fig:pic2}). Orice figură ce depășește ca dimensiune 50\% dintr-o pagină, va fi mutată la anexe. Toate figurile din cadrul tezei vor fi referite în text. Exemplu: Figura~\ref{fig:pic1} prezintă o schemă de principiu pentru un amplificator inversor cu AO. 
+\section{Figure Formatting Guidelines}
+
+The figures used in the document will be centered and numbered (for example Figure~\ref{fig:pic1}).
+Any figure that is not created by the author of the thesis must mandatorily be cited either at the end (for example Figure ~\ref{fig:pic2} is taken from the document \cite{article}), or at least in a footnote (see Figure~\ref{fig:pic2}). Any figure exceeding 50\% of a page in size will be moved to the appendices. All figures in the thesis will be referenced in the text. Example: Figure~\ref{fig:pic1} shows a schematic diagram of an inverting amplifier with an op-amp.
 
 \begin{figure}[th]
 \centering
 \includegraphics{pics/Pic1.png}
-  \caption{Amplificator inversor}
+  \caption{Inverting amplifier}
   \label{fig:pic1}
 \end{figure}
 
@@ -295,32 +279,32 @@ Orice figură ce nu este realizată de către autorul lucrării va fi în mod ob
 \begin{figure}[th]
 \centering
 \includegraphics{pics/Pic2.png}
-  \caption[Amplificator de instrumentație cu 3 AO-uri]{Amplificator de instrumentație cu 3 AO-uri\protect\footnotemark}
+  \caption[Instrumentation amplifier with 3 op-amps]{Instrumentation amplifier with 3 op-amps\protect\footnotemark}
   \label{fig:pic2}
 \end{figure}
 \footnotetext{© http://www.ece.tamu.edu/sspalermo/ecen3205/Secton\%201III.pdf}
 
-\chapter{Soluția Propusă}
-Capitolul conține o privire de ansamblu a soluției ce rezolvă problema, prin prezentarea structurii / arhitecturii acesteia. În funcție de tipul lucrării acest capitol poate conține diagrame (clase, distribuție, workflow, entitate-relație), demonstrații de corectitudine pentru algoritmii propuși de autor, abordări teoretice (modelare matematică), structura hardware, arhitectura aplicației.
+\chapter{Proposed Solution}
+This chapter contains an overview of the solution that solves the problem, by presenting its structure / architecture. Depending on the type of thesis, this chapter may contain diagrams (class, deployment, workflow, entity-relationship), correctness proofs for the algorithms proposed by the author, theoretical approaches (mathematical modeling), the hardware structure, and the application architecture.
 
 
-Criterii pentru calificativul \textit{Ne\textit{Satisfăcător}}: 
+Criteria for the \textit{Un\textit{satisfactory}} grade:
 \begin{itemize}
-	\item	Descriere în limbaj natural.
+	\item	Description in natural language.
 \end{itemize}
 
-Criterii pentru calificativul \textit{Satisfăcător}: 
+Criteria for the \textit{Satisfactory} grade:
 \begin{itemize}
-	\item	Descriere + diagrame de baze de date, workflow, clase, algoritmi. 
+	\item	Description + database, workflow, class, and algorithm diagrams.
 \end{itemize}
 
-Criterii pentru calificativul \textit{Bine}: 
+Criteria for the \textit{Good} grade:
 \begin{itemize}
-	\item 	Descriere + diagrame de baze de date, workflow, clase, algoritmi + descrierea unui proces prin care s-a realizat arhitectura/structura soluției.
+	\item 	Description + database, workflow, class, and algorithm diagrams + a description of the process through which the architecture/structure of the solution was developed.
 \end{itemize}
 
-\section{Indicații formatare formule}
-Formulele matematice utilizate în document vor fi centrate în pagină și numerotate. 
+\section{Formula Formatting Guidelines}
+The mathematical formulas used in the document will be centered on the page and numbered.
 
 \begin{equation}
 (x+a)^n = \sum_{k=0}^{n}\left(\begin{array}{c}n\\k\\\end{array}\right)x^ka^{n-k}
@@ -332,150 +316,150 @@ f(x) = a_0 + \sum_{n=1}^{\infty}\left(a_n \cos\frac{n\pi x}{L} + b_n\sin\frac{n\
 
 
 
-\chapter{Detalii de implementare}
-În plus fata de capitolul precedent acesta conține elemente specifice ale rezolvării problemei care au presupus dificultăți deosebite din punct de vedere tehnic. Pot fi incluse configurații, secvențe de cod, pseudo-cod, implementări ale unor algoritmi, analize ale unor date, scripturi de testare. De asemenea, poate fi detaliat modul în care au fost utilizate tehnologiile introduse in capitolul 3.
+\chapter{Implementation Details}
+In addition to the previous chapter, this one contains specific elements of solving the problem that involved particular technical difficulties. It may include configurations, code snippets, pseudo-code, implementations of algorithms, data analyses, and test scripts. It may also detail how the technologies introduced in Chapter 3 were used.
 
 
-Criterii pentru calificativul \textit{Ne\textit{Satisfăcător}}: 
+Criteria for the \textit{Un\textit{satisfactory}} grade:
 \begin{itemize}
-	\item	Sunt prezentate pe scurt scheme și pseudo-cod.
+	\item	Diagrams and pseudo-code are briefly presented.
 \end{itemize}
-Criterii pentru calificativul \textit{Satisfăcător}: 
+Criteria for the \textit{Satisfactory} grade:
 \begin{itemize}
-	\item	Descriere sumara a implementării, prezentarea unor secvențe nerelevante de cod, scheme, etc. 
+	\item	A summary description of the implementation, the presentation of irrelevant code snippets, diagrams, etc.
 \end{itemize}
-Criterii pentru calificativul \textit{Bine}: 
+Criteria for the \textit{Good} grade:
 \begin{itemize}
-	\item	Descrierea detaliată a algoritmilor/structurilor utilizați; Prezentarea etapizată a dezvoltării, inclusiv cu dificultăți de implementare întâmpinate, soluții descoperite; (dacă este cazul) demonstrarea corectitudinii algoritmilor utilizați. 
+	\item	A detailed description of the algorithms/structures used; A step-by-step presentation of the development, including implementation difficulties encountered and solutions discovered; (where applicable) a proof of correctness of the algorithms used.
 \end{itemize}
 
-\section{Indicații formatare tabele}
-Se recomandă utilizarea tabelelor de forma celui de mai jos.  Font size :  9. 
-Orice tabel prezent în teză va fi referit în text; exemplu: a se vedea Tabel~\ref{tab:criterii}.
+\section{Table Formatting Guidelines}
+It is recommended to use tables of the form shown below.  Font size:  9.
+Any table present in the thesis will be referenced in the text; example: see Table~\ref{tab:criterii}.
 
 \begin{table}[th]\small\linespread{1}
-\caption{Sumarizare criterii}
+\caption{Summary of criteria}
 \label{tab:criterii}
 \begin{tabular}{l >{\raggedright\arraybackslash}p{8cm} >{\raggedright\arraybackslash}p{4cm}}
-\textbf{Calificativ} & \textbf{Criteriu} & \textbf{Observații} \\\hline
-\textbf{Nesatisfacator} & Sunt prezentate pe scurt scheme și pseudo-cod & \\\hline
-\textbf{Satisfacator} &Descriere sumara a implementării, prezentarea unor secvențe nerelevante de cod, scheme, etc.& \\
+\textbf{Grade} & \textbf{Criterion} & \textbf{Notes} \\\hline
+\textbf{Unsatisfactory} & Diagrams and pseudo-code are briefly presented & \\\hline
+\textbf{Satisfactory} &A summary description of the implementation, the presentation of irrelevant code snippets, diagrams, etc.& \\
 \hline
-\textbf{\textit{Bine}} &Descrierea detaliată a algoritmilor/structurilor utilizați; Prezentarea etapizată a dezvoltării, inclusiv cu dificultăți de implementare întâmpinate, soluții descoperite; (dacă este cazul) demonstrarea corectitudinii algoritmilor utilizați. & Pot fi incluse configurații, secvente de cod, pseudo-cod, implementări ale unor algoritmi, analize ale unor date, scripturi de testare. \\
+\textbf{\textit{Good}} &A detailed description of the algorithms/structures used; A step-by-step presentation of the development, including implementation difficulties encountered and solutions discovered; (where applicable) a proof of correctness of the algorithms used. & May include configurations, code snippets, pseudo-code, implementations of algorithms, data analyses, and test scripts. \\
 \hline
 \end{tabular}
 \end{table}
 
 
-\chapter{Evaluare}
-Acest capitol trebuie să răspundă, în principiu, la 2 întrebări și să se încheie cu o discuție a rezultatelor obținute. Cele doua întrebări la care trebuie sa se răspundă sunt:
+\chapter{Evaluation}
+This chapter must, in principle, answer 2 questions and conclude with a discussion of the obtained results. The two questions that must be answered are:
 \begin{enumerate}
-	\item  \textbf{Merge corect?} (Conform specificațiilor extrase în capitolul 2); 
-Evaluarea dacă merge corect se face pe baza cerințelor identificate în capitolele anterioare. 
+	\item  \textbf{Does it work correctly?} (According to the specifications extracted in Chapter 2);
+The evaluation of whether it works correctly is done based on the requirements identified in the previous chapters.
 
-	\item Cât de \textit{Bine} merge / cum se compară cu soluțiile existente? (pe baza unor metrici clare). 
-Evaluarea cât de \textit{Bine} merge trebuie să fie bazată pe procente, timpi, cantitate, numere, \textbf{comparativ cu soluțiile prezentate în capitolul 3}. Poate fi vorba de performanță, overhead, resurse consumate, scalabilitate etc. 
+	\item How \textit{well} does it work / how does it compare to existing solutions? (based on clear metrics).
+The evaluation of how \textit{well} it works must be based on percentages, times, quantities, numbers, \textbf{compared to the solutions presented in Chapter 3}. This may concern performance, overhead, consumed resources, scalability, etc.
 \end{enumerate}
 
-În realizarea discuției, se vor utiliza tabele cu procente, rezultate numerice și grafice. În mod obișnuit, aici se fac comparații și teste comparative cu alte proiecte similare (dacă există) și se extrag puncte tari și puncte slabe. Se ține cont de avantajele menționate și se demonstrează viabilitatea abordării / aplicației, de dorit prin comparație cu alte abordări (dacă acest lucru este posibil). Cuvântul cheie la evaluare este ``metrică'': trebuie să aveți noțiuni măsurabile și cuantificabile. În cadrul procesului de evaluare, explicați datele, tabelele și graficele pe care le prezentați și insistați pe relevanța lor, în următorul stil: ``este de preferat ... deoarece …''; explicați cititorului nu doar datele ci și semnificația lor și cum sunt acestea interpretate. Din această interpretare trebuie să rezulte poziționarea proiectului vostru printre alternativele existente, precum și cum poate fi acesta îmbunătățit în continuare.
+When carrying out the discussion, tables with percentages, numerical results, and graphs will be used. Usually, comparisons and comparative tests with other similar projects (if they exist) are made here, and strengths and weaknesses are extracted. The mentioned advantages are taken into account and the viability of the approach / application is demonstrated, preferably through comparison with other approaches (if this is possible). The key word in evaluation is ``metric'': you must have measurable and quantifiable notions. During the evaluation process, explain the data, tables, and graphs that you present and emphasize their relevance, in the following style: ``it is preferable ... because …''; explain to the reader not only the data but also its meaning and how it is interpreted. From this interpretation, the positioning of your project among the existing alternatives must result, as well as how it can be further improved.
 
-Criterii pentru calificativul \textit{Ne\textit{Satisfăcător}}: 
+Criteria for the \textit{Un\textit{satisfactory}} grade:
 \begin{itemize}
-	\item Aplicația este testată dar rulează pe calculatorul studentului, nu există posibilități de testare, nu a fost validată cu clienți / utilizatori;
-	\item Nu au fost realizate comparații cu alte sisteme similare.
+	\item The application is tested but runs on the student's computer, there are no testing facilities, and it has not been validated with clients / users;
+	\item No comparisons with other similar systems have been made.
 \end{itemize}
 
-Criterii pentru calificativul \textit{Satisfăcător}: 
+Criteria for the \textit{Satisfactory} grade:
 \begin{itemize}
-	\item \dezvoltare  Există teste unitare și de integrare, există o strategie de punere în funcțiune (deployment), există validare minimală cu clienții / utilizatorii.
-	\item \cercetare Principalele componente și soluția în ansamblu au fost evaluate din punct de vedere al performanței, însă nu sunt folosite seturi de date standard, există unele erori de interpretare a datelor.
-	\item \ambele Discuție minimală asupra relevanței rezultatelor prezentate, comparație minimală cu alte sisteme similare.
+	\item \dezvoltare  There are unit and integration tests, there is a deployment strategy, and there is minimal validation with clients / users.
+	\item \cercetare The main components and the overall solution have been evaluated in terms of performance, but standard datasets are not used and there are some errors in interpreting the data.
+	\item \ambele A minimal discussion of the relevance of the presented results, and a minimal comparison with other similar systems.
 \end{itemize}
 
-Criterii pentru calificativul \textit{Bine}: 
+Criteria for the \textit{Good} grade:
 \begin{itemize}
-	\item \dezvoltare Teste unitare și de integrare, instrumente de punere in funcțiune (deployment) utilizate și care arată lucru constant de-a lungul semestrului, lucrare validată cu clienții / utilizatorii, produs în producție.
-	\item \cercetare Componentele și soluția în ansamblu au fost evaluate din punct de vedere al performanței, folosind seturi de date standard și cu o interpretare corectă a rezultatelor.
-	\item \ambele Discuție cu prezentarea calitativă și cantitativă a rezultatelor, precum și a relevanței acestor rezultate printr-o comparație complexă cu alte sisteme similare.
+	\item \dezvoltare Unit and integration tests, deployment tools that are used and that show consistent work throughout the semester, a thesis validated with clients / users, and a product in production.
+	\item \cercetare The components and the overall solution have been evaluated in terms of performance, using standard datasets and with a correct interpretation of the results.
+	\item \ambele A discussion with a qualitative and quantitative presentation of the results, as well as their relevance, through a comprehensive comparison with other similar systems.
 \end{itemize}
 
-\chapter{Concluzii}
-În acest capitol este sumarizat întreg proiectul, de la obiective, la implementare, si la relevanta rezultatelor obținute. În finalul capitolului poate exista o subsecțiune de ``Dezvoltări ulterioare''.
+\chapter{Conclusions}
+This chapter summarizes the entire project, from objectives, to implementation, and to the relevance of the obtained results. At the end of the chapter, there may be a ``Future Work'' subsection.
 
-Criterii pentru calificativul \textit{Ne\textit{Satisfăcător}}: 
+Criteria for the \textit{Un\textit{satisfactory}} grade:
 \begin{itemize}
-	\item	Concluziile nu sunt corelate cu conținutul lucrării;
+	\item	The conclusions are not correlated with the content of the thesis;
 \end{itemize}
 
-Criterii pentru calificativul \textit{Satisfăcător}: 
+Criteria for the \textit{Satisfactory} grade:
 \begin{itemize}
-	\item	Concluziile sunt corelate cu conținutul lucrării, însă nu se oferă o imagine asupra calității și relevantei rezultatelor obținute;
+	\item	The conclusions are correlated with the content of the thesis, but they do not provide a picture of the quality and relevance of the obtained results;
 \end{itemize}
 
-Criterii pentru calificativul \textit{Bine}: 
+Criteria for the \textit{Good} grade:
 \begin{itemize}
-	\item	Concluziile sunt corelate cu conținutul lucrării, și se oferă o imagine precisa asupra relevantei și calității rezultatelor obținute în cadrul proiectului. 
+	\item	The conclusions are correlated with the content of the thesis, and they provide a precise picture of the relevance and quality of the results obtained within the project.
 \end{itemize}
 
-\chapter*{Bibliografie}\addcontentsline{toc}{chapter}{Bibliografie}  
+\chapter*{Bibliography}\addcontentsline{toc}{chapter}{Bibliography}
 % * <marios.choudary@gmail.com> 2018-02-28T12:07:48.730Z:
-% 
-% > BIBLIOGRAFIE
-% Am adaugat un paragraf cu cateva detalii despre folosirea citarilor bibliografice in Latex, despre folosirea lui "\cite" si despre posibilitatea folosirii bibliografiei si direct in fisierul Latex.
-% 
+%
+% > BIBLIOGRAPHY
+% I added a paragraph with a few details about using bibliographic citations in LaTeX, about using ``\cite'', and about the possibility of including the bibliography directly in the LaTeX file.
+%
 % ^.
 
 \begin{itemize}
-	\item 	NU utilizați referințe la Wikipedia sau alte surse fără autor asumat.
-	\item 	Pentru referințe la articole relevante accesibile în web (descrise prin URL) se va nota la bibliografie și data accesării.
-	\item 	Mai multe detalii despre citarea referințelor din internet se pot regăsi la:
+	\item 	Do NOT use references to Wikipedia or other sources without an acknowledged author.
+	\item 	For references to relevant articles accessible on the web (described by URL), the access date will also be noted in the bibliography.
+	\item 	More details about citing internet references can be found at:
 	\begin{itemize}
 		\item	\url{http://www.writinghelp-central.com/apa-citation-internet.html}
 		\item	\url{http://www.webliminal.com/search/search-web13.html}
 	\end{itemize}
-	\item 	Note de subsol se utilizează dacă referiți un link mai puțin semnificativ o singură dată; Dacă nota este citată de mai multe ori, atunci utilizați o referință bibliografică.
-	\item 	Dacă o imagine este introdusă în text și nu este realizată de către autorul lucrării, trebuie citată sursa ei (ca notă de subsol sau referință - este de preferat utilizarea unei note de subsol).
-	\item 	Referințele se pun direct legate de text (de exemplu ``KVM [1] uses'', ``as stated by Popescu and Ionescu [12]'', etc.). Nu este recomandat să folosiți formulări de tipul ``[1] uses'', ``as stated in [12]'', ``as described in [11]'' etc..
-	\item 	Afirmațiile de forma ``are numerous'', ``have grown exponentially'', ``are among the most used'', ``are an important topic'' trebuie să fie acoperite cu citări, date concrete si analize comparative.
+	\item 	Footnotes are used if you reference a less significant link a single time; if the note is cited several times, then use a bibliographic reference.
+	\item 	If an image is inserted into the text and is not created by the author of the thesis, its source must be cited (as a footnote or reference - using a footnote is preferable).
+	\item 	References are placed directly connected to the text (for example ``KVM [1] uses'', ``as stated by Popescu and Ionescu [12]'', etc.). It is not recommended to use formulations such as ``[1] uses'', ``as stated in [12]'', ``as described in [11]'', etc.
+	\item 	Statements of the form ``are numerous'', ``have grown exponentially'', ``are among the most used'', ``are an important topic'' must be backed by citations, concrete data, and comparative analyses.
 	\begin{itemize}
-		\item	Mai ales în capitolele de introducere, ``state of the art'', ``related work'' sau ``background'' trebuie să vă argumentați afirmațiile prin citări. Fiți autocritici și gândiți-vă dacă afirmațiile au nevoie de citări, chiar și cele pe care le considerați evidente.
-		\item	Cea mai mare parte dintre citări vor fi în capitolele de introducere ``state of the art'', ``related work'' sau ``background''.
+		\item	Especially in the introduction, ``state of the art'', ``related work'', or ``background'' chapters, you must support your statements with citations. Be self-critical and consider whether your statements need citations, even those you consider obvious.
+		\item	Most of the citations will be in the introduction, ``state of the art'', ``related work'', or ``background'' chapters.
 	\end{itemize}
-	\item 	Toate intrările bibliografice trebuie citate în text. Nu le adăugați pur și simplu la final.
-	\item 	Nu copiați sau traduceți niciodată din surse de informație de orice tip (online, offline, cărți, etc.). Dacă totuși doriți să oferiți, prin excepție, un citat celebru - de maxim 1 frază- utilizați ghilimele și evident menționați sursa. .
-	\item 	Dacă reformulați idei sau creați un paragraf rezumat al unor idei folosind cuvintele voastre, precizați cu citare (referință bibliografică) sau cu notă de subsol sursa sau sursele de unde ați preluat ideile.
+	\item 	All bibliographic entries must be cited in the text. Do not simply add them at the end.
+	\item 	Never copy or translate from information sources of any kind (online, offline, books, etc.). If you nevertheless wish to provide, by exception, a famous quotation - of at most 1 sentence - use quotation marks and obviously mention the source.
+	\item 	If you reformulate ideas or create a paragraph summarizing some ideas in your own words, indicate with a citation (bibliographic reference) or a footnote the source or sources from which you took the ideas.
 \end{itemize}
 
-Trebuie respectat un singur standard de trimiteri bibliografice (citare), dintre următoarele alternative:
+A single standard of bibliographic references (citation) must be followed, from among the following alternatives:
 \begin{itemize}
 	\item APA (\url{http://pitt.libguides.com/c.php?g=12108\&p=64730})
-	\item IEEE (\url{https://ieee-dataport.org/sites/default/files/analysis/27/IEEE\%20Citation\%20Guidelines.pdf}) 
+	\item IEEE (\url{https://ieee-dataport.org/sites/default/files/analysis/27/IEEE\%20Citation\%20Guidelines.pdf})
 	\item Harvard (\url{https://libweb.anglia.ac.uk/referencing/harvard.htm})
-	\item Cu numerotarea referințelor în ordine alfabetică sau în ordinea apariției în text (de exemplu, stilul cu numere folosit de unele publicații ACM - \url{https://www.acm.org/publications/authors/reference-formatting}) 
+	\item With references numbered in alphabetical order or in the order of appearance in the text (for example, the numbered style used by some ACM publications - \url{https://www.acm.org/publications/authors/reference-formatting})
 \end{itemize}
 
-În Latex este foarte ușor să folosiți referințe într-un mod corect și unitar, fie prin adăugarea unei secțiuni
+In LaTeX it is very easy to use references in a correct and consistent way, either by adding a
 \verb!\begin{thebibliography}!
-(vezi la sfârșitul acestei secțiuni), fie printr-un fișier separat de tip bib, folosind comanda
+section (see at the end of this section), or through a separate bib file, using the command
 \verb!\bibliography{}!,
-așa cum procedăm mai jos prin folosirea fișierului ``bibliography.bib''. În orice caz, în Latex va trebui să folosiți comanda
+as we do below by using the ``bibliography.bib'' file. In any case, in LaTeX you will need to use the command
 \verb!\cite{}!
-pentru a adăuga referințe, iar această comandă trebuie folosită direct în text, acolo unde vreți sa apară citația, ca în exemplele următoare:
+to add references, and this command must be used directly in the text, where you want the citation to appear, as in the following examples:
 \begin{itemize}
-	\item Articol jurnal: ~\cite{article};
-	\item Articol conferință:~\cite{proc};
-	\item Carte: ~\cite{book};
-	\item Weblink: ~\cite{silva};
+	\item Journal article: ~\cite{article};
+	\item Conference article:~\cite{proc};
+	\item Book: ~\cite{book};
+	\item Web link: ~\cite{silva};
 \end{itemize}
 
-\textbf{Important}: în această secțiune de obicei apar doar intrările bibliografice (adică doar listarea referințelor). Citarea lor prin comanda cite și explicații legate de ele trebuie facute în secțiunile anterioare. Citarea de mai sus a fost facută aici doar pentru exemplificare.
+\textbf{Important}: in this section, usually only the bibliographic entries appear (that is, just the listing of references). Citing them via the cite command and explanations related to them must be done in the previous sections. The citation above was made here only for illustration.
 
-% Asa se specifica folosirea unui fisier cu referinte bibliografice:
+% This is how you specify the use of a file with bibliographic references:
 \bibliographystyle{plain}
 \bibliography{bibliography}
 
-%% O alta varianta ar fi fost includerea de articole direct in acest fisier
-%% in felul urmator:
+%% Another option would have been to include articles directly in this file
+%% as follows:
 %% \begin{thebibliography}{ABC}
 %%
 %% \bibitem{article}
@@ -487,27 +471,27 @@ pentru a adăuga referințe, iar această comandă trebuie folosită direct în 
 %%
 %% \end{thebibliography}
 
-%% Daca vreti ca o sectiune sa inceapa pe o pagina noua, puteti forta acest lucru cu comanda "\newpage", ca mai jos:
+%% If you want a section to start on a new page, you can force this with the ``\newpage'' command, as below:
 
 %\newpage
 
-\chapter*{Anexe}\addcontentsline{toc}{chapter}{Anexe}
+\chapter*{Appendices}\addcontentsline{toc}{chapter}{Appendices}
 
-Anexele sunt opționale.
-Ce poate intra în anexe:
+The appendices are optional.
+What can go into the appendices:
 \begin{itemize}
-\item	Exemplu de fișier de configurare sau compilare;
-\item	Un tabel mai mare de o jumătate pagină;
-\item	O figura mai mare mai mare de jumătate pagină;
-\item	O secvență de cod sursa mai mare de jumătate pagină;
-\item	Un set de capturi de ecran (``screenshot''-uri);
-\item	Un exemplu de rulare a unor comenzi plus rezultatul (``output''-ul) acestora;
-\item 	În anexe intră lucruri care ocupă mai mult de o pagină ce ar întrerupe firul natural de parcurgere al textului.
+\item	An example of a configuration or build file;
+\item	A table larger than half a page;
+\item	A figure larger than half a page;
+\item	A source code snippet larger than half a page;
+\item	A set of screenshots;
+\item	An example of running some commands plus their output;
+\item 	The appendices contain things that take up more than one page and would interrupt the natural flow of reading the text.
 \end{itemize}
 
 \begin{appendices}
 
-\chapter{Extrase de cod} % Introduce o nouă anexă
+\chapter{Code Excerpts} % Introduces a new appendix
 \ldots
 
 

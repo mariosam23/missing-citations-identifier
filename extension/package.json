@@ -42,6 +42,19 @@
           "default": "http://localhost:8000",
           "description": "Base URL of the citation-recommender FastAPI backend."
         },
+        "missingCitations.uiMode": {
+          "type": "string",
+          "default": "webview",
+          "enum": [
+            "webview",
+            "quickpick"
+          ],
+          "enumDescriptions": [
+            "Open a rich evidence panel with feedback controls (thumbs, reject reasons, copy BibTeX).",
+            "Use the classic QuickPick list. Choices are still logged as feedback."
+          ],
+          "description": "How to present citation candidates after a /recommend call."
+        },
         "missingCitations.topK": {
           "type": "integer",
           "default": 10,

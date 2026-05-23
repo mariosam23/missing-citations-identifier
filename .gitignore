@@ -16,6 +16,7 @@ pdfs/
 CLAUDE.md
 plan.md
 *.sql
+thesis/
 
 # only for testing
 papers_for_extension/ 
