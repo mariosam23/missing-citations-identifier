@@ -97,26 +97,18 @@ export async function recommendCitationsForSelection(): Promise<void> {
     return;
   }
 
-  const pick = await vscode.window.showQuickPick(
-    response.candidates.map(toQuickPickItem),
-    {
-      matchOnDescription: true,
-      matchOnDetail: true,
-      placeHolder: "Select a paper to cite",
-      ignoreFocusOut: true,
-    },
-  );
-  if (!pick) {
+  const chosen = await pickCandidate(response.candidates, selectedText);
+  if (!chosen) {
     return;
   }
 
-  const insertedKey = await insertCitation(editor, pick.candidate, languageId);
+  const insertedKey = await insertCitation(editor, chosen, languageId);
   if (insertedKey === null) {
     return; // insertion failed — warning already shown
   }
 
   // ── BibTeX auto-append (LaTeX only) ──────────────────────────────
-  await maybeAppendBibtex(editor, pick.candidate, insertedKey);
+  await maybeAppendBibtex(editor, chosen, insertedKey);
 }
 
 // ── BibTeX auto-append logic ───────────────────────────────────────
@@ -274,16 +266,166 @@ async function fetchRecommendations(args: FetchArgs): Promise<RecommendResponse>
   }
 }
 
+// ── Rich candidate picker ──────────────────────────────────────────
+
+const COPY_BIBTEX_BUTTON: vscode.QuickInputButton = {
+  iconPath: new vscode.ThemeIcon("copy"),
+  tooltip: "Copy BibTeX entry to clipboard",
+};
+
+const SEARCH_ONLINE_BUTTON: vscode.QuickInputButton = {
+  iconPath: new vscode.ThemeIcon("search"),
+  tooltip: "Search for this paper online",
+};
+
+const SCHOLAR_SEARCH_URL = "https://scholar.google.com/scholar?q=";
+const METER_SEGMENTS = 5;
+const EVIDENCE_DETAIL_MAX = 220;
+
+/**
+ * Show a styled QuickPick of candidates and resolve to the chosen one
+ * (or `undefined` if the picker is dismissed).
+ *
+ * Uses `createQuickPick` rather than `showQuickPick` so each item can carry
+ * action buttons (Copy BibTeX, Search online) that fire without closing the
+ * picker.
+ */
+function pickCandidate(
+  candidates: Candidate[],
+  query: string,
+): Promise<Candidate | undefined> {
+  return new Promise((resolve) => {
+    const picker = vscode.window.createQuickPick<CandidatePickItem>();
+    picker.title = `Citations for "${truncate(query, 60)}"`;
+    picker.placeholder = "Select a paper to cite — type to filter";
+    picker.matchOnDescription = true;
+    picker.matchOnDetail = true;
+    picker.ignoreFocusOut = true;
+    picker.items = candidates.map(toQuickPickItem);
+
+    let accepted = false;
+
+    picker.onDidTriggerItemButton(async (event) => {
+      const candidate = event.item.candidate;
+      if (event.button === COPY_BIBTEX_BUTTON) {
+        await vscode.env.clipboard.writeText(candidate.bibtex);
+        vscode.window.setStatusBarMessage(
+          `$(check) Copied BibTeX for ${candidate.citation_key}`,
+          3000,
+        );
+      } else if (event.button === SEARCH_ONLINE_BUTTON) {
+        const url = SCHOLAR_SEARCH_URL + encodeURIComponent(candidate.title);
+        await vscode.env.openExternal(vscode.Uri.parse(url));
+      }
+    });
+
+    picker.onDidAccept(() => {
+      accepted = true;
+      const selected = picker.selectedItems[0];
+      picker.hide();
+      resolve(selected?.candidate);
+    });
+
+    picker.onDidHide(() => {
+      picker.dispose();
+      if (!accepted) {
+        resolve(undefined);
+      }
+    });
+
+    picker.show();
+  });
+}
+
 function toQuickPickItem(candidate: Candidate): CandidatePickItem {
-  const author = candidate.authors[0] ?? "Unknown";
-  const yearStr = candidate.year !== null ? String(candidate.year) : "n.d.";
-  const firstEvidence = candidate.evidence[0]?.sentence ?? "";
   return {
-    label: `${author} (${yearStr}) — ${candidate.title}`,
-    description: candidate.venue ?? undefined,
-    detail: firstEvidence ? truncate(firstEvidence, 240) : undefined,
+    label: `$(book) ${authorLabel(candidate)} (${yearLabel(candidate)}) — ${candidate.title}`,
+    description: buildDescription(candidate),
+    detail: buildDetail(candidate),
+    buttons: [COPY_BIBTEX_BUTTON, SEARCH_ONLINE_BUTTON],
     candidate,
   };
+}
+
+/** Right-hand metadata line: match meter · venue · author count. */
+function buildDescription(candidate: Candidate): string {
+  const parts: string[] = [];
+  const meter = matchMeter(candidate);
+  if (meter) {
+    parts.push(meter);
+  }
+  if (candidate.venue) {
+    parts.push(candidate.venue);
+  }
+  const count = candidate.authors.length;
+  if (count > 0) {
+    parts.push(count === 1 ? "1 author" : `${count} authors`);
+  }
+  return parts.join("  ·  ");
+}
+
+/** Secondary line: the strongest supporting sentence, with its citing year. */
+function buildDetail(candidate: Candidate): string | undefined {
+  const evidence = bestEvidence(candidate);
+  if (!evidence?.sentence) {
+    return undefined;
+  }
+  const quote = `❝ ${truncate(evidence.sentence, EVIDENCE_DETAIL_MAX)} ❞`;
+  return evidence.citing_year ? `${quote}  — cited ${evidence.citing_year}` : quote;
+}
+
+/**
+ * A five-segment dot meter built from the best evidence cosine similarity.
+ * This is an honest semantic-match signal in [0, 1]; the backend `score`
+ * (which mixes in a corroboration bonus and is not bounded) is used only
+ * for ordering, never shown as a percentage.
+ */
+function matchMeter(candidate: Candidate): string | undefined {
+  const evidence = bestEvidence(candidate);
+  if (!evidence) {
+    return undefined;
+  }
+  const pct = Math.max(0, Math.min(100, Math.round(evidence.similarity * 100)));
+  const filled = Math.round((pct / 100) * METER_SEGMENTS);
+  const dots = "●".repeat(filled) + "○".repeat(METER_SEGMENTS - filled);
+  return `${dots} ${pct}% match`;
+}
+
+function bestEvidence(candidate: Candidate): Evidence | undefined {
+  if (candidate.evidence.length === 0) {
+    return undefined;
+  }
+  return candidate.evidence.reduce((best, current) =>
+    current.similarity > best.similarity ? current : best,
+  );
+}
+
+function authorLabel(candidate: Candidate): string {
+  const surname = firstAuthorSurname(candidate.authors[0]);
+  if (!surname) {
+    return "Unknown";
+  }
+  return candidate.authors.length > 1 ? `${surname} et al.` : surname;
+}
+
+function yearLabel(candidate: Candidate): string {
+  return candidate.year !== null ? String(candidate.year) : "n.d.";
+}
+
+/** Surname from "Last, First" or "First Last"; `null` if unusable. */
+function firstAuthorSurname(raw: string | undefined): string | null {
+  if (!raw) {
+    return null;
+  }
+  const name = raw.trim();
+  if (!name) {
+    return null;
+  }
+  if (name.includes(",")) {
+    return name.split(",", 1)[0].trim();
+  }
+  const tokens = name.split(/\s+/);
+  return tokens[tokens.length - 1];
 }
 
 /**

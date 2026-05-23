@@ -2,7 +2,7 @@
   "name": "missing-citations-identifier",
   "displayName": "Missing Citations Identifier",
   "description": "Recommend citations for a highlighted sentence and insert the chosen reference inline.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "sampetru",
   "private": true,
   "license": "MIT",
