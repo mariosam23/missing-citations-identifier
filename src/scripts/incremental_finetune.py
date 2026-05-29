@@ -23,6 +23,30 @@ from utils.logger import logger
 
 app = typer.Typer(add_completion=False)
 
+# Production embeds queries with BGE-large's asymmetric instruction prefix
+# (see pipeline/embedding/embedder.py). The model ships its "query" prompt
+# empty ({'query': '', 'document': ''}), so loading it plainly here would run
+# the evaluator and trainer in symmetric (prompt-free) mode — inconsistent with
+# how the deployed system encodes queries. Inject the exact production string.
+BGE_QUERY_PROMPT = "Represent this sentence for searching relevant passages: "
+
+
+def _load_model() -> SentenceTransformer:
+    """Load the base embedder, configured to match production query asymmetry.
+
+    The injected ``query`` prompt makes both the in-memory evaluator
+    (``query_prompt_name="query"``) and the manually-prefixed training anchors
+    behave like the deployed encoder: queries carry the instruction prefix,
+    passages stay prompt-free.
+    """
+    model = SentenceTransformer(
+        config.EMBEDDER_MODEL_NAME,
+        trust_remote_code=True,
+        truncate_dim=config.EMBEDDER_DIM,
+    )
+    model.prompts["query"] = BGE_QUERY_PROMPT
+    return model
+
 
 def _load_eval_data(split_path: str, max_queries: int = 1000):
     """Load queries and corpus from DB for in-memory evaluation."""
@@ -156,11 +180,7 @@ def main(
     # 4. Zero-shot Evaluation (Step 0)
     if 0 not in completed_steps:
         logger.info("Loading base model: %s", config.EMBEDDER_MODEL_NAME)
-        model = SentenceTransformer(
-            config.EMBEDDER_MODEL_NAME,
-            trust_remote_code=True,
-            truncate_dim=config.EMBEDDER_DIM,
-        )
+        model = _load_model()
         logger.info("Running baseline evaluation (Step 0)...")
         _evaluate_and_log(0, model)
         del model
@@ -188,16 +208,14 @@ def main(
         # of general semantics across chunks when training on small datasets.
         # Do NOT load in fp16 — use_amp handles mixed precision and
         # needs fp32 master weights for GradScaler to work.
-        step_model = SentenceTransformer(
-            config.EMBEDDER_MODEL_NAME,
-            trust_remote_code=True,
-            truncate_dim=config.EMBEDDER_DIM,
-        )
-        
-        # Raw text only — MNRL with prompt_name applies the model's
-        # built-in query prompt to anchors automatically.
+        step_model = _load_model()
+
+        # Asymmetric retrieval: the anchor (query) carries BGE-large's query
+        # instruction prefix, exactly as production encodes queries; the
+        # positive/negative passages stay prompt-free. MNRL does NOT apply
+        # prompts to InputExample, so we prepend the prefix explicitly.
         train_examples = [
-            InputExample(texts=[t["query"], t["pos"], t["neg"]])
+            InputExample(texts=[BGE_QUERY_PROMPT + t["query"], t["pos"], t["neg"]])
             for t in current_pool
         ]
         

@@ -204,16 +204,31 @@ function renderCard(candidate: Candidate, index: number): string {
   ${meterHtml}
   <ul class="evidence">${evidenceHtml}</ul>
   <div class="actions">
-    <button class="btn primary" data-action="insert" data-index="${index}">Insert</button>
-    <button class="btn" data-action="copyBibtex" data-index="${index}">Copy BibTeX</button>
-    <button class="btn" data-action="openUrl" data-index="${index}">Search online</button>
+    <button class="btn primary with-icon" data-action="insert" data-index="${index}">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M14 7v1H8v6H7V8H1V7h6V1h1v6h6z"/></svg>
+      Insert
+    </button>
+    <button class="btn with-icon" data-action="copyBibtex" data-index="${index}" title="Copy BibTeX">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 4v1h7v7h1V4H4zm-2 2v9h9V6H2zm1 1h7v7H3V7z"/></svg>
+      Copy
+    </button>
+    <button class="btn with-icon" data-action="openUrl" data-index="${index}" title="Search online">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 2v1h2.3L5.5 9.8l.7.7L13 3.7V6h1V2h-4zM2 4v10h10V9h-1v4H3V5h4V4H2z"/></svg>
+      Open
+    </button>
     <span class="spacer"></span>
-    <button class="btn icon-btn" data-action="thumbsUp" data-index="${index}" title="Useful">+</button>
-    <button class="btn icon-btn" data-action="thumbsDown" data-index="${index}" title="Not useful">&minus;</button>
-    <span class="reject-group">
-      <select class="reason" id="reason-${index}" aria-label="Rejection reason">${reasonOptions}</select>
-      <button class="btn danger" data-action="reject" data-index="${index}">Reject</button>
-    </span>
+    <div class="feedback-group">
+      <button class="btn icon-btn" data-action="thumbsUp" data-index="${index}" title="Useful">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 6v8h2V6H2zm10 0h-3.5l1.2-4.1c.1-.4-.2-.9-.7-.9H8L4.5 5.5V14h7c.5 0 .9-.4.9-.9V6c0-.5-.4-.9-.9-.9z"/></svg>
+      </button>
+      <button class="btn icon-btn" data-action="thumbsDown" data-index="${index}" title="Not useful">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 10V2h2v8H2zm10 0h-3.5l1.2 4.1c.1.4-.2.9-.7.9H8l-3.5-4.5V2h7c.5 0 .9.4.9.9v7.1c0 .5-.4.9-.9.9z"/></svg>
+      </button>
+      <span class="reject-group" style="display: none;">
+        <select class="reason" id="reason-${index}" aria-label="Rejection reason">${reasonOptions}</select>
+        <button class="btn danger" data-action="reject" data-index="${index}">Submit</button>
+      </span>
+    </div>
   </div>
 </article>`;
 }
@@ -391,6 +406,11 @@ const STYLES = `
     background: var(--vscode-button-secondaryBackground);
     transition: background 0.12s;
   }
+  .btn.with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
   .btn:hover { background: var(--vscode-button-secondaryHoverBackground); }
   .btn:active { opacity: 0.8; }
   .btn.primary {
@@ -404,9 +424,11 @@ const STYLES = `
   }
   .icon-btn {
     width: 26px;
-    padding: 4px 0;
-    text-align: center;
-    font-weight: 700;
+    height: 26px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     color: var(--vscode-descriptionForeground);
   }
@@ -420,10 +442,18 @@ const STYLES = `
     background: rgba(211,47,47,0.1);
   }
 
-  .reject-group {
+  .feedback-group {
     display: inline-flex;
     gap: 4px;
     align-items: center;
+  }
+  .reject-group {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: 6px;
+    padding-left: 10px;
+    border-left: 1px solid var(--vscode-panel-border);
   }
   .reason {
     font-family: inherit;
@@ -491,6 +521,11 @@ const SCRIPT = `
             b.classList.remove('active-up', 'active-down');
           });
           btn.classList.add(kind === 'thumbsUp' ? 'active-up' : 'active-down');
+          
+          const rejectGroup = card.querySelector('.reject-group');
+          if (rejectGroup) {
+            rejectGroup.style.display = kind === 'thumbsDown' ? 'inline-flex' : 'none';
+          }
         }
       }
 
