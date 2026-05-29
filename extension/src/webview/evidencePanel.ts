@@ -145,11 +145,13 @@ export class EvidencePanel {
 <body>
   <header class="header">
     <h1>Citation candidates</h1>
-    <p class="query">for “${escapeHtml(truncate(query, 200))}”</p>
+    <p class="query">${escapeHtml(truncate(query, 200))}</p>
+    <span class="count">${this.candidates.length} result${this.candidates.length !== 1 ? "s" : ""}</span>
   </header>
   <main class="cards">
     ${cards || '<p class="empty">No candidates returned.</p>'}
   </main>
+  <div id="toast" class="toast"></div>
   <script nonce="${nonce}">${SCRIPT}</script>
 </body>
 </html>`;
@@ -158,26 +160,33 @@ export class EvidencePanel {
 
 function renderCard(candidate: Candidate, index: number): string {
   const meter = matchMeter(candidate);
-  const meterHtml = meter
-    ? `<span class="meter" title="best evidence cosine similarity">${meter.dots} ${meter.pct}%</span>`
-    : "";
+  const rank = index + 1;
+
+  // Slim horizontal bar for match strength
+  let meterHtml = "";
+  if (meter) {
+    meterHtml = `<div class="meter" title="Semantic match ${meter.pct}%">
+      <div class="meter-track"><div class="meter-fill" style="width:${meter.pct}%"></div></div>
+      <span class="meter-pct">${meter.pct}%</span>
+    </div>`;
+  }
+
   const venueHtml = candidate.venue
-    ? `<span class="venue">${escapeHtml(candidate.venue)}</span>`
+    ? ` &middot; ${escapeHtml(candidate.venue)}`
     : "";
 
   const evidenceHtml = candidate.evidence
-    .map((evidence) => {
-      const year = evidence.citing_year
-        ? `<span class="cite-year">cited ${evidence.citing_year}</span>`
-        : "";
-      return `<li><blockquote>${escapeHtml(
-        truncate(evidence.sentence, EVIDENCE_MAX_CHARS),
-      )}</blockquote>${year}</li>`;
+    .map((ev) => {
+      const year = ev.citing_year ? `<span class="ev-year">${ev.citing_year}</span>` : "";
+      return `<li>
+        <blockquote>${escapeHtml(truncate(ev.sentence, EVIDENCE_MAX_CHARS))}</blockquote>
+        <span class="ev-meta">${year}</span>
+      </li>`;
     })
     .join("\n");
 
   const reasonOptions = REJECTION_REASONS.map(
-    (reason) => `<option value="${escapeHtml(reason)}">${escapeHtml(reason)}</option>`,
+    (r) => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`,
   ).join("");
 
   // NOTE (Phase 9): a role-distribution row (background / method_use / …) will
@@ -185,25 +194,25 @@ function renderCard(candidate: Candidate, index: number): string {
 
   return `<article class="card" data-index="${index}">
   <div class="card-head">
-    <h2 class="title">${escapeHtml(candidate.title)}</h2>
-    <div class="byline">
-      <span class="authors">${escapeHtml(authorLabel(candidate))}</span>
-      <span class="year">(${escapeHtml(yearLabel(candidate))})</span>
-      ${venueHtml}
-      ${meterHtml}
+    <span class="rank">${rank}</span>
+    <div class="card-meta">
+      <h2 class="title">${escapeHtml(candidate.title)}</h2>
+      <p class="byline">${escapeHtml(authorLabel(candidate))}, ${escapeHtml(yearLabel(candidate))}${venueHtml}</p>
+      <code class="key">${escapeHtml(candidate.citation_key)}</code>
     </div>
-    <code class="key">${escapeHtml(candidate.citation_key)}</code>
   </div>
+  ${meterHtml}
   <ul class="evidence">${evidenceHtml}</ul>
   <div class="actions">
-    <button class="primary" data-action="insert" data-index="${index}">Insert citation</button>
-    <button data-action="thumbsUp" data-index="${index}" title="Useful">👍</button>
-    <button data-action="thumbsDown" data-index="${index}" title="Not useful">👎</button>
-    <button data-action="copyBibtex" data-index="${index}">Copy BibTeX</button>
-    <button data-action="openUrl" data-index="${index}">Search online</button>
+    <button class="btn primary" data-action="insert" data-index="${index}">Insert</button>
+    <button class="btn" data-action="copyBibtex" data-index="${index}">Copy BibTeX</button>
+    <button class="btn" data-action="openUrl" data-index="${index}">Search online</button>
+    <span class="spacer"></span>
+    <button class="btn icon-btn" data-action="thumbsUp" data-index="${index}" title="Useful">+</button>
+    <button class="btn icon-btn" data-action="thumbsDown" data-index="${index}" title="Not useful">&minus;</button>
     <span class="reject-group">
       <select class="reason" id="reason-${index}" aria-label="Rejection reason">${reasonOptions}</select>
-      <button class="danger" data-action="reject" data-index="${index}">Reject</button>
+      <button class="btn danger" data-action="reject" data-index="${index}">Reject</button>
     </span>
   </div>
 </article>`;
@@ -211,80 +220,287 @@ function renderCard(candidate: Candidate, index: number): string {
 
 const STYLES = `
   :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+
   body {
     font-family: var(--vscode-font-family);
     font-size: var(--vscode-font-size);
     color: var(--vscode-foreground);
-    padding: 0 16px 24px;
+    padding: 0 16px 28px;
+    margin: 0;
+    line-height: 1.55;
   }
-  .header { position: sticky; top: 0; background: var(--vscode-editor-background); padding: 12px 0 8px; }
-  .header h1 { font-size: 1.1em; margin: 0; }
-  .query { color: var(--vscode-descriptionForeground); margin: 4px 0 0; }
-  .empty { color: var(--vscode-descriptionForeground); }
+
+  /* ── Header ─────────────────────────────────── */
+  .header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--vscode-editor-background);
+    padding: 14px 0 10px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+  }
+  .header h1 {
+    font-size: 1.08em;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+  .query {
+    color: var(--vscode-descriptionForeground);
+    margin: 0;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .count {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 0.78em;
+    color: var(--vscode-descriptionForeground);
+    opacity: 0.8;
+  }
+  .empty { color: var(--vscode-descriptionForeground); padding: 32px 0; }
+
+  /* ── Cards ──────────────────────────────────── */
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 8px;
+  }
   .card {
-    border: 1px solid var(--vscode-panel-border);
+    padding: 14px 16px;
     border-radius: 6px;
-    padding: 12px 14px;
-    margin: 12px 0;
     background: var(--vscode-editorWidget-background);
+    border: 1px solid transparent;
+    transition: border-color 0.15s, opacity 0.3s;
   }
-  .card.dimmed { opacity: 0.5; }
-  .title { font-size: 1.02em; margin: 0 0 4px; }
-  .byline { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; color: var(--vscode-descriptionForeground); font-size: 0.9em; }
-  .meter { font-family: var(--vscode-editor-font-family); letter-spacing: 1px; }
-  .key { display: inline-block; margin-top: 6px; font-size: 0.85em; color: var(--vscode-textPreformat-foreground); }
-  .evidence { list-style: none; padding: 0; margin: 10px 0; }
+  .card:hover { border-color: var(--vscode-panel-border); }
+  .card.dimmed { opacity: 0.35; pointer-events: none; }
+  .card.inserted { border-color: var(--vscode-testing-iconPassed, #388e3c); }
+
+  /* ── Card head ──────────────────────────────── */
+  .card-head {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .rank {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 600;
+    background: var(--vscode-badge-background);
+    color: var(--vscode-badge-foreground);
+    margin-top: 2px;
+  }
+  .card-meta { min-width: 0; }
+  .title {
+    font-size: 0.98em;
+    font-weight: 600;
+    margin: 0 0 2px;
+    line-height: 1.35;
+  }
+  .byline {
+    color: var(--vscode-descriptionForeground);
+    font-size: 0.85em;
+    margin: 0;
+  }
+  .key {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.8em;
+    color: var(--vscode-textPreformat-foreground);
+    opacity: 0.85;
+  }
+
+  /* ── Meter ──────────────────────────────────── */
+  .meter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 2px 34px;
+  }
+  .meter-track {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--vscode-panel-border);
+    overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--vscode-textLink-foreground, #007acc);
+    transition: width 0.4s ease;
+  }
+  .meter-pct {
+    font-size: 0.75em;
+    color: var(--vscode-descriptionForeground);
+    min-width: 28px;
+    text-align: right;
+  }
+
+  /* ── Evidence ───────────────────────────────── */
+  .evidence {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+  }
   .evidence li { margin: 6px 0; }
   .evidence blockquote {
-    margin: 0; padding: 6px 10px;
-    border-left: 3px solid var(--vscode-textBlockQuote-border);
+    margin: 0;
+    padding: 6px 10px;
+    border-left: 2px solid var(--vscode-textBlockQuote-border);
     background: var(--vscode-textBlockQuote-background);
     font-style: italic;
+    font-size: 0.9em;
+    border-radius: 0 4px 4px 0;
   }
-  .cite-year { font-size: 0.8em; color: var(--vscode-descriptionForeground); }
-  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
-  .reject-group { display: inline-flex; gap: 6px; margin-left: auto; align-items: center; }
-  button {
+  .ev-meta {
+    display: inline-flex;
+    gap: 6px;
+    margin-left: 14px;
+    font-size: 0.78em;
+    color: var(--vscode-descriptionForeground);
+  }
+
+  /* ── Actions ────────────────────────────────── */
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--vscode-panel-border);
+  }
+  .spacer { flex: 1; }
+
+  .btn {
+    font-family: inherit;
+    font-size: 0.82em;
+    padding: 4px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
     color: var(--vscode-button-secondaryForeground);
     background: var(--vscode-button-secondaryBackground);
-    border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;
+    transition: background 0.12s;
   }
-  button:hover { background: var(--vscode-button-secondaryHoverBackground); }
-  button.primary { color: var(--vscode-button-foreground); background: var(--vscode-button-background); }
-  button.primary:hover { background: var(--vscode-button-hoverBackground); }
-  button.danger { color: var(--vscode-errorForeground); }
-  button.active { outline: 2px solid var(--vscode-focusBorder); }
-  select.reason {
+  .btn:hover { background: var(--vscode-button-secondaryHoverBackground); }
+  .btn:active { opacity: 0.8; }
+  .btn.primary {
+    color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background);
+  }
+  .btn.primary:hover { background: var(--vscode-button-hoverBackground); }
+  .btn.danger {
+    color: var(--vscode-errorForeground);
+    background: var(--vscode-button-secondaryBackground);
+  }
+  .icon-btn {
+    width: 26px;
+    padding: 4px 0;
+    text-align: center;
+    font-weight: 700;
+    background: transparent;
+    color: var(--vscode-descriptionForeground);
+  }
+  .icon-btn:hover { background: rgba(128,128,128,0.12); }
+  .icon-btn.active-up {
+    color: var(--vscode-testing-iconPassed, #388e3c);
+    background: rgba(56,142,60,0.1);
+  }
+  .icon-btn.active-down {
+    color: var(--vscode-errorForeground, #d32f2f);
+    background: rgba(211,47,47,0.1);
+  }
+
+  .reject-group {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .reason {
+    font-family: inherit;
+    font-size: 0.8em;
     color: var(--vscode-dropdown-foreground);
     background: var(--vscode-dropdown-background);
     border: 1px solid var(--vscode-dropdown-border);
-    border-radius: 4px; padding: 4px;
+    border-radius: 4px;
+    padding: 3px 6px;
+  }
+
+  /* ── Toast ──────────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(40px);
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    background: var(--vscode-editorWidget-background);
+    color: var(--vscode-foreground);
+    border: 1px solid var(--vscode-panel-border);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    z-index: 100;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 `;
 
-// Webview-side script. Forwards clicks to the host and gives lightweight
-// optimistic feedback (highlight thumbs, dim a rejected card).
 const SCRIPT = `
   const vscode = acquireVsCodeApi();
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
   document.querySelectorAll('button[data-action]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const index = Number(btn.getAttribute('data-index'));
       const kind = btn.getAttribute('data-action');
       const card = btn.closest('.card');
+
       if (kind === 'reject') {
-        const select = document.getElementById('reason-' + index);
-        const reason = select ? select.value : '';
-        if (card) { card.classList.add('dimmed'); }
+        const sel = document.getElementById('reason-' + index);
+        const reason = sel ? sel.value : '';
+        if (card) card.classList.add('dimmed');
+        toast('Rejected');
         vscode.postMessage({ kind, index, reason });
         return;
       }
+
       if (kind === 'thumbsUp' || kind === 'thumbsDown') {
         if (card) {
-          card.querySelectorAll('button[data-action="thumbsUp"], button[data-action="thumbsDown"]')
-            .forEach((b) => b.classList.remove('active'));
-          btn.classList.add('active');
+          card.querySelectorAll('.icon-btn').forEach(b => {
+            b.classList.remove('active-up', 'active-down');
+          });
+          btn.classList.add(kind === 'thumbsUp' ? 'active-up' : 'active-down');
         }
       }
+
+      if (kind === 'insert' && card) {
+        card.classList.add('inserted');
+        toast('Inserted');
+      }
+
+      if (kind === 'copyBibtex') toast('Copied');
+
       vscode.postMessage({ kind, index });
     });
   });
