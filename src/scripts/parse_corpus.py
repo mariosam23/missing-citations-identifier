@@ -79,7 +79,10 @@ app = typer.Typer(add_completion=False)
 # Download helpers
 # ---------------------------------------------------------------------------
 
-def _extract_openalex_id(work: dict[str, Any]) -> str | None:
+def _extract_paper_id(work: dict[str, Any]) -> str | None:
+    s2_id = work.get("paperId")
+    if isinstance(s2_id, str) and s2_id:
+        return f"S2:{s2_id}"
     raw = work.get("id") or ""
     m = OPENALEX_ID_PATTERN.search(raw)
     return m.group(1) if m else None
@@ -157,6 +160,12 @@ def _pdf_url_candidates(work: dict[str, Any]) -> list[str]:
         _add(loc.get("pdf_url"))
     _add(_pmc_pdf_url(work))
     _add((work.get("open_access") or {}).get("oa_url"))
+    
+    # Semantic Scholar fallback
+    s2_oa = work.get("openAccessPdf")
+    if isinstance(s2_oa, dict):
+        _add(s2_oa.get("url"))
+    
     return urls
 
 
@@ -280,8 +289,8 @@ def _ingest_one(
     unpaywall_email: str | None = None,
 ) -> WorkResult:
     """Download → GROBID → delete → parse TEI. Runs in a thread pool worker."""
-    openalex_id = _extract_openalex_id(work) or ""
-    tei_path = tei_dir / f"{openalex_id}.tei.xml"
+    paper_id = _extract_paper_id(work) or ""
+    tei_path = tei_dir / f"{paper_id}.tei.xml"
 
     # TEI cache hit: skip download + GROBID entirely.
     if tei_path.exists() and tei_path.stat().st_size > 0:
@@ -289,12 +298,12 @@ def _ingest_one(
             tei_xml = tei_path.read_text(encoding="utf-8")
             parsed = parse_tei(
                 tei_xml,
-                openalex_id=openalex_id,
+                openalex_id=paper_id,
                 tei_path=tei_path,
             )
-            return WorkResult(openalex_id, parsed, tei_path, "ok", None)
+            return WorkResult(paper_id, parsed, tei_path, "ok", None)
         except Exception as exc:  # noqa: BLE001
-            return WorkResult(openalex_id, None, tei_path, "tei_parse_error", str(exc))
+            return WorkResult(paper_id, None, tei_path, "tei_parse_error", str(exc))
 
     # Try the OpenAlex-derived candidates first (free, no extra API calls).
     pdf_content, last_error = _download_pdf(http_client, _pdf_url_candidates(work))
@@ -323,7 +332,7 @@ def _ingest_one(
 
     if pdf_content is None:
         return WorkResult(
-            openalex_id, None, None, "no_pdf", last_error or "no url candidates"
+            paper_id, None, None, "no_pdf", last_error or "no url candidates"
         )
 
     # Write to a temp file so GROBID can POST it, then delete immediately.
@@ -336,22 +345,22 @@ def _ingest_one(
         try:
             tei_xml = process_fulltext(tmp_path)
         except GrobidTimeoutError as exc:
-            return WorkResult(openalex_id, None, None, "timeout", str(exc))
+            return WorkResult(paper_id, None, None, "timeout", str(exc))
         except GrobidError as exc:
-            return WorkResult(openalex_id, None, None, "error", str(exc))
+            return WorkResult(paper_id, None, None, "error", str(exc))
         finally:
             tmp_path.unlink(missing_ok=True)
 
         tei_path.write_text(tei_xml, encoding="utf-8")
         parsed = parse_tei(
             tei_xml,
-            openalex_id=openalex_id,
+            openalex_id=paper_id,
             tei_path=tei_path,
         )
-        return WorkResult(openalex_id, parsed, tei_path, "ok", None)
+        return WorkResult(paper_id, parsed, tei_path, "ok", None)
 
     except Exception as exc:  # noqa: BLE001
-        return WorkResult(openalex_id, None, None, "tei_parse_error", str(exc))
+        return WorkResult(paper_id, None, None, "tei_parse_error", str(exc))
 
 
 # ---------------------------------------------------------------------------
@@ -363,14 +372,21 @@ def _quick_normalize(title: str) -> str:
 
 
 def _upsert_paper(session: Session, parsed: ParsedDocument) -> Paper:
-    openalex_url = f"https://openalex.org/{parsed.openalex_id}"
+    paper_id = parsed.openalex_id
+    if paper_id.startswith("S2:"):
+        paper_url = f"https://www.semanticscholar.org/paper/{paper_id[3:]}"
+        source = "semanticscholar"
+    else:
+        paper_url = f"https://openalex.org/{paper_id}"
+        source = "openalex"
+
     existing = session.execute(
-        select(Paper).where(Paper.url == openalex_url)
+        select(Paper).where(Paper.url == paper_url)
     ).scalar_one_or_none()
     if existing is not None:
         return existing
     paper = Paper(
-        canonical_title=parsed.canonical_title or parsed.openalex_id,
+        canonical_title=parsed.canonical_title or paper_id,
         normalized_title=_quick_normalize(parsed.canonical_title or ""),
         authors={"list": parsed.authors} if parsed.authors else None,
         first_author=parsed.first_author,
@@ -378,8 +394,8 @@ def _upsert_paper(session: Session, parsed: ParsedDocument) -> Paper:
         venue=parsed.venue,
         doi=parsed.doi,
         arxiv_id=parsed.arxiv_id,
-        url=openalex_url,
-        source="openalex",
+        url=paper_url,
+        source=source,
         abstract=parsed.abstract,
     )
     session.add(paper)
@@ -475,20 +491,29 @@ def _record_failure(
     )
 
 
-def _flush_batch(session: Session, batch: list[WorkResult]) -> None:
+def _flush_batch(session: Session, batch: list[WorkResult], dry_run: bool = False) -> None:
     try:
         total_refs = total_ctx = 0
         for result in batch:
             refs, ctxs = _persist(session, result)
             total_refs += refs
             total_ctx += ctxs
-        session.commit()
-        logger.info(
-            "batch committed — docs=%d refs=%d contexts=%d",
-            len(batch),
-            total_refs,
-            total_ctx,
-        )
+        if not dry_run:
+            session.commit()
+            logger.info(
+                "batch committed — docs=%d refs=%d contexts=%d",
+                len(batch),
+                total_refs,
+                total_ctx,
+            )
+        else:
+            session.flush()
+            logger.info(
+                "DRY RUN: batch flushed (not committed) — docs=%d refs=%d contexts=%d",
+                len(batch),
+                total_refs,
+                total_ctx,
+            )
     except Exception:
         session.rollback()
         logger.exception("batch failed; rolled back %d documents", len(batch))
@@ -546,6 +571,11 @@ def main(
             " for bulk recovery; Unpaywall covers the same DOIs more reliably."
         ),
     ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Run normally but explicitly rollback the database transaction at the end.",
+    ),
 ) -> None:
     """Download + parse + ingest OpenAlex Works into the citation context DB."""
     import json
@@ -563,7 +593,8 @@ def main(
                     "DELETE FROM source_documents WHERE parse_status <> 'ok'"
                 )
             ).rowcount
-            session.commit()
+            if not dry_run:
+                session.commit()
             logger.info(
                 "retry-failed: cleared %d prior non-ok source_documents.",
                 deleted,
@@ -579,7 +610,7 @@ def main(
                 if not line:
                     continue
                 work = json.loads(line)
-                oid = _extract_openalex_id(work)
+                oid = _extract_paper_id(work)
                 if oid and oid not in done_ids:
                     works.append(work)
                     if limit is not None and len(works) >= limit:
@@ -614,7 +645,7 @@ def main(
                     http_client,
                     s2_client,
                     unpaywall_email,
-                ): (_extract_openalex_id(work) or "")
+                ): (_extract_paper_id(work) or "")
                 for work in works
             }
 
@@ -631,21 +662,25 @@ def main(
                         session, result.openalex_id, result.status, result.error
                     )
                     failed_count += 1
-                    if failed_count % BATCH_DOCS == 0:
+                    if failed_count % BATCH_DOCS == 0 and not dry_run:
                         session.commit()
                     continue
 
                 ok_batch.append(result)
                 if len(ok_batch) >= BATCH_DOCS:
-                    _flush_batch(session, ok_batch)
+                    _flush_batch(session, ok_batch, dry_run=dry_run)
                     ok_count += len(ok_batch)
                     ok_batch.clear()
 
         if ok_batch:
-            _flush_batch(session, ok_batch)
+            _flush_batch(session, ok_batch, dry_run=dry_run)
             ok_count += len(ok_batch)
 
-        session.commit()
+        if dry_run:
+            session.rollback()
+            logger.info("DRY RUN: rolled back all changes.")
+        else:
+            session.commit()
         logger.info(
             "ingest finished — ok=%d failed=%d",
             ok_count,
