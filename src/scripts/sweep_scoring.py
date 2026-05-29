@@ -118,7 +118,8 @@ def main(
         session, paper_ids, target_year=None, require_reachable=True
     )
     if not queries:
-        raise typer.Exit("no queries materialised — check the split / DB")
+        logger.error("no queries materialised — check the split / DB")
+        raise typer.Exit(code=1)
     logger.info("materialised %d queries (skipped %d unreachable)", len(queries), skipped)
 
     t0 = time.perf_counter()

@@ -46,6 +46,7 @@ app = typer.Typer(add_completion=False)
 
 EMB_TABLE = "citation_context_embeddings"
 BACKUP_TABLE = "citation_context_embeddings_backup_sentence"
+BACKUP_WINDOW = "citation_context_embeddings_backup_window"
 HNSW_INDEX = "citation_context_embedding_hnsw_idx"
 # Matches the live definition (and Alembic 0011) exactly.
 CREATE_HNSW_SQL = (
@@ -194,6 +195,51 @@ def rollback(yes: bool = typer.Option(False, "--yes", help="Confirm restoring se
             f"rolled back: {restored} sentence embeddings restored, index rebuilt, "
             f"context_text_for_embedding repointed to the sentence.\n"
             f"Drop {BACKUP_TABLE} manually once you are satisfied."
+        )
+    finally:
+        session.close()
+
+
+@app.command()
+def switch(
+    to: str = typer.Option(..., "--to", help="Which embeddings to make live: 'sentence' or 'window'."),
+    yes: bool = typer.Option(False, "--yes", help="Confirm the swap."),
+) -> None:
+    """Flip the live embeddings between the preserved sentence/window snapshots.
+
+    Both snapshot tables (``..._backup_sentence`` and ``..._backup_window``) hold
+    a full copy, so flipping needs no re-embed: truncate live, copy from the
+    chosen snapshot, repoint ``context_text_for_embedding`` to match, rebuild the
+    HNSW index.
+    """
+    target = to.lower()
+    if target not in ("sentence", "window"):
+        raise typer.BadParameter("--to must be 'sentence' or 'window'")
+    src = BACKUP_TABLE if target == "sentence" else BACKUP_WINDOW
+    repoint = REPOINT_TO_SENTENCE if target == "sentence" else REPOINT_TO_WINDOW
+
+    session = get_session()
+    try:
+        if not _table_exists(session, src):
+            raise typer.BadParameter(f"snapshot {src} not found — cannot switch to '{target}'.")
+        n_src = _scalar(session, f"SELECT COUNT(*) FROM {src}")
+        n_live = _scalar(session, f"SELECT COUNT(*) FROM {EMB_TABLE}")
+        if not yes:
+            raise typer.BadParameter(
+                f"this will replace the live {n_live}-row {EMB_TABLE} with the "
+                f"{n_src}-row '{target}' snapshot and rebuild the index. Re-run with --yes."
+            )
+        session.execute(text(f"DROP INDEX IF EXISTS {HNSW_INDEX}"))
+        session.execute(text(f"TRUNCATE {EMB_TABLE}"))
+        session.execute(text(f"INSERT INTO {EMB_TABLE} SELECT * FROM {src}"))
+        session.execute(text(repoint))
+        logger.info("rebuilding %s over the '%s' vectors ...", HNSW_INDEX, target)
+        session.execute(text(CREATE_HNSW_SQL))
+        session.commit()
+        live = _scalar(session, f"SELECT COUNT(*) FROM {EMB_TABLE}")
+        typer.echo(
+            f"switched live embeddings to '{target}' ({live} rows); index rebuilt, "
+            f"context_text_for_embedding repointed."
         )
     finally:
         session.close()

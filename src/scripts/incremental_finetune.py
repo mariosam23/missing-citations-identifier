@@ -12,8 +12,9 @@ from pathlib import Path
 
 import torch
 import typer
-from sentence_transformers import InputExample, SentenceTransformer, losses
+from sentence_transformers import InputExample, SentenceTransformer
 from sentence_transformers.evaluation import InformationRetrievalEvaluator
+from sentence_transformers.losses import MultipleNegativesRankingLoss
 from sqlalchemy import text
 from torch.utils.data import DataLoader
 
@@ -221,8 +222,10 @@ def main(
         
         # Use small batch_size to fit 6GB VRAM (triplets = 3 fwd passes
         # per step) with gradient accumulation for a larger effective bs.
-        loader = DataLoader(train_examples, shuffle=True, batch_size=batch_size)
-        train_loss = losses.MultipleNegativesRankingLoss(step_model)
+        # DataLoader's stub wants a Dataset; a list of InputExample is the
+        # documented sentence-transformers usage and works at runtime.
+        loader: DataLoader = DataLoader(train_examples, shuffle=True, batch_size=batch_size)  # type: ignore[arg-type]
+        train_loss = MultipleNegativesRankingLoss(step_model)
         n_steps = len(loader) // grad_accum_steps
         
         step_model.fit(
