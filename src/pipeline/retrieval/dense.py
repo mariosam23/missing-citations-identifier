@@ -62,7 +62,7 @@ class RetrievedContext:
 
 
 _DENSE_SQL = text(
-    """
+    r"""
     SELECT cce.context_id,
            cc.cited_paper_id,
            cc.citing_paper_id,
@@ -79,6 +79,11 @@ _DENSE_SQL = text(
       AND (CAST(:exclude_citing_paper_id AS BIGINT) IS NULL
            OR cc.citing_paper_id IS DISTINCT FROM
               CAST(:exclude_citing_paper_id AS BIGINT))
+      AND (CAST(:exclude_sentence AS TEXT) IS NULL
+           OR lower(btrim(regexp_replace(
+                cc.sentence_without_markers, '\s+', ' ', 'g')))
+              <> lower(btrim(regexp_replace(
+                CAST(:exclude_sentence AS TEXT), '\s+', ' ', 'g'))))
     ORDER BY cce.embedding <=> CAST(:query_embedding AS vector)
     LIMIT :top_n
     """
@@ -92,6 +97,7 @@ def retrieve_dense(
     top_n: int = DEFAULT_TOP_N,
     target_year: int | None = None,
     exclude_citing_paper_id: int | None = None,
+    exclude_sentence: str | None = None,
 ) -> list[RetrievedContext]:
     """Return the top-N contexts ranked by cosine similarity.
 
@@ -102,6 +108,11 @@ def retrieve_dense(
     ``exclude_citing_paper_id``, when set, filters out all contexts whose
     ``citing_paper_id`` matches — used by the eval harness to prevent
     leakage from a test paper's own citations.
+
+    ``exclude_sentence``, when set, drops contexts whose
+    ``sentence_without_markers`` normalises (lowercase, collapsed whitespace) to
+    the same string — the leak-free eval mode, which removes verbatim-duplicate
+    evidence so recall reflects genuine paraphrase matching, not copy-paste.
     """
     rows = session.execute(
         _DENSE_SQL,
@@ -110,6 +121,7 @@ def retrieve_dense(
             "top_n": top_n,
             "target_year": target_year,
             "exclude_citing_paper_id": exclude_citing_paper_id,
+            "exclude_sentence": exclude_sentence,
         },
     ).all()
 

@@ -104,13 +104,13 @@ def reciprocal_rank_fusion(
     return fused
 
 
-def fuse_paper_rankings(
+def fuse_paper_rankings_scored(
     rankings: Sequence[Sequence[int]],
     *,
     k: int = DEFAULT_K,
     top_k: int,
-) -> list[int]:
-    """Fuse multiple paper-id rankings via RRF; return the top-K paper ids.
+) -> list[tuple[int, float]]:
+    """Fuse paper-id rankings via RRF; return top-K ``(paper_id, rrf_score)``.
 
     Operates one level up from :func:`reciprocal_rank_fusion`: instead of
     fusing context rankings (where sparse-only contexts contaminate the
@@ -119,7 +119,10 @@ def fuse_paper_rankings(
     those rankings. Tie-break is by paper-id ascending — stable and
     deterministic.
 
-    Raises ``ValueError`` if ``k`` is not positive.
+    The scores are returned so callers can surface the actual ranking
+    criterion (e.g. the API ``Candidate.score``) instead of a separate value
+    that does not drive the order. Raises ``ValueError`` if ``k`` is not
+    positive.
     """
     if k <= 0:
         raise ValueError(f"k must be a positive integer, got {k}")
@@ -130,4 +133,18 @@ def fuse_paper_rankings(
             rrf_score[paper_id] = rrf_score.get(paper_id, 0.0) + 1.0 / (k + rank)
 
     ordered = sorted(rrf_score.items(), key=lambda kv: (-kv[1], kv[0]))
-    return [pid for pid, _ in ordered[:top_k]]
+    return ordered[:top_k]
+
+
+def fuse_paper_rankings(
+    rankings: Sequence[Sequence[int]],
+    *,
+    k: int = DEFAULT_K,
+    top_k: int,
+) -> list[int]:
+    """Fuse multiple paper-id rankings via RRF; return the top-K paper ids.
+
+    Thin wrapper over :func:`fuse_paper_rankings_scored` for callers that only
+    need the ordering, not the scores.
+    """
+    return [pid for pid, _ in fuse_paper_rankings_scored(rankings, k=k, top_k=top_k)]

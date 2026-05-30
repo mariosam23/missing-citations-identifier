@@ -1,29 +1,29 @@
 """POST /recommend — hybrid (dense + sparse) retrieval over the citation DB.
 
+Ranking is delegated to ``pipeline.retrieval.hybrid.hybrid_rank`` — the same
+canonical context-level path the ``hybrid_context`` evaluation variant uses, so
+the extension serves exactly what the thesis numbers measure. This route owns
+only the user-facing concerns around that shared core.
+
 Flow:
 
 1. Embed the query sentence with the singleton encoder.
-2. Run two retrieval branches over ``citation_contexts`` in parallel paths:
-   top-1000 dense (cosine over ``citation_context_embeddings``) and top-1000
-   sparse (``ts_rank_cd`` over the tsvector columns).
-3. Fuse the two rankings with reciprocal rank fusion (``k=60``) into a unified
-   top-1000.
-4. Group by ``cited_paper_id``; compute features.
-5. Score and pick top-K.
-6. Hydrate paper metadata; build BibTeX-style citation keys; attach top-3
-   evidence contexts.
+2. ``hybrid_rank``: top-1000 dense (cosine over ``citation_context_embeddings``)
+   and top-1000 sparse (``ts_rank_cd`` over the tsvector columns) retrieval,
+   fused by reciprocal rank fusion (``k=60``) at the *context* level, grouped by
+   ``cited_paper_id``, scored by the cosine-space aggregator, and capped to
+   top-K.
+3. Hydrate paper metadata; build BibTeX-style citation keys; attach top-3
+   evidence contexts; apply the optional ``target_year`` candidate filter.
 
-The score blends two signals (see ``pipeline.retrieval.aggregate``):
-``mean_top_3_similarity + 0.1*log1p(distinct_citing_papers)``. The former
-measures how well the strongest evidence matches; the latter rewards papers
-corroborated by several independent citers. (A popularity penalty was tried
-and removed — it halved recall on the val split; see the aggregate docstring.)
-
-Hybrid retrieval (§10.5) adds the sparse branch so lexically-exact tokens —
-acronyms ("LoRA"), named datasets ("GLUE") — are not lost to sub-word
-tokenisation. The aggregator is unchanged: ``mean_top_3_similarity`` still
-runs on dense cosine values, and sparse-only contexts carry ``0.0`` there,
-which lightly suppresses bare keyword matches relative to semantic ones.
+``Candidate.score`` is the aggregator score
+(``mean_top_3_similarity + 0.1*log1p(distinct_citing_papers)``); evidence
+``similarity`` is dense cosine, with a sparse-only context carrying ``0.0`` (it
+never outranks a semantic match, and the client's confidence meter stays in
+``[0, 1]``). Hybrid retrieval (§10.5) adds the sparse branch so lexically-exact
+tokens — acronyms ("LoRA"), named datasets ("GLUE") — are not lost to sub-word
+tokenisation. (Paper-level RRF fusion was tried and lost on full val; see
+``pipeline.retrieval.hybrid``.)
 """
 
 from __future__ import annotations
@@ -46,15 +46,9 @@ from api.services.recommendation_logger import (
 from database.postgres.tables.papers import Paper
 from pipeline.bibtex.formatter import paper_to_bibtex
 from pipeline.embedding.embedder import encode_query
-from pipeline.retrieval.aggregate import (
-    DEFAULT_EVIDENCE_COUNT,
-    compute_features,
-    group_by_paper,
-    rank_papers,
-)
-from pipeline.retrieval.dense import DEFAULT_TOP_N, retrieve_dense
-from pipeline.retrieval.fusion import reciprocal_rank_fusion
-from pipeline.retrieval.sparse import retrieve_sparse
+from pipeline.retrieval.aggregate import DEFAULT_EVIDENCE_COUNT
+from pipeline.retrieval.dense import DEFAULT_TOP_N
+from pipeline.retrieval.hybrid import hybrid_rank
 from utils.logger import logger
 
 router = APIRouter(tags=["recommend"])
@@ -91,47 +85,14 @@ def recommend(
 
     query_embedding = encode_query(query)
 
-    dense_ctxs = retrieve_dense(
-        session,
-        query_embedding,
-        top_n=DEFAULT_TOP_N,
-        target_year=request.target_year,
-    )
-
-    sparse_ctxs = retrieve_sparse(
+    ranked = hybrid_rank(
         session,
         query,
+        query_embedding,
         top_n=DEFAULT_TOP_N,
+        top_k=request.top_k,
         target_year=request.target_year,
     )
-
-    if not sparse_ctxs:
-        # Stop-word-only query, or simply no lexical hits — fusion degrades to
-        # dense-only. Not an error; just worth a breadcrumb.
-        logger.warning(
-            "sparse retrieval returned no contexts for query=%r — "
-            "fusion degrades to dense-only",
-            query,
-        )
-
-    fused = reciprocal_rank_fusion([dense_ctxs, sparse_ctxs], top_n=DEFAULT_TOP_N)
-    logger.debug(
-        "retrieval — dense=%d sparse=%d fused=%d overlap=%d",
-        len(dense_ctxs),
-        len(sparse_ctxs),
-        len(fused),
-        len(
-            {c.context_id for c in dense_ctxs}
-            & {c.context_id for c in sparse_ctxs}
-        ),
-    )
-
-    if not fused:
-        return RecommendResponse(candidates=[])
-
-    aggregates = group_by_paper(fused)
-    compute_features(session, aggregates)
-    ranked = rank_papers(aggregates, top_k=request.top_k)
 
     if not ranked:
         return RecommendResponse(candidates=[])

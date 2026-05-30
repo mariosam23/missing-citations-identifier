@@ -1,10 +1,19 @@
-"""Inspect the /recommend pipeline for a single query.
+"""Context-level retrieval inspector for a single query.
 
-Runs the full hybrid path (encode → dense + sparse retrieve → RRF fusion →
-group → score) and prints a table of the top-K candidates with the
-*components* of their score exposed, plus the top-3 evidence sentences.
-Optionally pins a target paper (by ID or title substring) so its rank is
-reported even when it falls outside the top-K.
+Runs encode → dense + sparse retrieve → *context-level* RRF fusion → group →
+score and prints a table of the top-K candidates with the *components* of their
+score exposed (``mean_top_3``, distinct-citers bonus, popularity penalty), plus
+the top-3 evidence sentences. Optionally pins a target paper (by ID or title
+substring) so its rank is reported even when it falls outside the top-K.
+
+NOTE — this is no longer a mirror of what ``/recommend`` ranks. Since the
+prod/eval unification, ``/recommend`` (and the ``hybrid_rrf`` eval variant) rank
+via *paper-level* RRF in ``pipeline.retrieval.hybrid``; the ordering and score
+breakdown printed here are the *context-level* aggregator (preserved as the
+``hybrid_context`` ablation). This tool is kept deliberately context-level
+because its value is the per-branch context provenance and the score-component
+breakdown, which only exist in that path — use it to inspect retrieval coverage
+and the famous-paper question, not to predict the served ranking.
 
 The ``src(d/s/b)`` column and the ``[d|s|b]`` tag on each evidence line make
 the Phase 6 fusion observable: how many of a paper's contexts came from the
@@ -133,6 +142,11 @@ def main(
         typer.echo(
             f"\nRetrieval — dense={len(dense_ctxs)} sparse={len(sparse_ctxs)} "
             f"fused={len(fused)} overlap={overlap}"
+        )
+        typer.echo(
+            "  (context-level inspector — ordering/score below is the "
+            "pre-unification aggregator, NOT what /recommend now serves; "
+            "see pipeline.retrieval.hybrid)"
         )
         if not sparse_ctxs:
             typer.echo(

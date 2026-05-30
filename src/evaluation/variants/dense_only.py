@@ -24,9 +24,16 @@ class DenseOnly:
 
     name: str = "dense_only"
 
-    def __init__(self, session: Session, *, top_n: int = DEFAULT_TOP_N) -> None:
+    def __init__(
+        self,
+        session: Session,
+        *,
+        top_n: int = DEFAULT_TOP_N,
+        leak_free: bool = False,
+    ) -> None:
         self._session = session
         self._top_n = top_n
+        self._leak_free = leak_free
 
     def candidates(
         self,
@@ -47,6 +54,7 @@ class DenseOnly:
             top_n=self._top_n,
             target_year=target_year,
             exclude_citing_paper_id=exclude_citing_paper_id,
+            exclude_sentence=query if self._leak_free else None,
         )
         if not contexts:
             return []

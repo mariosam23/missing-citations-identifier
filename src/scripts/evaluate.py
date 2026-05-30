@@ -34,6 +34,9 @@ _VARIANT_REGISTRY: dict[str, str] = {
     "dense_only": "evaluation.variants.dense_only.DenseOnly",
     "sparse_only": "evaluation.variants.sparse_only.SparseOnly",
     "hybrid_rrf": "evaluation.variants.hybrid_rrf.HybridRRF",
+    # Ablation: the superseded context-level fusion (what /recommend served
+    # before unification). Compare against hybrid_rrf on the same split.
+    "hybrid_context": "evaluation.variants.hybrid_context.HybridContext",
 }
 
 # Eval default: 200 contexts per branch is plenty for top-20 paper ranking
@@ -94,6 +97,14 @@ def main(
             " citing paper's own contexts, making the gold unreachable."
         ),
     ),
+    leak_free: bool = typer.Option(
+        False, "--leak-free",
+        help=(
+            "Drop candidate contexts whose sentence is a verbatim (normalised)"
+            " duplicate of the query, so recall reflects genuine paraphrase"
+            " matching rather than copy-pasted citation text."
+        ),
+    ),
 ) -> None:
     """Evaluate a retrieval variant and write a JSON report."""
     split_path = Path(split_dir) / f"split_{seed}.json"
@@ -119,10 +130,10 @@ def main(
             split_path, strict=strict, session=session
         )
 
-        variant_instance = variant_cls(session, top_n=top_n)
+        variant_instance = variant_cls(session, top_n=top_n, leak_free=leak_free)
 
         def variant_factory(sess):  # type: ignore[no-untyped-def]
-            return variant_cls(sess, top_n=top_n)
+            return variant_cls(sess, top_n=top_n, leak_free=leak_free)
 
         runner = EvalRunner(
             variant_instance,
