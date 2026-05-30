@@ -34,6 +34,33 @@ class Settings(BaseSettings):
     # are embedded raw.
     EMBEDDER_QUERY_PROMPT_NAME: str = "query"
 
+    # Citation-need identifier (LLM-based binary "should this sentence cite?"
+    # decision). Pin the model + run at temperature 0 for reproducible results.
+    # NOTE: the gemini-2.0-* models return quota 0 on this account; only the
+    # 2.5 / 3.1 flash tiers actually serve requests, so the rotation lists those.
+    GEMINI_MODEL_NAME: str = "gemini-2.5-flash-lite"
+    # Comma-separated fallbacks the rotating client cycles through to spread
+    # per-model rate limits. The primary model above is tried first.
+    GEMINI_FALLBACK_MODELS: str = "gemini-3.1-flash-lite,gemini-2.5-flash"
+    CITATION_NEED_MIN_CONFIDENCE: float = 0.5
+    CITATION_NEED_MAX_SENTENCES: int = 400
+    # Skip sentences below this word count before spending an API call on them.
+    CITATION_NEED_MIN_WORDS: int = 5
+
+    def gemini_model_rotation(self) -> list[str]:
+        """Ordered, de-duplicated model list: primary first, then fallbacks."""
+        ordered = [
+            self.GEMINI_MODEL_NAME.strip(),
+            *(m.strip() for m in self.GEMINI_FALLBACK_MODELS.split(",")),
+        ]
+        seen: set[str] = set()
+        rotation: list[str] = []
+        for model in ordered:
+            if model and model not in seen:
+                seen.add(model)
+                rotation.append(model)
+        return rotation
+
     model_config = {
         "env_file": str(_ENV_FILE),
         "env_file_encoding": "utf-8",

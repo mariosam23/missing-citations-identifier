@@ -9,7 +9,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import feedback, health, paper, recommend
+from api.routes import analyze, feedback, health, paper, recommend
 
 
 def create_app() -> FastAPI:
@@ -28,6 +28,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(recommend.router)
+    app.include_router(analyze.router)
     app.include_router(paper.router)
     app.include_router(feedback.router)
 

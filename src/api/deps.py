@@ -8,10 +8,13 @@ from typing import TYPE_CHECKING
 from sqlalchemy.orm import Session
 
 from database.postgres.engine import get_session
+from pipeline.citation_need.identifier import get_identifier as _get_identifier
 from pipeline.embedding.embedder import get_embedder as _get_embedder
 
 if TYPE_CHECKING:
     from sentence_transformers import SentenceTransformer
+
+    from pipeline.citation_need.identifier import CitationNeedIdentifier
 
 
 def db_session() -> Iterator[Session]:
@@ -25,3 +28,8 @@ def db_session() -> Iterator[Session]:
 def get_embedder() -> SentenceTransformer:
     """FastAPI-friendly accessor for the process-wide embedder singleton."""
     return _get_embedder()
+
+
+def get_citation_need_identifier() -> CitationNeedIdentifier:
+    """FastAPI-friendly accessor for the citation-need identifier singleton."""
+    return _get_identifier()

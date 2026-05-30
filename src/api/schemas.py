@@ -107,6 +107,39 @@ class ScanResponse(BaseModel):
     items: list[ScanItem]
 
 
+class AnalyzeRequest(BaseModel):
+    """Request for the binary citation-need identification pass."""
+
+    text: str = Field(..., min_length=1, description="Full document text.")
+    max_sentences: int = Field(400, ge=1, le=2000)
+    min_confidence: float = Field(
+        0.5,
+        ge=0.0,
+        le=1.0,
+        description="Drop flagged sentences below this self-reported confidence.",
+    )
+    document_path: str | None = Field(
+        default=None,
+        description="Workspace-relative path of the analysed document.",
+    )
+
+
+class AnalyzeItem(BaseModel):
+    """One sentence the identifier judged to need a citation."""
+
+    sentence_id: str
+    text: str
+    start_offset: int
+    end_offset: int
+    needs_citation: bool
+    confidence: float
+    section_type: str | None = None
+
+
+class AnalyzeResponse(BaseModel):
+    items: list[AnalyzeItem]
+
+
 class FeedbackType(StrEnum):
     """The interactions the webview/quickpick can report for a candidate."""
 
