@@ -1,15 +1,23 @@
 import * as vscode from "vscode";
 
-import { recommendCitationsForSelection } from "./recommendCommand";
+import {
+  recommendCitationsForSelection,
+  scanDocumentForMissingCitations,
+} from "./recommendCommand";
 
-const COMMAND_ID = "missingCitations.recommend";
+const RECOMMEND_COMMAND_ID = "missingCitations.recommend";
+const SCAN_COMMAND_ID = "missingCitations.scanDocument";
 
 export function activate(context: vscode.ExtensionContext): void {
-  const disposable = vscode.commands.registerCommand(
-    COMMAND_ID,
+  const recommendCommand = vscode.commands.registerCommand(
+    RECOMMEND_COMMAND_ID,
     recommendCitationsForSelection,
   );
-  context.subscriptions.push(disposable);
+  const scanCommand = vscode.commands.registerCommand(
+    SCAN_COMMAND_ID,
+    scanDocumentForMissingCitations,
+  );
+  context.subscriptions.push(recommendCommand, scanCommand);
 }
 
 export function deactivate(): void {

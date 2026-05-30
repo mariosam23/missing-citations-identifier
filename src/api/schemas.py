@@ -7,6 +7,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
+from pipeline.missing_citations.detector import CitationNeedLabel
+
 
 class RecommendRequest(BaseModel):
     text: str = Field(..., min_length=1, description="Query sentence/snippet.")
@@ -65,6 +67,44 @@ class RecommendResponse(BaseModel):
             "back in POST /feedback. Null when logging failed."
         ),
     )
+
+
+class ScanRequest(BaseModel):
+    """Request for document-wide missing-citation scanning."""
+
+    text: str = Field(..., min_length=1, description="Full document text.")
+    top_k: int = Field(5, ge=1, le=50)
+    target_year: int | None = Field(
+        None, description="Filter to papers published on/before this year."
+    )
+    language: str | None = Field(
+        None,
+        description="VS Code document languageId, e.g. 'latex' or 'markdown'.",
+    )
+    document_path: str | None = Field(
+        default=None,
+        description="Workspace-relative path of the scanned document.",
+    )
+    max_sentences: int = Field(250, ge=1, le=1000)
+    min_confidence: float = Field(0.55, ge=0.0, le=1.0)
+
+
+class ScanItem(BaseModel):
+    """One actionable missing-citation finding."""
+
+    sentence_id: str
+    text: str
+    start_offset: int
+    end_offset: int
+    label: CitationNeedLabel
+    confidence: float
+    reasons: list[str]
+    candidates: list[Candidate]
+    recommendation_event_id: uuid.UUID | None = None
+
+
+class ScanResponse(BaseModel):
+    items: list[ScanItem]
 
 
 class FeedbackType(StrEnum):

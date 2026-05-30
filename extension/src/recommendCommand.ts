@@ -10,7 +10,14 @@ import {
   truncate,
   yearLabel,
 } from "./display";
-import { Candidate, FeedbackPayload, FeedbackType, RecommendResponse } from "./types";
+import {
+  Candidate,
+  FeedbackPayload,
+  FeedbackType,
+  RecommendResponse,
+  ScanItem,
+  ScanResponse,
+} from "./types";
 import {
   EvidenceAction,
   EvidencePanel,
@@ -18,11 +25,16 @@ import {
 
 const CONFIG_SECTION = "missingCitations";
 const RECOMMEND_PATH = "/recommend";
+const SCAN_PATH = "/scan";
 
 const LATEX_LANGUAGE_IDS = new Set(["latex", "tex"]);
 
 interface CandidatePickItem extends vscode.QuickPickItem {
   candidate: Candidate;
+}
+
+interface ScanPickItem extends vscode.QuickPickItem {
+  item: ScanItem;
 }
 
 /** Shared BibTeX manager instance — serialises .bib writes. */
@@ -120,6 +132,103 @@ export async function recommendCitationsForSelection(): Promise<void> {
     feedbackClient,
     eventId,
   });
+}
+
+export async function scanDocumentForMissingCitations(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    vscode.window.showInformationMessage(
+      "Missing Citations: open a document to scan first.",
+    );
+    return;
+  }
+
+  const documentText = editor.document.getText();
+  if (!documentText.trim()) {
+    vscode.window.showInformationMessage(
+      "Missing Citations: the active document is empty.",
+    );
+    return;
+  }
+
+  const config = vscode.workspace.getConfiguration(CONFIG_SECTION);
+  const backendUrl = (config.get<string>("backendUrl") ?? "").trim();
+  if (!backendUrl) {
+    vscode.window.showErrorMessage(
+      "Missing Citations: `missingCitations.backendUrl` is not configured.",
+    );
+    return;
+  }
+
+  const topK = config.get<number>("topK") ?? 10;
+  const timeoutMs = config.get<number>("scanRequestTimeoutMs") ?? 120000;
+  const maxSentences = config.get<number>("scanMaxSentences") ?? 250;
+  const minConfidence = config.get<number>("scanMinConfidence") ?? 0.55;
+  const languageId = editor.document.languageId;
+  const documentPath = vscode.workspace.asRelativePath(editor.document.uri);
+
+  let response: ScanResponse;
+  try {
+    response = await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Scanning for missing citations…",
+        cancellable: true,
+      },
+      (_progress, token) =>
+        fetchScanResults({
+          backendUrl,
+          text: documentText,
+          languageId,
+          documentPath,
+          topK,
+          timeoutMs,
+          maxSentences,
+          minConfidence,
+          token,
+        }),
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    vscode.window.showErrorMessage(`Missing Citations: ${message}`);
+    return;
+  }
+
+  if (response.items.length === 0) {
+    vscode.window.showInformationMessage(
+      "Missing Citations: no likely missing citations found.",
+    );
+    return;
+  }
+
+  const chosen = await pickScanItem(response.items);
+  if (!chosen) {
+    return;
+  }
+  if (chosen.candidates.length === 0) {
+    vscode.window.showInformationMessage(
+      "Missing Citations: the selected sentence has no candidate references.",
+    );
+    return;
+  }
+
+  const selection = new vscode.Selection(
+    editor.document.positionAt(chosen.start_offset),
+    editor.document.positionAt(chosen.end_offset),
+  );
+  editor.selection = selection;
+  editor.revealRange(selection, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+
+  const feedbackClient = new FeedbackClient(backendUrl, timeoutMs);
+  EvidencePanel.show(chosen.text, chosen.candidates, (action) =>
+    handleEvidenceAction(action, {
+      editor,
+      selection,
+      languageId,
+      feedbackClient,
+      eventId: chosen.recommendation_event_id,
+    }),
+  );
 }
 
 // ── Webview action handling ────────────────────────────────────────
@@ -353,7 +462,94 @@ async function fetchRecommendations(args: FetchArgs): Promise<RecommendResponse>
   }
 }
 
+interface ScanFetchArgs extends FetchArgs {
+  maxSentences: number;
+  minConfidence: number;
+}
+
+async function fetchScanResults(args: ScanFetchArgs): Promise<ScanResponse> {
+  const url = joinUrl(args.backendUrl, SCAN_PATH);
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), args.timeoutMs);
+  const cancelSub = args.token.onCancellationRequested(() => controller.abort());
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: args.text,
+        top_k: args.topK,
+        language: args.languageId,
+        document_path: args.documentPath,
+        max_sentences: args.maxSentences,
+        min_confidence: args.minConfidence,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const detail = await safeReadText(res);
+      throw new Error(
+        `backend returned ${res.status} ${res.statusText}${detail ? `: ${detail}` : ""}`,
+      );
+    }
+
+    const payload = (await res.json()) as ScanResponse;
+    if (!payload || !Array.isArray(payload.items)) {
+      throw new Error("backend returned malformed response (missing 'items').");
+    }
+    return payload;
+  } catch (err) {
+    if (isAbortError(err)) {
+      if (args.token.isCancellationRequested) {
+        throw new Error("request cancelled.");
+      }
+      throw new Error(`request timed out after ${args.timeoutMs} ms.`);
+    }
+    if (err instanceof Error) {
+      throw new Error(`could not reach ${url} — ${err.message}`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutHandle);
+    cancelSub.dispose();
+  }
+}
+
 // ── QuickPick flow ─────────────────────────────────────────────────
+
+async function pickScanItem(items: ScanItem[]): Promise<ScanItem | undefined> {
+  const picked = await vscode.window.showQuickPick(
+    items.map(toScanQuickPickItem),
+    {
+      title: "Missing citation candidates",
+      placeHolder: "Select a flagged sentence to inspect candidate references",
+      matchOnDescription: true,
+      matchOnDetail: true,
+    },
+  );
+  return picked?.item;
+}
+
+function toScanQuickPickItem(item: ScanItem): ScanPickItem {
+  const confidencePct = Math.round(item.confidence * 100);
+  const bestCandidate = item.candidates[0];
+  const candidateLabel = bestCandidate
+    ? `${bestCandidate.title} (${yearLabel(bestCandidate)})`
+    : "No candidate reference";
+
+  // Hard-wrapped sentences carry their source line breaks/indentation; collapse
+  // them so the single-line QuickPick label reads cleanly.
+  const preview = item.text.replace(/\s+/g, " ").trim();
+
+  return {
+    label: `$(warning) ${confidencePct}%  ${truncate(preview, 92)}`,
+    description: candidateLabel,
+    detail: item.reasons.join(" · "),
+    item,
+  };
+}
 
 const COPY_BIBTEX_BUTTON: vscode.QuickInputButton = {
   iconPath: new vscode.ThemeIcon("copy"),

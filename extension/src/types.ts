@@ -30,6 +30,28 @@ export interface RecommendResponse {
   event_id: string | null;
 }
 
+export type CitationNeedLabel =
+  | "HAS_CITATION"
+  | "COVERED_BY_BLOCK"
+  | "MISSING_CITATION"
+  | "NOT_CITATION_WORTHY";
+
+export interface ScanItem {
+  sentence_id: string;
+  text: string;
+  start_offset: number;
+  end_offset: number;
+  label: CitationNeedLabel;
+  confidence: number;
+  reasons: string[];
+  candidates: Candidate[];
+  recommendation_event_id: string | null;
+}
+
+export interface ScanResponse {
+  items: ScanItem[];
+}
+
 // Mirror of api.schemas.FeedbackType.
 export type FeedbackType =
   | "accepted"

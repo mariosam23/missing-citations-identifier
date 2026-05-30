@@ -11,6 +11,8 @@ Usage::
 
 from __future__ import annotations
 
+import sys
+
 import typer
 
 from database.postgres.engine import get_session
@@ -23,6 +25,13 @@ from evaluation.dataset import (
     save_split,
 )
 from utils.logger import logger
+
+# Windows cp1252 stdout can't encode the "→" in the summary line; force UTF-8
+# (same fix as scripts.evaluate / scripts.debug_recommend).
+for _stream in (sys.stdout, sys.stderr):
+    _reconfigure = getattr(_stream, "reconfigure", None)
+    if callable(_reconfigure):
+        _reconfigure(encoding="utf-8", errors="replace")
 
 app = typer.Typer(add_completion=False)
 

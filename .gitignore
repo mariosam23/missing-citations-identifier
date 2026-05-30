@@ -236,3 +236,7 @@ models/
 # Ignore embedded scicite dataset repository
 eval/scicite/
 issues.txt
+
+# Local data archives (large binaries — keep out of git history)
+*.zip
+data.zip

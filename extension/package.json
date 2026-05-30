@@ -15,13 +15,19 @@
   ],
   "main": "./out/extension.js",
   "activationEvents": [
-    "onCommand:missingCitations.recommend"
+    "onCommand:missingCitations.recommend",
+    "onCommand:missingCitations.scanDocument"
   ],
   "contributes": {
     "commands": [
       {
         "command": "missingCitations.recommend",
         "title": "Recommend Citations for Selection",
+        "category": "Missing Citations"
+      },
+      {
+        "command": "missingCitations.scanDocument",
+        "title": "Scan Document for Missing Citations",
         "category": "Missing Citations"
       }
     ],
@@ -31,6 +37,10 @@
           "command": "missingCitations.recommend",
           "when": "editorHasSelection",
           "group": "1_modification@99"
+        },
+        {
+          "command": "missingCitations.scanDocument",
+          "group": "1_modification@100"
         }
       ]
     },
@@ -66,7 +76,27 @@
           "type": "integer",
           "default": 15000,
           "minimum": 1000,
-          "description": "Client-side timeout (ms) for the /recommend request."
+          "description": "Client-side timeout (ms) for a single /recommend request."
+        },
+        "missingCitations.scanRequestTimeoutMs": {
+          "type": "integer",
+          "default": 120000,
+          "minimum": 1000,
+          "description": "Client-side timeout (ms) for a /scan request. A whole-document scan runs retrieval for every flagged sentence, so it needs a larger budget than /recommend."
+        },
+        "missingCitations.scanMaxSentences": {
+          "type": "integer",
+          "default": 250,
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Maximum number of sentences from the active document to scan."
+        },
+        "missingCitations.scanMinConfidence": {
+          "type": "number",
+          "default": 0.55,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Minimum final confidence required for /scan to return a flagged sentence."
         },
         "missingCitations.citeCommand": {
           "type": "string",

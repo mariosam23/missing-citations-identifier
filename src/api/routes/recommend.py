@@ -28,28 +28,35 @@ tokenisation. (Paper-level RRF fusion was tried and lost on full val; see
 
 from __future__ import annotations
 
-import re
-import unicodedata
 import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from api.deps import db_session
-from api.schemas import Candidate, Evidence, RecommendRequest, RecommendResponse
+from api.schemas import (
+    Candidate,
+    RecommendRequest,
+    RecommendResponse,
+    ScanItem,
+    ScanRequest,
+    ScanResponse,
+)
+from api.services.candidate_builder import CandidateBuildResult, build_candidates
 from api.services.recommendation_logger import (
     RecommendationLogger,
     ResultToLog,
 )
-from database.postgres.tables.papers import Paper
-from pipeline.bibtex.formatter import paper_to_bibtex
 from pipeline.embedding.embedder import encode_query
-from pipeline.retrieval.aggregate import DEFAULT_EVIDENCE_COUNT
+from pipeline.missing_citations.detector import (
+    CitationNeedLabel,
+    Detection,
+    scan_document,
+)
+from pipeline.retrieval.aggregate import PaperAggregate
 from pipeline.retrieval.dense import DEFAULT_TOP_N
 from pipeline.retrieval.hybrid import hybrid_rank
-from utils.logger import logger
 
 router = APIRouter(tags=["recommend"])
 
@@ -57,21 +64,6 @@ DbSession = Annotated[Session, Depends(db_session)]
 
 # Best-effort, dedicated-session logger (see recommendation_logger docstring).
 _recommendation_logger = RecommendationLogger()
-
-
-# Words too generic to anchor a citation key. Lowercase, ASCII-only.
-_TITLE_STOPWORDS: frozenset[str] = frozenset(
-    {
-        "a", "an", "the",
-        "on", "in", "of", "for", "to", "at", "by", "with", "from", "as",
-        "and", "or", "but", "nor", "so", "yet",
-        "is", "are", "was", "were", "be", "been", "being",
-        "this", "that", "these", "those",
-        "we", "i", "our", "their",
-        "via", "using", "towards", "toward",
-    }
-)
-_WORD_PATTERN = re.compile(r"[a-z0-9]+")
 
 
 @router.post("/recommend", response_model=RecommendResponse)
@@ -83,84 +75,112 @@ def recommend(
     if not query:
         raise HTTPException(status_code=400, detail="text must not be empty")
 
-    query_embedding = encode_query(query)
+    ranked = _rank_candidates(
+        session,
+        query,
+        top_k=request.top_k,
+        target_year=request.target_year,
+    )
+    built = build_candidates(
+        session,
+        ranked,
+        target_year=request.target_year,
+    )
+    event_id = _log_recommendation(
+        query_text=query,
+        document_path=request.document_path,
+        target_year=request.target_year,
+        candidates=built.candidates,
+        results_to_log=built.results_to_log,
+    )
+    return RecommendResponse(candidates=built.candidates, event_id=event_id)
 
-    ranked = hybrid_rank(
+
+@router.post("/scan", response_model=ScanResponse)
+def scan(
+    request: ScanRequest,
+    session: DbSession,
+) -> ScanResponse:
+    """Scan a document for citation-worthy uncited sentences."""
+    if not request.text.strip():
+        return ScanResponse(items=[])
+
+    detections = scan_document(request.text, max_sentences=request.max_sentences)
+    items: list[ScanItem] = []
+
+    for detection in detections:
+        if detection.label != CitationNeedLabel.MISSING_CITATION:
+            continue
+
+        query = detection.sentence.text.strip()
+        if not query:
+            continue
+
+        ranked = _rank_candidates(
+            session,
+            query,
+            top_k=request.top_k,
+            target_year=request.target_year,
+        )
+        confidence = _combine_scan_confidence(detection, ranked)
+        if confidence < request.min_confidence:
+            continue
+
+        built = build_candidates(
+            session,
+            ranked,
+            target_year=request.target_year,
+        )
+        if not built.candidates and detection.confidence < 0.5:
+            continue
+
+        event_id = None
+        if built.candidates:
+            event_id = _log_recommendation(
+                query_text=query,
+                document_path=request.document_path,
+                target_year=request.target_year,
+                candidates=built.candidates,
+                results_to_log=built.results_to_log,
+            )
+        items.append(
+            _build_scan_item(
+                detection=detection,
+                confidence=confidence,
+                ranked=ranked,
+                built=built,
+                event_id=event_id,
+            )
+        )
+
+    return ScanResponse(
+        items=sorted(items, key=lambda item: item.confidence, reverse=True)
+    )
+
+
+def _rank_candidates(
+    session: Session,
+    query: str,
+    *,
+    top_k: int,
+    target_year: int | None,
+) -> list[PaperAggregate]:
+    query_embedding = encode_query(query)
+    return hybrid_rank(
         session,
         query,
         query_embedding,
         top_n=DEFAULT_TOP_N,
-        top_k=request.top_k,
-        target_year=request.target_year,
+        top_k=top_k,
+        target_year=target_year,
     )
-
-    if not ranked:
-        return RecommendResponse(candidates=[])
-
-    paper_rows = session.execute(
-        select(Paper).where(Paper.paper_id.in_([a.cited_paper_id for a in ranked]))
-    ).scalars().all()
-    paper_by_id = {p.paper_id: p for p in paper_rows}
-
-    # Two-pass citation-key generation so we can suffix duplicates.
-    raw_keys: list[str] = []
-    for agg in ranked:
-        paper = paper_by_id.get(agg.cited_paper_id)
-        raw_keys.append(_build_citation_key(paper))
-    final_keys = _disambiguate_keys(raw_keys)
-
-    candidates: list[Candidate] = []
-    results_to_log: list[ResultToLog] = []
-    for agg, key in zip(ranked, final_keys, strict=True):
-        paper = paper_by_id.get(agg.cited_paper_id)
-        if paper is None:
-            # Hydration miss — should be rare; skip rather than break the response.
-            logger.warning("paper_id=%s missing from papers table", agg.cited_paper_id)
-            continue
-        if request.target_year is not None and paper.year is not None and paper.year > request.target_year:
-            continue
-
-        evidence = [
-            Evidence(
-                sentence=e.sentence,
-                citing_year=e.citing_year,
-                similarity=round(e.similarity, 4),
-            )
-            for e in agg.top_evidence(DEFAULT_EVIDENCE_COUNT)
-        ]
-
-        bibtex = paper_to_bibtex(paper, key)
-        candidates.append(
-            Candidate(
-                paper_id=paper.paper_id,
-                title=paper.canonical_title,
-                authors=_extract_author_list(paper),
-                year=paper.year,
-                venue=paper.venue,
-                citation_key=key,
-                score=round(agg.score, 6),
-                evidence=evidence,
-                bibtex=bibtex,
-            )
-        )
-        # rank is 1-based and aligned with the displayed order; full-precision
-        # score (not the rounded display value) is stored for analysis.
-        results_to_log.append(
-            ResultToLog(
-                paper_id=paper.paper_id,
-                rank=len(candidates),
-                score=agg.score,
-                citation_key=key,
-            )
-        )
-
-    event_id = _log_recommendation(request, query, candidates, results_to_log)
-    return RecommendResponse(candidates=candidates, event_id=event_id)
 
 
 def _log_recommendation(
-    request: RecommendRequest,
-    query: str,
+    *,
+    query_text: str,
+    document_path: str | None,
+    target_year: int | None,
     candidates: list[Candidate],
     results_to_log: list[ResultToLog],
 ) -> uuid.UUID | None:
@@ -170,9 +190,9 @@ def _log_recommendation(
     candidate if logging failed, so a logging outage never affects the response.
     """
     logged = _recommendation_logger.log(
-        query_text=query,
-        document_path=request.document_path,
-        target_year=request.target_year,
+        query_text=query_text,
+        document_path=document_path,
+        target_year=target_year,
         results=results_to_log,
     )
     if logged is None:
@@ -182,75 +202,65 @@ def _log_recommendation(
     return logged.event_id
 
 
-# ---------------------------------------------------------------------------
-# Citation-key generation
-# ---------------------------------------------------------------------------
-
-def _ascii_slug(value: str) -> str:
-    """NFKD-decompose, drop combining marks, lowercase, strip non-alphanum."""
-    normalized = unicodedata.normalize("NFKD", value)
-    ascii_only = normalized.encode("ascii", "ignore").decode("ascii")
-    return "".join(ch for ch in ascii_only if ch.isalnum()).lower()
-
-
-def _first_significant_title_word(title: str | None) -> str:
-    if not title:
-        return "untitled"
-    ascii_title = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii").lower()
-    for word in _WORD_PATTERN.findall(ascii_title):
-        if word not in _TITLE_STOPWORDS and not word.isdigit():
-            return word
-    # Fallback: first token of any kind.
-    tokens = _WORD_PATTERN.findall(ascii_title)
-    return tokens[0] if tokens else "untitled"
+def _build_scan_item(
+    *,
+    detection: Detection,
+    confidence: float,
+    ranked: list[PaperAggregate],
+    built: CandidateBuildResult,
+    event_id: uuid.UUID | None,
+) -> ScanItem:
+    return ScanItem(
+        sentence_id=detection.sentence.sentence_id,
+        text=detection.sentence.text,
+        start_offset=detection.sentence.start_offset,
+        end_offset=detection.sentence.end_offset,
+        label=CitationNeedLabel.MISSING_CITATION,
+        confidence=round(confidence, 4),
+        reasons=_scan_reasons(detection, ranked),
+        candidates=built.candidates,
+        recommendation_event_id=event_id,
+    )
 
 
-def _build_citation_key(paper: Paper | None) -> str:
-    """``{surname}{year}{firstword}`` — matches the §18 BibTeX convention."""
-    if paper is None:
-        return "unknown"
-    surname = _ascii_slug(paper.first_author or "") or "anon"
-    year = str(paper.year) if paper.year else "nodate"
-    word = _first_significant_title_word(paper.canonical_title)
-    return f"{surname}{year}{word}"
+def _combine_scan_confidence(
+    detection: Detection,
+    ranked: list[PaperAggregate],
+) -> float:
+    """Blend rule and retrieval confidence.
+
+    The rule score decides *whether* a sentence is citation-worthy; retrieval
+    refines *how confident* we are in surfacing it. Strong rule hits must not
+    disappear when hybrid scores are only moderate.
+    """
+    rule_confidence = detection.confidence
+    if not ranked:
+        return rule_confidence if rule_confidence >= 0.5 else 0.0
+
+    top_score = _bounded_score(ranked[0].score)
+    second_score = _bounded_score(ranked[1].score) if len(ranked) > 1 else 0.0
+    margin_confidence = min(1.0, max(0.0, (top_score - second_score) / 0.25))
+    retrieval_confidence = (0.7 * top_score) + (0.3 * margin_confidence)
+
+    combined = (0.6 * rule_confidence) + (0.4 * retrieval_confidence)
+    if rule_confidence >= 0.5:
+        combined = max(combined, rule_confidence)
+
+    return min(1.0, combined)
 
 
-def _disambiguate_keys(keys: list[str]) -> list[str]:
-    """Append ``a``, ``b``, ``c``... to duplicates in the order they appear."""
-    counts: dict[str, int] = {}
-    for k in keys:
-        counts[k] = counts.get(k, 0) + 1
-
-    seen: dict[str, int] = {}
-    out: list[str] = []
-    for k in keys:
-        if counts[k] == 1:
-            out.append(k)
-            continue
-        idx = seen.get(k, 0)
-        suffix = chr(ord("a") + idx) if idx < 26 else f"_{idx}"
-        seen[k] = idx + 1
-        out.append(f"{k}{suffix}")
-    return out
+def _bounded_score(score: float) -> float:
+    return min(1.0, max(0.0, score))
 
 
-def _extract_author_list(paper: Paper) -> list[str]:
-    """Best-effort flatten of the JSONB authors blob into ``["Last, First", ...]``."""
-    blob = paper.authors
-    if not isinstance(blob, dict):
-        return [paper.first_author] if paper.first_author else []
-    raw = blob.get("list")
-    if not isinstance(raw, list):
-        return [paper.first_author] if paper.first_author else []
-
-    out: list[str] = []
-    for entry in raw:
-        if isinstance(entry, str):
-            out.append(entry)
-        elif isinstance(entry, dict):
-            name = entry.get("name") or entry.get("display_name")
-            if isinstance(name, str) and name:
-                out.append(name)
-    if not out and paper.first_author:
-        out.append(paper.first_author)
-    return out
+def _scan_reasons(
+    detection: Detection,
+    ranked: list[PaperAggregate],
+) -> list[str]:
+    reasons = list(detection.reasons)
+    if ranked:
+        reasons.append(f"hybrid top score {ranked[0].score:.3f}")
+        if len(ranked) > 1:
+            margin = ranked[0].score - ranked[1].score
+            reasons.append(f"hybrid rank margin {margin:.3f}")
+    return reasons
