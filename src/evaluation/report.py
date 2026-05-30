@@ -31,6 +31,11 @@ class Report:
     target_year: int | None
     top_k: int
     num_unreachable_skipped: int = 0
+    # Queries that raised during scoring and were excluded from the metrics.
+    # ``num_queries`` is the attempted count; metrics cover ``num_queries -
+    # num_failed`` queries. Non-zero means the aggregates are over fewer
+    # queries than ``num_queries`` advertises.
+    num_failed: int = 0
     require_reachable: bool = True
     timestamp: str = field(
         default_factory=lambda: datetime.now(UTC).isoformat()
@@ -84,6 +89,7 @@ def save_report(report: Report, path: Path | None = None) -> Path:
         "num_citing_papers": report.num_citing_papers,
         "num_queries": report.num_queries,
         "num_unreachable_skipped": report.num_unreachable_skipped,
+        "num_failed": report.num_failed,
         "require_reachable": report.require_reachable,
         "target_year": report.target_year,
         "top_k": report.top_k,
@@ -105,6 +111,7 @@ def load_report(path: Path) -> Report:
         num_citing_papers=raw["num_citing_papers"],
         num_queries=raw["num_queries"],
         num_unreachable_skipped=raw.get("num_unreachable_skipped", 0),
+        num_failed=raw.get("num_failed", 0),
         require_reachable=raw.get("require_reachable", True),
         target_year=raw.get("target_year"),
         top_k=raw["top_k"],

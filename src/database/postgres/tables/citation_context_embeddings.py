@@ -14,7 +14,8 @@ from ..base import Base
 class CitationContextEmbedding(Base):
     """Dense embedding for a citation context. Schema §6.5.
 
-    Dimensionality is fixed at model selection time (bge-base-en-v1.5 → 768).
+    Dimensionality is fixed at model selection time (bge-large-en-v1.5 → 1024)
+    and read from ``config.EMBEDDER_DIM`` so the column tracks the live model.
     The HNSW index is built in a follow-up Alembic revision after bulk insert.
     """
 

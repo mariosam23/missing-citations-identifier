@@ -14,7 +14,7 @@ Flow:
    evidence contexts.
 
 The score blends two signals (see ``pipeline.retrieval.aggregate``):
-``mean_top_3_similarity + 0.3*log1p(distinct_citing_papers)``. The former
+``mean_top_3_similarity + 0.1*log1p(distinct_citing_papers)``. The former
 measures how well the strongest evidence matches; the latter rewards papers
 corroborated by several independent citers. (A popularity penalty was tried
 and removed — it halved recall on the val split; see the aggregate docstring.)

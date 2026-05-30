@@ -1,4 +1,4 @@
-"""Bulk-embed citation contexts with BAAI/bge-base-en-v1.5.
+"""Bulk-embed citation contexts with the configured embedder (BAAI/bge-large-en-v1.5, 1024-dim).
 
 Phase 3 — produces the ``citation_context_embeddings`` rows that back the
 ``POST /recommend`` dense retrieval path. Fully resumable: the inner query

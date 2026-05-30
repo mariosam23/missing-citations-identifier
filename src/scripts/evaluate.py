@@ -157,11 +157,14 @@ def _print_report(report: Report) -> None:
         if report.require_reachable and report.num_unreachable_skipped
         else ""
     )
+    failed_note = (
+        f", {report.num_failed} failed/excluded" if report.num_failed else ""
+    )
     typer.echo(
         f"\nVariant: {report.variant_name}\n"
         f"Split:   {report.split_name} "
         f"({report.num_citing_papers} citing papers, "
-        f"{report.num_queries} queries{skipped_note})\n"
+        f"{report.num_queries} queries{skipped_note}{failed_note})\n"
         f"Reachable-only filter: {report.require_reachable}\n"
         f"Target year filter: {report.target_year or 'none'}\n"
     )

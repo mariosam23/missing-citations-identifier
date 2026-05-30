@@ -118,9 +118,9 @@ class EvalRunner:
         t0 = time.perf_counter()
 
         if self._workers <= 1:
-            all_metrics = self._eval_sequential(queries, embeddings)
+            all_metrics, num_failed = self._eval_sequential(queries, embeddings)
         else:
-            all_metrics = self._eval_parallel(queries, embeddings)
+            all_metrics, num_failed = self._eval_parallel(queries, embeddings)
 
         elapsed = time.perf_counter() - t0
         logger.info(
@@ -128,6 +128,14 @@ class EvalRunner:
             elapsed,
             elapsed / len(queries),
         )
+        if num_failed:
+            logger.warning(
+                "%d/%d queries raised during scoring and were excluded from "
+                "metrics; aggregates cover %d queries",
+                num_failed,
+                len(queries),
+                len(queries) - num_failed,
+            )
 
         per_query: dict[str, list[float]] = {}
         for m in all_metrics:
@@ -140,6 +148,7 @@ class EvalRunner:
             num_citing_papers=len(paper_ids),
             num_queries=len(queries),
             num_unreachable_skipped=unreachable_skipped,
+            num_failed=num_failed,
             require_reachable=self._require_reachable,
             target_year=self._target_year,
             top_k=self._top_k,
@@ -184,23 +193,44 @@ class EvalRunner:
         self,
         queries: list[EvalQuery],
         embeddings: list[np.ndarray],
-    ) -> list[dict[str, float]]:
-        return [
-            self._score_one(self._variant, q, emb)
-            for q, emb in tqdm(
-                zip(queries, embeddings, strict=True),
-                total=len(queries),
-                desc=self._variant.name,
-                unit="q",
-            )
-        ]
+    ) -> tuple[list[dict[str, float]], int]:
+        """Score queries one at a time; return ``(metrics, num_failed)``.
+
+        A query that raises is logged and excluded from ``metrics`` rather than
+        aborting the whole run — the caller records ``num_failed`` on the report
+        so the dropped queries are visible.
+        """
+        metrics: list[dict[str, float]] = []
+        num_failed = 0
+        for q, emb in tqdm(
+            zip(queries, embeddings, strict=True),
+            total=len(queries),
+            desc=self._variant.name,
+            unit="q",
+        ):
+            try:
+                metrics.append(self._score_one(self._variant, q, emb))
+            except Exception:
+                num_failed += 1
+                logger.exception(
+                    "query failed (citing_paper_id=%s gold_paper_id=%s) — "
+                    "excluded from metrics",
+                    q.citing_paper_id,
+                    q.gold_paper_id,
+                )
+        return metrics, num_failed
 
     def _eval_parallel(
         self,
         queries: list[EvalQuery],
         embeddings: list[np.ndarray],
-    ) -> list[dict[str, float]]:
-        """Evaluate in parallel with per-thread DB sessions."""
+    ) -> tuple[list[dict[str, float]], int]:
+        """Evaluate in parallel with per-thread DB sessions.
+
+        Each query is scored under its own ``try`` so a single failure neither
+        kills its worker thread nor silently shrinks the result set: a failed
+        query leaves ``results[i] = None`` and is counted into ``num_failed``.
+        """
         if self._variant_factory is None:
             raise ValueError(
                 "variant_factory is required when workers > 1 "
@@ -222,10 +252,19 @@ class EvalRunner:
                     i = next(counter)
                     if i >= n:
                         break
-                    results[i] = self._score_one(
-                        variant, queries[i], embeddings[i]
-                    )
-                    progress.update(1)
+                    try:
+                        results[i] = self._score_one(
+                            variant, queries[i], embeddings[i]
+                        )
+                    except Exception:
+                        logger.exception(
+                            "query failed (citing_paper_id=%s "
+                            "gold_paper_id=%s) — excluded from metrics",
+                            queries[i].citing_paper_id,
+                            queries[i].gold_paper_id,
+                        )
+                    finally:
+                        progress.update(1)
             finally:
                 session.close()
 
@@ -239,4 +278,5 @@ class EvalRunner:
             t.join()
         progress.close()
 
-        return [r for r in results if r is not None]
+        metrics = [r for r in results if r is not None]
+        return metrics, n - len(metrics)

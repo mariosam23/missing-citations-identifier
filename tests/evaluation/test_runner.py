@@ -211,3 +211,61 @@ class TestEvalRunner:
         assert report.aggregates["hit@1"]["mean"] == pytest.approx(0.5)
         assert report.aggregates["mrr@20"]["mean"] == pytest.approx(0.5)
         assert report.aggregates["ndcg@20"]["mean"] == pytest.approx(0.5)
+
+    def test_sequential_excludes_failed_queries(self) -> None:
+        """A query whose variant raises is counted and excluded, not fatal.
+
+        Guards the regression where a failed query silently shrank the metric
+        vectors while ``num_queries`` still advertised the attempted count.
+        """
+        from evaluation.runner import EvalRunner
+
+        queries = [
+            EvalQuery(
+                sentence="ok",
+                gold_paper_id=1,
+                citing_paper_id=10,
+                citing_year=2020,
+            ),
+            EvalQuery(
+                sentence="boom",
+                gold_paper_id=2,
+                citing_paper_id=11,
+                citing_year=2021,
+            ),
+            EvalQuery(
+                sentence="ok again",
+                gold_paper_id=3,
+                citing_paper_id=12,
+                citing_year=2022,
+            ),
+        ]
+
+        class _FlakyVariant:
+            name = "flaky"
+
+            def candidates(
+                self,
+                query: str,
+                *,
+                target_year: int | None,
+                exclude_citing_paper_id: int,
+                top_k: int,
+                query_embedding: np.ndarray | None = None,
+            ) -> list[int]:
+                if query == "boom":
+                    raise RuntimeError("simulated retrieval failure")
+                return [exclude_citing_paper_id]
+
+        # split and session are unused by _eval_sequential with a stub variant.
+        runner = EvalRunner(
+            variant=_FlakyVariant(),
+            split=None,  # type: ignore[arg-type]
+            session=None,  # type: ignore[arg-type]
+        )
+        embeddings = [np.zeros(4, dtype=np.float32) for _ in queries]
+
+        metrics, num_failed = runner._eval_sequential(queries, embeddings)
+
+        assert num_failed == 1
+        assert len(metrics) == 2

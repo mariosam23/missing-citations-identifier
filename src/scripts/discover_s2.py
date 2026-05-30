@@ -8,7 +8,7 @@ record is the raw S2 Paper; downstream scripts consume only the fields
 they need.
 
 Usage:
-    python -m src.scripts.discover_s2 --target 1000
+    python -m scripts.discover_s2 --target 1000
 """
 
 from __future__ import annotations
@@ -27,8 +27,8 @@ from tenacity import (
     wait_exponential,
 )
 
-from src.utils.config import config
-from src.utils.logger import logger
+from utils.config import config
+from utils.logger import logger
 
 DEFAULT_OUTPUT = Path("data/corpus/s2_works.jsonl")
 PAGE_SIZE = 100
