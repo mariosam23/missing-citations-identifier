@@ -17,11 +17,14 @@ from pipeline.citation_need.identifier import (
     CitationNeedResult,
     get_identifier,
 )
+from pipeline.citation_need.sanitize import clean_for_llm, is_classifiable
 
 __all__ = [
     "CitationNeedIdentifier",
     "CitationNeedJudgement",
     "CitationNeedQuery",
     "CitationNeedResult",
+    "clean_for_llm",
     "get_identifier",
+    "is_classifiable",
 ]

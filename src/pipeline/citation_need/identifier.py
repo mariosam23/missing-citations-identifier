@@ -33,6 +33,7 @@ from pydantic import BaseModel, ValidationError, field_validator
 
 from llm.gemini_client import GeminiClient
 from llm.rotating_client import RotatingGeminiClient
+from pipeline.citation_need.sanitize import clean_for_llm, is_classifiable
 from pipeline.missing_citations.detector import (
     SentenceSpan,
     has_explicit_citation,
@@ -187,6 +188,7 @@ class CitationNeedIdentifier:
         models: Sequence[str] | None = None,
         min_words: int | None = None,
         max_sentences: int | None = None,
+        enable_sanitizer: bool = True,
     ) -> None:
         self._client, self._model_name = self._resolve_client(
             client, model_name, models
@@ -199,6 +201,7 @@ class CitationNeedIdentifier:
             if max_sentences is not None
             else config.CITATION_NEED_MAX_SENTENCES
         )
+        self._enable_sanitizer = enable_sanitizer
 
     @staticmethod
     def _resolve_client(
@@ -302,23 +305,36 @@ class CitationNeedIdentifier:
             return {}
         return self._parse_decisions(raw)
 
-    @staticmethod
-    def _build_batch_prompt(queries: list[CitationNeedQuery]) -> str:
+    def _build_batch_prompt(self, queries: list[CitationNeedQuery]) -> str:
         blocks: list[str] = []
         for index, query in enumerate(queries):
             lines = [f"### Item {index}"]
-            if query.previous:
-                lines.append(f"Before: {query.previous}")
-            lines.append(f"TARGET: {query.target}")
-            if query.next:
-                lines.append(f"After: {query.next}")
+            previous = self._clean(query.previous)
+            following = self._clean(query.next)
+            if previous:
+                lines.append(f"Before: {previous}")
+            lines.append(f"TARGET: {self._clean(query.target)}")
+            if following:
+                lines.append(f"After: {following}")
             blocks.append("\n".join(lines))
         return "\n\n".join(blocks)
+
+    def _clean(self, text: str | None) -> str | None:
+        """Sanitize prompt-bound text when the filter is enabled, else passthrough."""
+        if text is None:
+            return None
+        return clean_for_llm(text) if self._enable_sanitizer else text
 
     def _target_is_candidate(self, target: str) -> bool:
         if has_explicit_citation(target):
             return False
-        return len(_WORD_PATTERN.findall(target)) >= self._min_words
+        if len(_WORD_PATTERN.findall(target)) < self._min_words:
+            return False
+        if self._enable_sanitizer and not is_classifiable(
+            clean_for_llm(target), min_words=self._min_words
+        ):
+            return False
+        return True
 
     def _analyze_paragraph(
         self, spans: list[SentenceSpan]
@@ -388,12 +404,15 @@ class CitationNeedIdentifier:
         index_map: dict[int, SentenceSpan] = {}
         index = 0
         for span in spans:
+            # Only the prompt text is sanitized; index_map keeps the ORIGINAL
+            # span so the result's text/offsets stay exact for the editor.
+            rendered = self._clean(span.text) or span.text
             if span.sentence_id in candidate_ids:
-                parts.append(f"[{index}] {span.text}")
+                parts.append(f"[{index}] {rendered}")
                 index_map[index] = span
                 index += 1
             else:
-                parts.append(span.text)
+                parts.append(rendered)
         return " ".join(parts), index_map
 
     def _parse_decisions(self, raw: str) -> dict[int, _Decision]:

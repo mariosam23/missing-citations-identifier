@@ -109,6 +109,14 @@ def run(
         min=1,
         help="Targets packed into one LLM call (fewer calls = less quota use).",
     ),
+    filter_inputs: bool = typer.Option(
+        True,
+        "--filter/--no-filter",
+        help=(
+            "Apply the pre-LLM input-sanitization filter (clean residue + skip "
+            "non-prose). Use --no-filter for the unfiltered baseline."
+        ),
+    ),
     sleep: float = typer.Option(
         0.0,
         "--sleep",
@@ -118,7 +126,9 @@ def run(
 ) -> None:
     """Score the identifier on the binary citation-need task."""
     rows = _load_rows(Path(dataset), limit=limit)
-    identifier = CitationNeedIdentifier(model_name=model)
+    identifier = CitationNeedIdentifier(
+        model_name=model, enable_sanitizer=filter_inputs
+    )
 
     queries = [
         CitationNeedQuery(
@@ -170,6 +180,7 @@ def run(
         cited_total=cited_total,
         model_name=identifier.model_name,
         dataset=str(dataset),
+        filter_inputs=filter_inputs,
     )
     out_path = _write_report(report, Path(output))
     _print_report(report)
@@ -231,6 +242,7 @@ def _build_report(
     cited_total: int,
     model_name: str,
     dataset: str,
+    filter_inputs: bool,
 ) -> dict[str, Any]:
     by_threshold = {
         f"{t:.2f}": _metrics_at(predictions, t) for t in _THRESHOLDS
@@ -241,6 +253,7 @@ def _build_report(
             "temperature": 0.0,
             "dataset": dataset,
             "headline_threshold": headline_threshold,
+            "input_filter": filter_inputs,
             "num_scored": len(predictions),
             "num_unmatched": sum(
                 1 for p in predictions if p.sent and not p.answered
@@ -301,6 +314,10 @@ def _print_report(report: dict[str, Any]) -> None:
     headline = report["headline"]
     cited = report["already_cited"]
     typer.echo(f"Model: {settings['model']} (temperature 0)")
+    typer.echo(
+        f"Input filter: {'on' if settings.get('input_filter') else 'off'} "
+        f"(prefiltered without an LLM call: {settings['num_prefiltered']})"
+    )
     typer.echo(
         f"Scored: {settings['num_scored']} "
         f"(unmatched: {settings['num_unmatched']})"

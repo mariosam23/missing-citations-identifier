@@ -34,6 +34,10 @@ dev = [
     "ruff>=0.7",
     "mypy>=1.13",
 ]
+viz = [
+    "matplotlib>=3.9",
+    "nbformat>=5.10",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

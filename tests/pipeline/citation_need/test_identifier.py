@@ -237,5 +237,55 @@ def test_classify_rejects_bad_batch_size() -> None:
         identifier.classify(queries, batch_size=0)
 
 
+# --- input-sanitization filter -------------------------------------------------
+
+
+def test_analyze_sends_cleaned_text_but_keeps_original_offsets() -> None:
+    # Trailing "in ]" is citation-stripping residue: cleaned out of the prompt,
+    # but the returned span must stay an exact slice of the original document.
+    doc = "The established result rests on earlier published findings in 2004 in ]."
+    identifier, client = _identifier(
+        '[{"index": 0, "needs_citation": true, "confidence": 0.8}]'
+    )
+
+    results = identifier.analyze(doc)
+
+    assert len(results) == 1
+    assert doc[results[0].start_offset : results[0].end_offset] == results[0].text
+    assert "]" in results[0].text  # original residue preserved in the result
+    assert "in ]" not in client.prompts[0]  # but the LLM saw cleaned prose
+
+
+def test_sanitizer_off_reproduces_unfiltered_prompt() -> None:
+    doc = "The established result rests on earlier published findings in 2004 in ]."
+    client = FakeClient(
+        '[{"index": 0, "needs_citation": true, "confidence": 0.8}]'
+    )
+    identifier = CitationNeedIdentifier(client=client, enable_sanitizer=False)
+
+    identifier.analyze(doc)
+
+    assert "in ]" in client.prompts[0]
+
+
+def test_classify_filter_skips_list_item_baseline_sends_it() -> None:
+    query = CitationNeedQuery(
+        "3. Subsample the remaining libraries without replacement to size N."
+    )
+
+    on_client = FakeClient()  # no responses => no call expected
+    on = CitationNeedIdentifier(client=on_client, enable_sanitizer=True)
+    on_judgements = on.classify([query], batch_size=10)
+    assert on_client.prompts == []
+    assert on_judgements[0].sent is False
+    assert on_judgements[0].needs_citation is False
+
+    off_client = FakeClient(_reply(False))
+    off = CitationNeedIdentifier(client=off_client, enable_sanitizer=False)
+    off_judgements = off.classify([query], batch_size=10)
+    assert len(off_client.prompts) == 1
+    assert off_judgements[0].sent is True
+
+
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, "-v"]))
